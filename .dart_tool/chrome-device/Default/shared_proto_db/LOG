@@ -1,0 +1,28 @@
+2026/03/16-15:12:41.468 7108 Reusing MANIFEST C:\Users\naday\AppData\Local\Temp\flutter_tools.9bc9d21d\flutter_tools_chrome_device.9e8bca3f\Default\shared_proto_db/MANIFEST-000001
+2026/03/16-15:12:41.470 7108 Recovering log #29
+2026/03/16-15:12:41.476 7108 Reusing old log C:\Users\naday\AppData\Local\Temp\flutter_tools.9bc9d21d\flutter_tools_chrome_device.9e8bca3f\Default\shared_proto_db/000029.log 
+2026/03/16-15:12:41.478 7108 Delete type=0 #3
+2026/03/16-15:12:41.478 7108 Delete type=0 #4
+2026/03/16-15:12:41.478 7108 Delete type=0 #7
+2026/03/16-15:12:41.478 7108 Delete type=2 #8
+2026/03/16-15:12:41.478 7108 Delete type=0 #10
+2026/03/16-15:12:41.478 7108 Delete type=2 #11
+2026/03/16-15:12:41.478 7108 Delete type=0 #13
+2026/03/16-15:12:41.479 7108 Delete type=2 #14
+2026/03/16-15:12:41.480 7108 Delete type=0 #16
+2026/03/16-15:12:41.480 7108 Delete type=2 #17
+2026/03/16-15:12:41.480 7108 Delete type=0 #19
+2026/03/16-15:12:41.481 7108 Delete type=0 #23
+2026/03/16-15:12:41.481 7108 Delete type=0 #26
+2026/03/16-15:13:48.118 1324 Level-0 table #33: started
+2026/03/16-15:13:48.146 1324 Level-0 table #33: 136661 bytes OK
+2026/03/16-15:13:48.158 1324 Delete type=0 #29
+2026/03/16-15:13:48.169 1324 Compacting 4@0 + 1@1 files
+2026/03/16-15:13:48.196 1324 Generated table #34@0: 1693 keys, 97628 bytes
+2026/03/16-15:13:48.196 1324 Compacted 4@0 + 1@1 files => 97628 bytes
+2026/03/16-15:13:48.198 1324 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/03/16-15:13:48.201 1324 Delete type=2 #21
+2026/03/16-15:13:48.202 1324 Delete type=2 #24
+2026/03/16-15:13:48.202 1324 Delete type=2 #27
+2026/03/16-15:13:48.202 1324 Delete type=2 #30
+2026/03/16-15:13:48.202 1324 Delete type=2 #33
