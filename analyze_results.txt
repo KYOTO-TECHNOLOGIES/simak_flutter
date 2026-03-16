@@ -1,0 +1,19 @@
+﻿Analyzing product_detail_screen.dart...                         
+
+   info - The import of 'package:flutter/services.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\features\products\screens\product_detail_screen.dart:1196:8 - unnecessary_import
+   info - Don't use 'BuildContext's across async gaps - lib\features\products\screens\product_detail_screen.dart:2021:51 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\products\screens\product_detail_screen.dart:2022:58 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2084:41 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2092:53 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2093:60 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2144:37 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2144:41 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2171:29 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2171:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2399:39 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2412:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2412:53 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2425:43 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2425:47 - unnecessary_underscores
+warning - A value for optional parameter 'color' isn't ever given - lib\features\products\screens\product_detail_screen.dart:2762:10 - unused_element_parameter
+
