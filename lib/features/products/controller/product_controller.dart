@@ -95,15 +95,25 @@ class ProductController extends ChangeNotifier {
     return AppConstants.kDefaultProductImage;
   }
 
-  // ─── Fetching ───────────────────────────────────────────────────
+  // ─── Fetching (Offline-First) ────────────────────────────────
+  /// Loads products from cache instantly, then silently refreshes
+  /// from API in the background if the cache is stale.
   Future<void> fetchProducts() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _products = await _service.fetchProducts();
+      _products = await _service.fetchProducts(
+        // This callback fires when background API refresh completes.
+        // It updates the product list and the UI seamlessly.
+        onRefresh: (freshProducts) {
+          _products = freshProducts;
+          notifyListeners();
+        },
+      );
     } catch (e) {
+      // Only reaches here if there is NO cache AND the API failed.
       _error = 'failed_load_products';
       debugPrint(e.toString());
     } finally {
@@ -112,13 +122,20 @@ class ProductController extends ChangeNotifier {
     }
   }
 
+  /// Loads a single product detail, offline-first.
   Future<void> fetchProductDetail(int id) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _selectedProduct = await _service.fetchProductDetail(id);
+      _selectedProduct = await _service.fetchProductDetail(
+        id,
+        onRefresh: (freshProduct) {
+          _selectedProduct = freshProduct;
+          notifyListeners();
+        },
+      );
     } catch (e) {
       _error = 'failed_load_details';
       debugPrint(e.toString());

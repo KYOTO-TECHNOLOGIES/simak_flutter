@@ -987,61 +987,12 @@ class _BannerSliderState extends State<_BannerSlider>
                 }),
               ),
             ),
-            // Navigation arrows on the right
-            Positioned(
-              right: 20,
-              bottom: 24,
-              child: Row(
-                children: [
-                  _buildNavArrow(
-                    Icons.chevron_left, 
-                    Colors.black.withOpacity(0.3),
-                    Colors.white,
-                    () {
-                      if (_currentPage > 0) {
-                        _pageController.previousPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    }
-                  ),
-                  const SizedBox(width: 8),
-                  _buildNavArrow(
-                    Icons.chevron_right,
-                    Colors.white,
-                    Colors.black54,
-                    () {
-                      if (_currentPage < controller.banners.length - 1) {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    }
-                  ),
-                ],
-              ),
-            ),
           ],
         );
       },
     );
   }
 
-  Widget _buildNavArrow(IconData icon, Color bgColor, Color iconColor, VoidCallback? onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: bgColor,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: iconColor, size: 22),
-      ),
-    );
-  }
 }
 
 class _BannerSlide extends StatelessWidget {

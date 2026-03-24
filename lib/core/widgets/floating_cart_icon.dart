@@ -92,8 +92,8 @@ class _FloatingCartIconState extends State<FloatingCartIcon>
                       children: [
                         // The main cart vessel with Dynamic Shadow
                         Container(
-                          height: 44,
-                          width: 44,
+                          height: 36,
+                          width: 36,
                           decoration: BoxDecoration(
                             color: theme.cardColor,
                             shape: BoxShape.circle,
@@ -114,7 +114,7 @@ class _FloatingCartIconState extends State<FloatingCartIcon>
                             child: Icon(
                               Icons.shopping_cart_rounded,
                               color: AppColors.primary,
-                              size: 22,
+                              size: 18,
                             ),
                           ),
                         ),
@@ -138,15 +138,15 @@ class _FloatingCartIconState extends State<FloatingCartIcon>
                                       shape: BoxShape.circle,
                                     ),
                                     constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
+                                      minWidth: 16,
+                                      minHeight: 16,
                                     ),
                                     child: Center(
                                       child: Text(
                                         '${controller.itemCount}',
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 9,
+                                          fontSize: 8,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),

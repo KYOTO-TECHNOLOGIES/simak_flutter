@@ -16,8 +16,8 @@ class LanguageSelectionIcon extends StatelessWidget {
     return GestureDetector(
       onTap: () => _showLanguagePicker(context),
       child: Container(
-        height: 44,
-        width: 44,
+        height: 36,
+        width: 36,
         decoration: BoxDecoration(
           color: theme.cardColor,
           shape: BoxShape.circle,
@@ -53,7 +53,7 @@ class LanguageSelectionIcon extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: FontWeight.w800,
         color: AppColors.primary,
         letterSpacing: 0.5,
