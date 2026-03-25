@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
 
   void setupFCM() async {
     // 🔔 Ask permission (important for Android 13+ / iOS)
-    await FirebaseMessaging.instance.requestPermission();
+    // await FirebaseMessaging.instance.requestPermission();
 
     // 📱 Get token
     String? token = await FirebaseMessaging.instance.getToken();

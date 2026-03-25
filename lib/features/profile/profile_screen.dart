@@ -1362,20 +1362,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         currentValue: user.email,
         userId: user.id,
         onVerified: (String verifiedValue) async {
-          final auth = context.read<AuthController>();
-          // Include BOTH email and phone data so the backend
-          // doesn't lose the phone_number during email verification.
-          final updateData = <String, dynamic>{
-            'email': verifiedValue,
-            'is_email_verified': true,
-          };
-          // Preserve phone state explicitly
-          if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) {
-            updateData['phone_number'] = user.phoneNumber;
-            updateData['is_phone_verified'] = user.isPhoneVerified;
-          }
-          await auth.updateProfile(updateData);
-          await auth.refreshProfile();
+          // The verifyOtp call inside the dialog already updated the profile and synced with backend.
+          // No need for redundant (and potentially stale) updateProfile/refreshProfile calls here.
         },
       ),
     );
@@ -1390,20 +1378,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         currentValue: user.phoneNumber ?? '',
         userId: user.id,
         onVerified: (String verifiedValue) async {
-          final auth = context.read<AuthController>();
-          // Include BOTH phone and email data so the backend
-          // doesn't lose the email during phone verification.
-          final updateData = <String, dynamic>{
-            'phone_number': verifiedValue,
-            'is_phone_verified': true,
-          };
-          // Preserve email state explicitly
-          if (user.email.isNotEmpty) {
-            updateData['email'] = user.email;
-            updateData['is_email_verified'] = user.isEmailVerified;
-          }
-          await auth.updateProfile(updateData);
-          await auth.refreshProfile();
+          // The verifyOtp call inside the dialog already updated the profile and synced with backend.
+          // No need for redundant (and potentially stale) updateProfile/refreshProfile calls here.
         },
       ),
     );

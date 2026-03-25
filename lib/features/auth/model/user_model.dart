@@ -101,9 +101,15 @@ class UserModel {
     final String? jsonEmail = json['email'] as String?;
     final bool hasEmailUpdate = json.containsKey('email') && jsonEmail != null && jsonEmail.isNotEmpty;
     final String newEmail = hasEmailUpdate ? jsonEmail : existing.email;
-    final bool emailChanged = hasEmailUpdate && newEmail != existing.email;
+    
+    // Normalize email for robust comparison
+    String normalizeEmail(String s) => s.trim().toLowerCase();
+    final String normalizedNewEmail = normalizeEmail(newEmail);
+    final String normalizedExistingEmail = normalizeEmail(existing.email);
+    final bool emailChanged = hasEmailUpdate && normalizedNewEmail != normalizedExistingEmail;
     
     final bool hasEmailVerifiedJson = json.containsKey('is_email_verified');
+    // NEVER downgrade verification if email hasn't changed
     final bool mergedEmailVerified = emailChanged 
         ? (hasEmailVerifiedJson ? (json['is_email_verified'] as bool? ?? false) : false)
         : (hasEmailVerifiedJson 
@@ -121,6 +127,7 @@ class UserModel {
     final bool phoneChanged = hasPhoneUpdate && normalizedNewPhone != normalizedExistingPhone;
     
     final bool hasPhoneVerifiedJson = json.containsKey('is_phone_verified');
+    // NEVER downgrade verification if phone hasn't actually changed
     final bool mergedPhoneVerified = phoneChanged 
         ? (hasPhoneVerifiedJson ? (json['is_phone_verified'] as bool? ?? false) : false)
         : (hasPhoneVerifiedJson 
@@ -130,9 +137,8 @@ class UserModel {
     debugPrint('--- UserModel.merge ---');
     debugPrint('Existing: ID=${existing.id}, E=${existing.email}(V:${existing.isEmailVerified}), P=${existing.phoneNumber}(V:${existing.isPhoneVerified})');
     debugPrint('JSON Keys: ${json.keys.toList()}');
-    debugPrint('JSON Values: email=${json['email']}, phone=${json['phone_number']}, is_email_v=${json['is_email_verified']}, is_phone_v=${json['is_phone_verified']}');
-    debugPrint('Calculated: emailChanged=$emailChanged, emailVerified=$mergedEmailVerified');
-    debugPrint('Calculated: phoneChanged=$phoneChanged, phoneVerified=$mergedPhoneVerified');
+    debugPrint('Calculated Status: emailChanged=$emailChanged, emailVerified=$mergedEmailVerified');
+    debugPrint('Calculated Status: phoneChanged=$phoneChanged, phoneVerified=$mergedPhoneVerified');
 
     return UserModel(
       id: json['id'] as int? ?? existing.id,

@@ -198,29 +198,8 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
         if (!mounted) return;
         Navigator.of(context).pop();
       } else {
-      // Default behavior: update profile with both email AND phone data
-        final updateData = <String, dynamic>{};
-        final currentUser = auth.currentUser;
-        if (_isEmail) {
-          updateData['email'] = identifier;
-          updateData['is_email_verified'] = true;
-          // Preserve phone state
-          if (currentUser?.phoneNumber != null && currentUser!.phoneNumber!.isNotEmpty) {
-            updateData['phone_number'] = currentUser.phoneNumber;
-            updateData['is_phone_verified'] = currentUser.isPhoneVerified;
-          }
-        } else {
-          updateData['phone_number'] = identifier;
-          updateData['is_phone_verified'] = true;
-          // Preserve email state
-          if (currentUser != null && currentUser.email.isNotEmpty) {
-            updateData['email'] = currentUser.email;
-            updateData['is_email_verified'] = currentUser.isEmailVerified;
-          }
-        }
-
-        await auth.updateProfile(updateData);
-
+        // The verifyOtp call already updated the profile and synced with backend.
+        // Direct pop is safe.
         if (!mounted) return;
         Navigator.of(context).pop();
 

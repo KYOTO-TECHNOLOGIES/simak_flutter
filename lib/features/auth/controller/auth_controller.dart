@@ -199,82 +199,101 @@ class AuthController extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
-      // ★ Capture existing verification state BEFORE _handleAuthResponse,
-      // because the server's OTP-login response may not include the OTHER
-      // verification flag, causing merge to reset it.
-      final bool prevPhoneVerified = _currentUser?.isPhoneVerified ?? false;
-      final String? prevPhone = _currentUser?.phoneNumber;
-      final bool prevEmailVerified = _currentUser?.isEmailVerified ?? false;
-      final String? prevEmail = _currentUser?.email;
-
-      debugPrint('--- verifyOtp PRE-state ---');
-      debugPrint('Phone: $prevPhone (verified: $prevPhoneVerified)');
-      debugPrint('Email: $prevEmail (verified: $prevEmailVerified)');
-
       final request = OtpVerifyRequest(identifier: identifier, otp: otp);
       final response = await _authService.verifyOtp(request);
-      await _handleAuthResponse(response);
-      
-      // Force-set verification status for both types, restoring any
-      // flag that _handleAuthResponse may have lost.
-      if (_currentUser != null) {
-        UserModel updatedUser = _currentUser!;
-        
-        if (identifier.contains('@')) {
-          // Email OTP — mark email verified, preserve phone state
-          updatedUser = updatedUser.copyWith(
-            isEmailVerified: true,
-            email: identifier,
-            isPhoneVerified: prevPhoneVerified || updatedUser.isPhoneVerified,
-            phoneNumber: updatedUser.phoneNumber?.isNotEmpty == true
-                ? updatedUser.phoneNumber
-                : prevPhone,
-          );
-        } else {
-          // Phone OTP — mark phone verified, preserve email state
-          updatedUser = updatedUser.copyWith(
-            isPhoneVerified: true,
-            phoneNumber: identifier,
-            isEmailVerified: prevEmailVerified || updatedUser.isEmailVerified,
-            email: updatedUser.email.isNotEmpty ? updatedUser.email : (prevEmail ?? ''),
-          );
+
+      // ════════════════════════════════════════════════════════════
+      // FLOW 1: LOGIN — no user is currently logged in.
+      //   → Use the response normally (save tokens, set user).
+      // ════════════════════════════════════════════════════════════
+      if (_currentUser == null) {
+        debugPrint('--- verifyOtp: LOGIN flow (no existing user) ---');
+        await _handleAuthResponse(response);
+
+        // Mark the verified identifier
+        if (_currentUser != null) {
+          if (identifier.contains('@')) {
+            _currentUser = _currentUser!.copyWith(
+              isEmailVerified: true,
+              email: identifier,
+            );
+          } else {
+            _currentUser = _currentUser!.copyWith(
+              isPhoneVerified: true,
+              phoneNumber: identifier,
+            );
+          }
+          await _tokenStorage.saveUserData(_currentUser!.toJson());
         }
 
-        debugPrint('--- verifyOtp POST-state (local) ---');
-        debugPrint('Phone: ${updatedUser.phoneNumber} (verified: ${updatedUser.isPhoneVerified})');
-        debugPrint('Email: ${updatedUser.email} (verified: ${updatedUser.isEmailVerified})');
-
-        _currentUser = updatedUser;
-        await _tokenStorage.saveUserData(updatedUser.toJson());
-
-        // ★★ CRITICAL: Push the restored state back to the backend.
-        // The auth/otp/login/ endpoint may have reset phone_number to null
-        // in the database. We PATCH the correct data back immediately.
-        if (_currentUser!.id != null) {
-          final syncData = <String, dynamic>{};
-          
-          // Always include the email
-          if (updatedUser.email.isNotEmpty) {
-            syncData['email'] = updatedUser.email;
-          }
-          // Always include the phone number
-          if (updatedUser.phoneNumber != null && updatedUser.phoneNumber!.isNotEmpty) {
-            syncData['phone_number'] = updatedUser.phoneNumber;
-          }
-
-          if (syncData.isNotEmpty) {
-            try {
-              debugPrint('--- verifyOtp: syncing restored state to backend ---');
-              debugPrint('Sync payload: $syncData');
-              await _authService.updateProfileRaw(_currentUser!.id!, syncData);
-              debugPrint('--- verifyOtp: backend sync complete ---');
-            } catch (e) {
-              debugPrint('⚠ Failed to sync restored state to backend: $e');
-              // Non-fatal: local state is already correct
-            }
-          }
-        }
+        _isOtpSent = false;
+        _setLoading(false);
+        return true;
       }
+
+      // ════════════════════════════════════════════════════════════
+      // FLOW 2: PROFILE VERIFICATION — user is already logged in.
+      //   → Do NOT call _handleAuthResponse (it would switch the
+      //     session to a different/new user created by auth/otp/login/).
+      //   → Instead, PATCH the CURRENT user to update the verified
+      //     contact info while preserving everything else.
+      // ════════════════════════════════════════════════════════════
+      debugPrint('--- verifyOtp: PROFILE VERIFICATION flow ---');
+      debugPrint('Current user ID: ${_currentUser!.id}');
+      debugPrint('Identifier: $identifier');
+
+      // The 200 response from auth/otp/login/ proves the OTP is valid.
+      // We intentionally IGNORE the response tokens & user object.
+
+      // Build the PATCH payload for the CURRENT user
+      final patchData = <String, dynamic>{};
+
+      if (identifier.contains('@')) {
+        // Email verification — update email, keep phone untouched
+        patchData['email'] = identifier;
+        patchData['is_email_verified'] = true;
+      } else {
+        // Phone verification — update phone, keep email untouched
+        patchData['phone_number'] = identifier;
+        patchData['is_phone_verified'] = true;
+      }
+
+      debugPrint('--- verifyOtp: PATCHing current user ${_currentUser!.id} ---');
+      debugPrint('Patch payload: $patchData');
+
+      // PATCH the current user on the backend
+      try {
+        final responseData = await _authService.updateProfileRaw(
+          _currentUser!.id!,
+          patchData,
+        );
+        debugPrint('--- verifyOtp: PATCH response: $responseData ---');
+
+        // Merge the server response into the current user
+        _currentUser = UserModel.merge(_currentUser!, responseData);
+      } catch (patchErr) {
+        debugPrint('⚠ PATCH failed: $patchErr — updating local state only');
+        // Even if PATCH fails, update local state so UI reflects the change
+      }
+
+      // Ensure local state reflects the verification
+      if (identifier.contains('@')) {
+        _currentUser = _currentUser!.copyWith(
+          isEmailVerified: true,
+          email: identifier,
+        );
+      } else {
+        _currentUser = _currentUser!.copyWith(
+          isPhoneVerified: true,
+          phoneNumber: identifier,
+        );
+      }
+
+      debugPrint('--- verifyOtp POST-state ---');
+      debugPrint('Phone: ${_currentUser!.phoneNumber} (verified: ${_currentUser!.isPhoneVerified})');
+      debugPrint('Email: ${_currentUser!.email} (verified: ${_currentUser!.isEmailVerified})');
+
+      await _tokenStorage.saveUserData(_currentUser!.toJson());
 
       _isOtpSent = false;
       _setLoading(false);
@@ -357,7 +376,20 @@ class AuthController extends ChangeNotifier {
       
       // 3. Merge the actual server response (which might have extra fields like full_name)
       if (_currentUser != null) {
+        // Capture state before merge for safety net
+        final bool preEmailV = _currentUser!.isEmailVerified;
+        final bool prePhoneV = _currentUser!.isPhoneVerified;
+
         _currentUser = UserModel.merge(_currentUser!, responseData);
+
+        // Safety net: don't downgrade verification if identifiers didn't change
+        if (preEmailV && !_currentUser!.isEmailVerified) {
+          _currentUser = _currentUser!.copyWith(isEmailVerified: true);
+        }
+        if (prePhoneV && !_currentUser!.isPhoneVerified) {
+          _currentUser = _currentUser!.copyWith(isPhoneVerified: true);
+        }
+
         debugPrint('Post-Update Merge Local User: E=${_currentUser!.email}(V:${_currentUser!.isEmailVerified}), P=${_currentUser!.phoneNumber}(V:${_currentUser!.isPhoneVerified})');
       } else {
         _currentUser = UserModel.fromJson(responseData);
