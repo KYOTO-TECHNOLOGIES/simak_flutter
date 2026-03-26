@@ -44,7 +44,7 @@ class _CartScreenState extends State<CartScreen> {
             const Icon(Icons.shopping_bag_outlined, color: AppColors.accent, size: 24),
             const SizedBox(width: 12),
             Text(
-              '${tr(context, 'my_cart')} (${cartController.itemCount})',
+              '${tr(context, 'my_cart')} (${cartController.uniqueItemCount})',
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -74,7 +74,7 @@ class _CartScreenState extends State<CartScreen> {
               ? _buildErrorState(context, theme, cartController.error!)
               : cartController.isLoading && cartController.cart == null
                   ? const Center(child: CircularProgressIndicator())
-                  : cartController.itemCount == 0
+                  : cartController.uniqueItemCount == 0
                       ? _buildEmptyState(context, theme)
                       : _buildCartBody(context, theme, cartController),
     );

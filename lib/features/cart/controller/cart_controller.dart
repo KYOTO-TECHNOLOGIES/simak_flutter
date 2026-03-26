@@ -15,6 +15,7 @@ class CartController extends ChangeNotifier {
   String? get error => _error;
 
   int get itemCount => _cart?.totalItems ?? 0;
+  int get uniqueItemCount => _cart?.items.length ?? 0;
   double get totalPrice => _cart?.totalPrice ?? 0.0;
 
   Future<void> fetchCart() async {

@@ -65,9 +65,9 @@ class _FloatingCartIconState extends State<FloatingCartIcon>
 
     return Consumer<CartController>(
       builder: (context, controller, child) {
-        // Trigger pulse if items were added
-        if (controller.itemCount != _lastItemCount) {
-          _onItemCountChanged(controller.itemCount);
+        // Trigger pulse if unique items were added
+        if (controller.uniqueItemCount != _lastItemCount) {
+          _onItemCountChanged(controller.uniqueItemCount);
         }
 
         return AnimatedBuilder(
@@ -120,7 +120,7 @@ class _FloatingCartIconState extends State<FloatingCartIcon>
                         ),
                         
                         // Animated Badge
-                        if (controller.itemCount > 0)
+                        if (controller.uniqueItemCount > 0)
                           Positioned(
                             top: -2,
                             right: -2,
@@ -143,7 +143,7 @@ class _FloatingCartIconState extends State<FloatingCartIcon>
                                     ),
                                     child: Center(
                                       child: Text(
-                                        '${controller.itemCount}',
+                                        '${controller.uniqueItemCount}',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 8,

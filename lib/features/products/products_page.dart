@@ -349,7 +349,7 @@ class _ProductsPageState extends State<ProductsPage>
                                 // Small Badge showing actual cart count
                                 Consumer<CartController>(
                                   builder: (context, controller, child) {
-                                    if (controller.itemCount == 0) return const SizedBox.shrink();
+                                    if (controller.uniqueItemCount == 0) return const SizedBox.shrink();
                                     return Positioned(
                                       top: -4,
                                       right: -4,
@@ -365,7 +365,7 @@ class _ProductsPageState extends State<ProductsPage>
                                         ),
                                         child: Center(
                                           child: Text(
-                                            '${controller.itemCount}',
+                                            '${controller.uniqueItemCount}',
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 8,
