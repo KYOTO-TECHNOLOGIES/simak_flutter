@@ -19,6 +19,8 @@ import 'package:uae_ecom_project/features/home/widgets/how_it_works_section.dart
 import 'package:uae_ecom_project/features/marketing/model/marketing_model.dart';
 import 'package:uae_ecom_project/features/auth/widgets/name_input_dialog.dart';
 import 'package:uae_ecom_project/features/home/widgets/language_selection_icon.dart';
+import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
+import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,6 +41,7 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductController>().fetchProducts();
       context.read<MarketingController>().fetchBanners();
+      context.read<OrderController>().fetchHomeReviews();
       _schedulePromoPopup();
       _scheduleNameDialogFallback();
     });
@@ -194,15 +197,15 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     children: [
                       Container(
-                        height: 48,
-                        width: 48,
+                        height: 52,
+                        width: 52,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.2),
-                              blurRadius: 10,
+                              color: AppColors.primary.withOpacity(0.1),
+                              blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
                           ],
@@ -210,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                         child: const Icon(
                           Icons.shopping_bag_rounded,
                           color: AppColors.white,
-                          size: 24,
+                          size: 26,
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -1396,37 +1399,6 @@ class _UserReviews extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Professional review data based on user input
-    final reviews = [
-      {
-        "id": 4,
-        "rating": 4,
-        "comment": tr(context, 'review_1'),
-        "user_name": trText(context, 'Sarah Ahmed'),
-        "date": tr(context, 'days_ago')
-      },
-      {
-        "id": 3,
-        "rating": 5,
-        "comment": tr(context, 'review_2'),
-        "user_name": trText(context, 'John Doe'),
-        "date": tr(context, 'week_ago')
-      },
-      {
-        "id": 2,
-        "rating": 4,
-        "comment": tr(context, 'review_3'),
-        "user_name": trText(context, 'Michael R.'),
-        "date": tr(context, 'weeks_ago')
-      },
-      {
-        "id": 1,
-        "rating": 5,
-        "comment": tr(context, 'review_4'),
-        "user_name": trText(context, 'Emma Wilson'),
-        "date": tr(context, 'month_ago')
-      }
-    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1440,135 +1412,206 @@ class _UserReviews extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 160,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: reviews.length,
-            padding: EdgeInsets.zero,
-            clipBehavior: Clip.none,
-            itemBuilder: (context, index) {
-              final review = reviews[index];
-              return Container(
-                width: 280,
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.shadowColor.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        ...List.generate(5, (starIndex) {
-                          final rating = review['rating'] as int;
-                          return Icon(
-                            starIndex < rating
-                                ? Icons.star_rounded
-                                : Icons.star_outline_rounded,
-                            color: const Color(0xFFFFB300),
-                            size: 16,
-                          );
-                        }),
-                        const Spacer(),
-                        Text(
-                          review['date'] as String,
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: Text(
-                        review['comment'] as String,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontSize: 13,
-                          height: 1.5,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.primary.withOpacity(0.1),
-                                AppColors.primary.withOpacity(0.2),
-                              ],
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              (review['user_name'] as String)[0],
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              review['user_name'] as String,
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.verified_user, 
-                                     color: Colors.green.shade600, size: 10),
-                                const SizedBox(width: 4),
-                                Text(
-                                  tr(context, 'verified_customer'),
-                                  style: TextStyle(
-                                    color: Colors.green.shade600,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+        Consumer<OrderController>(
+          builder: (context, controller, _) {
+            final reviews = controller.homeReviews;
+            
+            if (controller.isLoading && reviews.isEmpty) {
+              return const SizedBox(
+                height: 180,
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
               );
-            },
-          ),
+            }
+
+            if (reviews.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            return SizedBox(
+              height: 200, // Slightly taller to account for product badge
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: min(reviews.length, 10), // Show up to 10 latest reviews
+                padding: EdgeInsets.zero,
+                clipBehavior: Clip.none,
+                itemBuilder: (context, index) {
+                  final review = reviews[index];
+                  return _buildReviewCard(context, review, theme);
+                },
+              ),
+            );
+          },
         ),
       ],
     );
+  }
+
+  Widget _buildReviewCard(BuildContext context, ReviewModel review, ThemeData theme) {
+    return Container(
+      width: 300,
+      margin: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Rating Row
+          Row(
+            children: [
+              ...List.generate(5, (starIndex) {
+                return Icon(
+                  starIndex < review.rating
+                      ? Icons.star_rounded
+                      : Icons.star_outline_rounded,
+                  color: const Color(0xFFFFB300),
+                  size: 18,
+                );
+              }),
+              const Spacer(),
+              const Icon(Icons.format_quote_rounded, color: Color(0xFFE0E0E0), size: 28),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // Comment
+          Expanded(
+            child: Text(
+              review.comment,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withOpacity(0.8),
+                fontSize: 13,
+                height: 1.5,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          
+          // Product Badge
+          if (review.productName != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.actionBlue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.shopping_bag_outlined, size: 10, color: AppColors.actionBlue.withOpacity(0.7)),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      review.productName!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.actionBlue.withOpacity(0.8),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          
+          const SizedBox(height: 16),
+          
+          // User Info
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.primary.withOpacity(0.2),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    review.userName.isNotEmpty ? review.userName[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.userName.isNotEmpty ? review.userName : 'Anonymous',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(Icons.verified_user, 
+                             color: Colors.green.shade600, size: 11),
+                        const SizedBox(width: 4),
+                        Text(
+                          tr(context, 'verified_customer'),
+                          style: TextStyle(
+                            color: Colors.green.shade600,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                _getTimeAgo(review.createdAt),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays > 365) return '${(diff.inDays / 365).floor()}y ago';
+    if (diff.inDays > 30) return '${(diff.inDays / 30).floor()}m ago';
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    return 'Just now';
   }
 }
 

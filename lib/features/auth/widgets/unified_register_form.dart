@@ -69,24 +69,41 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
     if (!_isValidInput) return;
 
     final authController = context.read<AuthController>();
-    final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
+    String text = _phoneController.text.trim();
+    if (_isPhoneMode && text.startsWith('0')) {
+      text = text.substring(1);
+    }
+    
+    // Ensure identifier has + prefix for consistency
     final identifier = _isPhoneMode 
-        ? '$_selectedCountryCode$text'
-        : text;
+        ? (_selectedCountryCode.startsWith('+') ? '$_selectedCountryCode$text' : '+$_selectedCountryCode$text')
+        : _emailController.text.trim();
+    
     final currentPassword = _generateSecurePassword();
     
-    // Attempt registration
+    // 1. Attempt registration
     final registerSuccess = await authController.register(
-      email: _isPhoneMode ? '$identifier@placeholder.com' : identifier, // dummy email if phone is used
-      phoneNumber: _isPhoneMode ? identifier : '', // API might require valid structures
+      email: _isPhoneMode ? '' : identifier, 
+      phoneNumber: _isPhoneMode ? identifier : '', 
       password: currentPassword,
       passwordConfirm: currentPassword,
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
     );
 
-    if (registerSuccess && mounted) {
-      // Send OTP regardless of whether login auto-succeeded or not
+    // 2. If registration fails because user already exists, that's fine - we'll just try to login via OTP
+    bool shouldProceedToOtp = registerSuccess;
+    if (!registerSuccess) {
+      final err = authController.errorMessage?.toLowerCase() ?? '';
+      if (err.contains('already exists') || err.contains('taken')) {
+        debugPrint('User already exists, proceeding to OTP request for login');
+        shouldProceedToOtp = true;
+        authController.clearError();
+      }
+    }
+
+    // 3. Request OTP for login
+    if (shouldProceedToOtp && mounted) {
       final otpSuccess = await authController.requestOtp(identifier: identifier);
       if (otpSuccess && mounted) {
          Navigator.of(context).pushNamed('/otp', arguments: identifier);
@@ -147,8 +164,8 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
         else
           _buildEmailField(theme),
 
-        // ─── Validation Error Message ─────────────────────────────
-        _buildValidationError(context, theme),
+        // ─── Validation & Server Error Message ─────────────────────────────
+        _buildErrorDisplay(context, theme),
 
         const SizedBox(height: 16),
 
@@ -472,7 +489,24 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
     );
   }
 
-  Widget _buildValidationError(BuildContext context, ThemeData theme) {
+  Widget _buildErrorDisplay(BuildContext context, ThemeData theme) {
+    // 1. Check for Server Error first
+    final auth = context.read<AuthController>();
+    if (auth.errorMessage != null && _showErrors) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8, left: 4),
+        child: Text(
+          auth.errorMessage!,
+          style: const TextStyle(
+            color: AppColors.error,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    // 2. Fallback to Local Validation Error
     if (!_showErrors) return const SizedBox.shrink();
     final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
     if (text.isEmpty || _isValidInput) return const SizedBox.shrink();

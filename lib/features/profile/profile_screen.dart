@@ -16,6 +16,7 @@ import 'package:uae_ecom_project/features/orders/screens/order_detail_screen.dar
 
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
 import 'package:uae_ecom_project/features/auth/widgets/add_address_dialog.dart';
+import 'package:uae_ecom_project/features/profile/screens/notification_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -228,6 +229,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
+      ),
+      leading: IconButton(
+        icon: Icon(Icons.notifications_outlined, color: theme.colorScheme.onSurface),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NotificationScreen()),
+          );
+        },
       ),
       centerTitle: true,
       actions: [

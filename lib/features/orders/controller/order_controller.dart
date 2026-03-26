@@ -139,4 +139,19 @@ class OrderController extends ChangeNotifier {
       return [];
     }
   }
+
+  List<ReviewModel> _homeReviews = [];
+  List<ReviewModel> get homeReviews => _homeReviews;
+
+  /// Fetch all reviews for home page display.
+  Future<void> fetchHomeReviews() async {
+    try {
+      final data = await _reviewService.getReviews();
+      _homeReviews = data.map((json) => ReviewModel.fromJson(json)).toList();
+      _homeReviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+    }
+  }
 }

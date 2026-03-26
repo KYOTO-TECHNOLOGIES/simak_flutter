@@ -12,6 +12,7 @@ import 'package:uae_ecom_project/features/orders/controller/checkout_controller.
 import 'package:uae_ecom_project/features/orders/screens/order_page.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/splash/splash_screen.dart';
+import 'package:uae_ecom_project/firebase_options.dart';
 import 'package:uae_ecom_project/service/token_storage.dart';
 import 'package:uae_ecom_project/service/cache_service.dart';
 import 'package:uae_ecom_project/core/theme/theme_provider.dart';
@@ -37,7 +38,7 @@ void main() async {
   await TokenStorage().init();
   // Initialize Hive cache before the app starts.
   await CacheService().init();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -58,7 +59,7 @@ class _MyAppState extends State<MyApp> {
 
   void setupFCM() async {
     // 🔔 Ask permission (important for Android 13+ / iOS)
-    // await FirebaseMessaging.instance.requestPermission();
+    await FirebaseMessaging.instance.requestPermission();
 
     // 📱 Get token
     String? token = await FirebaseMessaging.instance.getToken();

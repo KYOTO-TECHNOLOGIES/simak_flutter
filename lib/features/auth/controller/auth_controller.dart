@@ -101,13 +101,14 @@ class AuthController extends ChangeNotifier {
 
   // ─── Login (Email/Password) ─────────────────────────────────
   Future<bool> login({
-    required String email,
+    String? email,
+    String? phoneNumber,
     required String password,
   }) async {
     _setLoading(true);
     _setError(null);
     try {
-      final request = LoginRequest(email: email, password: password);
+      final request = LoginRequest(email: email, phoneNumber: phoneNumber, password: password);
       final response = await _authService.login(request);
       await _handleAuthResponse(response);
       _setLoading(false);
@@ -129,8 +130,8 @@ class AuthController extends ChangeNotifier {
 
   // ─── Register ───────────────────────────────────────────────
   Future<bool> register({
-    required String email,
-    required String phoneNumber,
+    String? email,
+    String? phoneNumber,
     required String password,
     required String passwordConfirm,
     required String firstName,
@@ -149,11 +150,20 @@ class AuthController extends ChangeNotifier {
       );
       final response = await _authService.register(request);
       
-      // If the registration response doesn't have tokens, we need to log in explicitly
+      // If the registration response doesn't have tokens, we might need OTP login
       if (response.accessToken.isEmpty) {
-        debugPrint('Registration successful but no tokens returned. Performing auto-login...');
-        final loginResponse = await _authService.login(LoginRequest(email: email, password: password));
-        await _handleAuthResponse(loginResponse);
+        debugPrint('Registration successful but no tokens returned. Checking auto-login...');
+        try {
+          final loginResponse = await _authService.login(LoginRequest(
+            email: email,
+            phoneNumber: phoneNumber,
+            password: password,
+          ));
+          await _handleAuthResponse(loginResponse);
+        } catch (e) {
+          debugPrint('Auto-login skipped (likely OTP-only system): $e');
+          // We still return true because registration itself succeeded
+        }
       } else {
         await _handleAuthResponse(response);
       }
@@ -273,7 +283,7 @@ class AuthController extends ChangeNotifier {
         _currentUser = UserModel.merge(_currentUser!, responseData);
       } catch (patchErr) {
         debugPrint('⚠ PATCH failed: $patchErr — updating local state only');
-        // Even if PATCH fails, update local state so UI reflects the change
+      // Even if PATCH fails, update local state so UI reflects the change
       }
 
       // Ensure local state reflects the verification

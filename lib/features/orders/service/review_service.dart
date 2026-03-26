@@ -108,4 +108,24 @@ class ReviewService {
         ? response.data
         : <String, dynamic>{};
   }
+  /// GET /api/reviews/
+  /// Returns a list of reviews, optionally filtered.
+  Future<List<Map<String, dynamic>>> getReviews({int? productId, int? userId}) async {
+    final Map<String, dynamic> query = {};
+    if (productId != null) query['product'] = productId;
+    if (userId != null) query['user'] = userId;
+
+    final response = await _dio.get(
+      'reviews/',
+      queryParameters: query,
+    );
+
+    final dynamic data = response.data;
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    } else if (data is Map && data.containsKey('results')) {
+      return List<Map<String, dynamic>>.from(data['results']);
+    }
+    return [];
+  }
 }

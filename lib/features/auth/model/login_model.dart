@@ -1,16 +1,20 @@
 class LoginRequest {
-  final String email;
+  final String? email;
+  final String? phoneNumber;
   final String password;
 
   const LoginRequest({
-    required this.email,
+    this.email,
+    this.phoneNumber,
     required this.password,
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'email': email,
+    final Map<String, dynamic> data = {
       'password': password,
     };
+    if (email != null && email!.isNotEmpty) data['email'] = email;
+    if (phoneNumber != null && phoneNumber!.isNotEmpty) data['phone_number'] = phoneNumber;
+    return data;
   }
 }

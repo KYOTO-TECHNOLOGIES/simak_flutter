@@ -51,10 +51,14 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
     if (!_isValidInput) return;
 
     final authController = context.read<AuthController>();
-    final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
+    String text = _phoneController.text.trim();
+    if (_isPhoneMode && text.startsWith('0')) {
+      text = text.substring(1);
+    }
+
     final identifier = _isPhoneMode 
-        ? '$_selectedCountryCode$text'
-        : text;
+        ? (_selectedCountryCode.startsWith('+') ? '$_selectedCountryCode$text' : '+$_selectedCountryCode$text')
+        : _emailController.text.trim();
 
     final success = await authController.requestOtp(identifier: identifier);
     
@@ -93,6 +97,9 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
           _buildPhoneField(theme)
         else
           _buildEmailField(theme),
+
+        // ─── Validation & Server Error Message ─────────────────────────────
+        _buildErrorDisplay(context, theme),
 
 
 
@@ -372,5 +379,51 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
     );
   }
 
+  Widget _buildErrorDisplay(BuildContext context, ThemeData theme) {
+    // 1. Check for Server Error first
+    final auth = context.read<AuthController>();
+    if (auth.errorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8, left: 4),
+        child: Text(
+          auth.errorMessage!,
+          style: const TextStyle(
+            color: AppColors.error,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    // 2. Fallback to Local Validation Error (only show if input is not empty and invalid)
+    final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
+    if (text.isEmpty) return const SizedBox.shrink();
+    
+    // Check if input is valid but terms are not - we usually only show error on submit or live
+    // For now, let's keep it simple and only show if the identifier itself is invalid
+    bool isIdentifierValid = false;
+    if (_isPhoneMode) {
+      final country = _countries.firstWhere((c) => c['code'] as String == _selectedCountryCode);
+      final pattern = country['pattern'] as String;
+      isIdentifierValid = RegExp(pattern).hasMatch(text);
+    } else {
+      isIdentifierValid = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text);
+    }
+
+    if (isIdentifierValid) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, left: 4),
+      child: Text(
+        tr(context, _isPhoneMode ? 'valid_phone_for_country' : 'enter_valid_email'),
+        style: const TextStyle(
+          color: AppColors.error,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
 }
 
