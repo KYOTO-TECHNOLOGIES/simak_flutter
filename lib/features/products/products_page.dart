@@ -302,9 +302,9 @@ class _ProductsPageState extends State<ProductsPage>
                                       TextSpan(
                                         text: tr(context, 'app_name_fresh'),
                                         style: const TextStyle(
-                                          color: AppColors.accent,
+                                          color: AppColors.actionBlue,
                                           fontSize: 20,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w900,
                                         ),
                                       ),
                                     ],

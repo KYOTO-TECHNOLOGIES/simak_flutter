@@ -175,7 +175,7 @@ class _NavItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.15)
+              ? AppColors.actionBlue.withOpacity(0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -193,7 +193,7 @@ class _NavItem extends StatelessWidget {
                 child: Icon(
                   isSelected ? data.activeIcon : data.icon,
                   key: ValueKey(isSelected),
-                  color: isSelected ? AppColors.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: isSelected ? AppColors.actionBlue : theme.colorScheme.onSurface.withOpacity(0.6),
                   size: 24,
                 ),
               ),
@@ -206,7 +206,7 @@ class _NavItem extends StatelessWidget {
                         child: Text(
                           data.label,
                           style: const TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.actionBlue,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),

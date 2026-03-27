@@ -196,27 +196,12 @@ class _HomePageState extends State<HomePage> {
                   textDirection: TextDirection.ltr,
                   child: Row(
                     children: [
-                      Container(
-                        height: 52,
-                        width: 52,
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: Colors.grey.shade100, width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            'assets/images/home_logo.png',
-                            fit: BoxFit.contain,
-                          ),
+                      SizedBox(
+                        height: 44,
+                        width: 44,
+                        child: Image.asset(
+                          'assets/images/home_logo.png',
+                          fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(width: 14),
