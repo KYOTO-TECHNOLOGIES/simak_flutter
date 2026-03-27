@@ -136,6 +136,7 @@ class AuthController extends ChangeNotifier {
     required String passwordConfirm,
     required String firstName,
     required String lastName,
+    String? referralCode,
   }) async {
     _setLoading(true);
     _setError(null);
@@ -147,6 +148,7 @@ class AuthController extends ChangeNotifier {
         passwordConfirm: passwordConfirm,
         firstName: firstName,
         lastName: lastName,
+        referralCode: referralCode,
       );
       final response = await _authService.register(request);
       

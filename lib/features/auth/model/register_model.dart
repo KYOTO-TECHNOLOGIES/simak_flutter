@@ -5,6 +5,7 @@ class RegisterRequest {
   final String passwordConfirm;
   final String firstName;
   final String lastName;
+  final String? referralCode;
 
   const RegisterRequest({
     this.email,
@@ -13,6 +14,7 @@ class RegisterRequest {
     required this.passwordConfirm,
     required this.firstName,
     required this.lastName,
+    this.referralCode,
   });
 
   Map<String, dynamic> toJson() {
@@ -24,6 +26,7 @@ class RegisterRequest {
     };
     if (email != null && email!.isNotEmpty) data['email'] = email;
     if (phoneNumber != null && phoneNumber!.isNotEmpty) data['phone_number'] = phoneNumber;
+    if (referralCode != null && referralCode!.isNotEmpty) data['referral_code'] = referralCode;
     return data;
   }
 }

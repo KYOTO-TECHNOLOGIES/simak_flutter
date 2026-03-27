@@ -19,6 +19,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _referralController = TextEditingController();
   bool _agreedToTerms = false;
   String _selectedCountryCode = '+971';
   bool _showErrors = false;
@@ -35,6 +36,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
     _lastNameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _referralController.dispose();
     super.dispose();
   }
 
@@ -89,6 +91,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
       passwordConfirm: currentPassword,
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
+      referralCode: _referralController.text.trim(),
     );
 
     // 2. If registration fails because user already exists, that's fine - we'll just try to login via OTP
@@ -143,6 +146,10 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
             Expanded(child: _buildInputField(theme, _lastNameController, 'last_name_label', 'last_name_hint')),
           ],
         ),
+        const SizedBox(height: 24),
+
+        // ─── Referral Code ──────────────────────────────────────────
+        _buildInputField(theme, _referralController, 'referral_code_label', 'referral_code_hint', isReferral: true),
         const SizedBox(height: 24),
 
         // ─── Contact Field ─────────────────────────────────────────
@@ -334,7 +341,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
     );
   }
 
-  Widget _buildInputField(ThemeData theme, TextEditingController controller, String labelKey, String hintKey) {
+  Widget _buildInputField(ThemeData theme, TextEditingController controller, String labelKey, String hintKey, {bool isReferral = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -359,7 +366,11 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
             controller: controller,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              prefixIcon: Icon(Icons.person_outline, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+              prefixIcon: Icon(
+                isReferral ? Icons.card_giftcard_outlined : Icons.person_outline, 
+                size: 20, 
+                color: theme.colorScheme.onSurface.withOpacity(0.3)
+              ),
               hintText: tr(context, hintKey),
               hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

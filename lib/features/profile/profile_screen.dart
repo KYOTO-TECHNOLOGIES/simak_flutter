@@ -17,6 +17,7 @@ import 'package:uae_ecom_project/features/orders/screens/order_detail_screen.dar
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
 import 'package:uae_ecom_project/features/auth/widgets/add_address_dialog.dart';
 import 'package:uae_ecom_project/features/profile/screens/notification_screen.dart';
+import 'package:uae_ecom_project/features/profile/screens/referral_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -395,6 +396,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       (Icons.shopping_bag_outlined, tr(context, 'my_orders')),
       (Icons.location_on_outlined, tr(context, 'my_addresses')),
       (Icons.rate_review_outlined, tr(context, 'my_reviews')),
+      (Icons.card_giftcard_outlined, tr(context, 'referrals')),
     ];
 
     return Stack(
@@ -518,15 +520,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_selectedSection == 2) {
       return _buildAddressesSection(context, theme);
     }
-    
-    // Refresh reviews when entering the section
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final controller = context.read<OrderController>();
-      if (!controller.isLoading && user.id != null) {
-        controller.fetchUserReviews(user.id!);
-      }
-    });
-    return _buildMyReviewsSection(context, theme);
+    if (_selectedSection == 3) {
+      // Refresh reviews when entering the section
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final controller = context.read<OrderController>();
+        if (!controller.isLoading && user.id != null) {
+          controller.fetchUserReviews(user.id!);
+        }
+      });
+      return _buildMyReviewsSection(context, theme);
+    }
+
+    return const ReferralScreen();
   }
 
   Widget _buildPersonalInfoSection(

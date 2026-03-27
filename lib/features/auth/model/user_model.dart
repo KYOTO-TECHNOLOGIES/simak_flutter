@@ -19,6 +19,7 @@ class UserModel {
   final String? createdAt;
   final String? updatedAt;
   final String? lastLoginAt;
+  final String? referralCode;
 
   const UserModel({
     this.id,
@@ -37,6 +38,7 @@ class UserModel {
     this.createdAt,
     this.updatedAt,
     this.lastLoginAt,
+    this.referralCode,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -63,6 +65,7 @@ class UserModel {
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
       lastLoginAt: json['last_login_at'] as String?,
+      referralCode: json['referral_code'] as String?,
     );
   }
 
@@ -84,6 +87,7 @@ class UserModel {
       'created_at': createdAt,
       'updated_at': updatedAt,
       'last_login_at': lastLoginAt,
+      'referral_code': referralCode,
     };
   }
 
@@ -165,6 +169,7 @@ class UserModel {
       createdAt: json['created_at'] as String? ?? existing.createdAt,
       updatedAt: json['updated_at'] as String? ?? existing.updatedAt,
       lastLoginAt: json['last_login_at'] as String? ?? existing.lastLoginAt,
+      referralCode: json['referral_code'] as String? ?? existing.referralCode,
     );
   }
 
@@ -185,6 +190,7 @@ class UserModel {
     String? createdAt,
     String? updatedAt,
     String? lastLoginAt,
+    String? referralCode,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -203,6 +209,7 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
+      referralCode: referralCode ?? this.referralCode,
     );
   }
 }
