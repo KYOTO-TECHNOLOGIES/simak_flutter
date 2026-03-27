@@ -57,7 +57,7 @@ final Map<String, Map<String, String>> _translations = {
     'select_language': 'Select Language',
 
     // ── Home Page ───────────────────────────────────────────
-    'tagline': 'online fish market',
+    'tagline': 'Signature of quality',
     'search_hint': 'Search for seafood, recipes...',
     'shop_by_category': 'Shop by Category',
     'cat_lobster': 'Lobster',
@@ -678,7 +678,7 @@ final Map<String, Map<String, String>> _translations = {
     'app_name_fresh': '生鲜',
     'app_name_full': '西马克生鲜',
     'select_language': '选择语言',
-    'tagline': '在线海鲜市场',
+    'tagline': '品质的标志',
     'search_hint': '搜索海鲜、食谱...',
     'shop_by_category': '按类别选购',
     'cat_lobster': '龙虾',
@@ -1267,7 +1267,7 @@ final Map<String, Map<String, String>> _translations = {
     'select_language': 'اختر اللغة',
 
     // ── Home Page ───────────────────────────────────────────
-    'tagline': 'سوق الأسماك الإلكتروني',
+    'tagline': 'بصمة الجودة',
     'search_hint': 'ابحث عن المأكولات البحرية، الوصفات...',
     'shop_by_category': 'تسوق حسب الفئة',
     'cat_lobster': 'كركند',

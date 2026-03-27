@@ -66,20 +66,30 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
       final auth = context.read<AuthController>();
       final user = auth.currentUser;
       if (user != null && user.isPhoneVerified && user.phoneNumber != null) {
-        final fullPhone = user.phoneNumber!;
-        // Try to match country code
-        for (final country in _countries) {
-          final code = country['code']!;
-          if (fullPhone.startsWith(code)) {
-            setState(() {
-              _selectedCountryCode = code;
-              _selectedCountryName = country['name']!;
-              _phoneController.text = fullPhone.substring(code.length);
-            });
-            break;
-          }
-        }
+        _populateFromFullPhone(user.phoneNumber!);
       }
+    });
+  }
+
+  void _populateFromFullPhone(String fullPhone) {
+    if (fullPhone.isEmpty) return;
+    
+    // Try to match country code from our supported list
+    for (final country in _countries) {
+      final code = country['code']!;
+      if (fullPhone.startsWith(code)) {
+        setState(() {
+          _selectedCountryCode = code;
+          _selectedCountryName = country['name']!;
+          _phoneController.text = fullPhone.substring(code.length);
+        });
+        return;
+      }
+    }
+    
+    // Fallback: if no code matches, just put everything in the controller
+    setState(() {
+      _phoneController.text = fullPhone;
     });
   }
 
@@ -542,6 +552,10 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                     userId: user.id,
                     onVerified: (identifier) async {
                       await context.read<AuthController>().refreshProfile();
+                      // Auto-populate the form with the newly verified phone
+                      if (mounted) {
+                        _populateFromFullPhone(identifier);
+                      }
                     },
                   ),
                 );

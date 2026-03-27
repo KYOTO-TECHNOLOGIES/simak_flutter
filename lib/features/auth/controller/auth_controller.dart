@@ -186,6 +186,37 @@ class AuthController extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
+      // ── Preemptive Linking for Logged-In Users ──
+      // If logged in, attempt to PATCH the identifier to the profile first.
+      // This ensures the backend links the subsequent OTP login to the current session.
+      if (_currentUser != null) {
+        debugPrint('--- requestOtp: Logged in, patching identifier before OTP ---');
+        final patchData = identifier.contains('@') 
+            ? {'email': identifier} 
+            : {'phone_number': identifier};
+            
+        try {
+          // Sync with server immediately
+          final responseData = await _authService.updateProfileRaw(_currentUser!.id!, patchData);
+          _currentUser = UserModel.merge(_currentUser!, responseData);
+          await _tokenStorage.saveUserData(_currentUser!.toJson());
+          debugPrint('--- requestOtp: Preemptive PATCH successful ---');
+        } catch (e) {
+          debugPrint('--- requestOtp: Preemptive PATCH failed (likely already taken): $e ---');
+          if (e is DioException && e.response?.statusCode == 400) {
+            final errorData = e.response?.data;
+            String msg = 'This ${identifier.contains('@') ? 'email' : 'phone number'} is already verified with another account.';
+            if (errorData is Map && errorData.isNotEmpty) {
+               msg = errorData.values.first.toString();
+            }
+            _setError(msg);
+            _setLoading(false);
+            return false;
+          }
+          // For other errors, we continue to requestOtp anyway
+        }
+      }
+
       await _authService.requestOtp(OtpRequestModel(identifier: identifier));
       _isOtpSent = true;
       _setLoading(false);
@@ -243,67 +274,89 @@ class AuthController extends ChangeNotifier {
 
       // ════════════════════════════════════════════════════════════
       // FLOW 2: PROFILE VERIFICATION — user is already logged in.
-      //   → Do NOT call _handleAuthResponse (it would switch the
-      //     session to a different/new user created by auth/otp/login/).
-      //   → Instead, PATCH the CURRENT user to update the verified
-      //     contact info while preserving everything else.
+      //   → The auth/otp/login/ request includes the auth header
+      //     (added by ApiClient interceptor), so the backend
+      //     verifies the phone/email for the CURRENT user.
+      //   → Save the response tokens (they encode verified status).
+      //   → Merge response user with current user to preserve data.
+      //   → PATCH as a backup to update the user record.
+      //   → Re-fetch profile to confirm backend state.
       // ════════════════════════════════════════════════════════════
       debugPrint('--- verifyOtp: PROFILE VERIFICATION flow ---');
       debugPrint('Current user ID: ${_currentUser!.id}');
+      debugPrint('Response user ID: ${response.user?.id}');
       debugPrint('Identifier: $identifier');
 
-      // The 200 response from auth/otp/login/ proves the OTP is valid.
-      // We intentionally IGNORE the response tokens & user object.
+      // ── Step 1: Check if the OTP response user matches the current user ──
+      // Only save new tokens if IDs match — otherwise we'd switch sessions
+      // and lose the cart / other user-specific data.
+      final bool isSameUser = response.user != null && 
+          response.user!.id == _currentUser!.id;
 
-      // Build the PATCH payload for the CURRENT user
-      final patchData = <String, dynamic>{};
-
-      if (identifier.contains('@')) {
-        // Email verification — update email, keep phone untouched
-        patchData['email'] = identifier;
-        patchData['is_email_verified'] = true;
+      if (isSameUser && response.accessToken.isNotEmpty) {
+        // Same user — save the new tokens (they encode verified status)
+        await _tokenStorage.saveTokens(
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+        );
+        // Merge the response user data
+        _currentUser = UserModel.merge(_currentUser!, 
+          response.rawUserJson ?? response.user!.toJson());
+        debugPrint('--- verifyOtp: Same user — saved new tokens & merged ---');
       } else {
-        // Phone verification — update phone, keep email untouched
+        debugPrint('--- verifyOtp: Different user (${response.user?.id}) or no user in response — keeping original tokens ---');
+      }
+
+      // ── Step 3: PATCH to update phone/email on the current user record ──
+      // This is necessary because 'auth/otp/login/' doesn't always 
+      // link the phone if the current session is different.
+      final patchData = <String, dynamic>{};
+      if (identifier.contains('@')) {
+        patchData['email'] = identifier;
+      } else {
         patchData['phone_number'] = identifier;
-        patchData['is_phone_verified'] = true;
       }
 
       debugPrint('--- verifyOtp: PATCHing current user ${_currentUser!.id} ---');
-      debugPrint('Patch payload: $patchData');
-
-      // PATCH the current user on the backend
       try {
         final responseData = await _authService.updateProfileRaw(
           _currentUser!.id!,
           patchData,
         );
-        debugPrint('--- verifyOtp: PATCH response: $responseData ---');
-
-        // Merge the server response into the current user
+        debugPrint('--- verifyOtp: PATCH response was successful ---');
         _currentUser = UserModel.merge(_currentUser!, responseData);
       } catch (patchErr) {
-        debugPrint('⚠ PATCH failed: $patchErr — updating local state only');
-      // Even if PATCH fails, update local state so UI reflects the change
+        debugPrint('⚠ PATCH failed: $patchErr — the phone may be linked to another account');
       }
 
-      // Ensure local state reflects the verification
-      if (identifier.contains('@')) {
-        _currentUser = _currentUser!.copyWith(
-          isEmailVerified: true,
-          email: identifier,
-        );
-      } else {
-        _currentUser = _currentUser!.copyWith(
-          isPhoneVerified: true,
-          phoneNumber: identifier,
-        );
+      // ── Step 4: Re-fetch user profile to confirm backend state ──
+      // This is the source of truth. If the backend didn't set is_phone_verified=true
+      // (because it's read-only or because the PATCH failed), we must reflect that.
+      try {
+        final freshUser = await _authService.getCurrentUser();
+        _currentUser = UserModel.merge(_currentUser!, freshUser.toJson());
+        await _tokenStorage.saveUserData(_currentUser!.toJson());
+        debugPrint('--- verifyOtp: Profile re-fetched and synced ---');
+      } catch (fetchErr) {
+        debugPrint('⚠ Profile re-fetch after verification failed: $fetchErr');
       }
 
-      debugPrint('--- verifyOtp POST-state ---');
+      debugPrint('--- verifyOtp FINAL state ---');
       debugPrint('Phone: ${_currentUser!.phoneNumber} (verified: ${_currentUser!.isPhoneVerified})');
       debugPrint('Email: ${_currentUser!.email} (verified: ${_currentUser!.isEmailVerified})');
 
-      await _tokenStorage.saveUserData(_currentUser!.toJson());
+      // Check if the requested verification actually happened on the backend for this user
+      final bool emailRequest = identifier.contains('@');
+      final bool nowVerified = emailRequest ? _currentUser!.isEmailVerified : _currentUser!.isPhoneVerified;
+
+      if (!nowVerified) {
+        debugPrint('--- verifyOtp: Logical verification failure (not updated on backend) ---');
+        _setError(emailRequest 
+          ? 'Failed to verify email. Please try again.' 
+          : 'This phone number is already verified with another account.');
+        _setLoading(false);
+        return false;
+      }
 
       _isOtpSent = false;
       _setLoading(false);

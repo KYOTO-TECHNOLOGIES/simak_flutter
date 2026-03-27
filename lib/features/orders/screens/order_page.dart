@@ -10,7 +10,6 @@ import 'package:uae_ecom_project/features/orders/controller/checkout_controller.
 import 'package:uae_ecom_project/features/auth/widgets/address_list_widget.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
-import 'package:uae_ecom_project/features/auth/model/user_model.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
 
 class OrderPage extends StatefulWidget {
@@ -1039,9 +1038,12 @@ class _OrderPageState extends State<OrderPage> {
                       currentValue: user.phoneNumber ?? '',
                       userId: user.id,
                       onVerified: (identifier) async {
-                        // Profile is updated inside dialog usually, 
-                        // but here we might need to refresh auth state if not automatic
+                        // Refresh auth state after verification
                         await auth.refreshProfile();
+                        // Re-fetch cart to ensure it persists after token changes
+                        if (context.mounted) {
+                          context.read<CartController>().fetchCart();
+                        }
                       },
                     ),
                   );

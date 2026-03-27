@@ -200,20 +200,23 @@ class _HomePageState extends State<HomePage> {
                         height: 52,
                         width: 52,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: AppColors.white,
                           borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: Colors.grey.shade100, width: 1),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.1),
-                              blurRadius: 12,
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.shopping_bag_rounded,
-                          color: AppColors.white,
-                          size: 26,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            'assets/images/home_logo.png',
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -235,9 +238,9 @@ class _HomePageState extends State<HomePage> {
                                 TextSpan(
                                   text: tr(context, 'app_name_fresh'),
                                   style: const TextStyle(
-                                    color: AppColors.accent,
+                                    color: AppColors.actionBlue,
                                     fontSize: 22,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                               ],

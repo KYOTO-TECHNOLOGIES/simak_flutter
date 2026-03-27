@@ -193,6 +193,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
     if (!mounted) return;
 
     if (success) {
+      // Refresh profile to ensure latest verification state is synced
+      await auth.refreshProfile();
+
       if (widget.onVerified != null) {
         await widget.onVerified!(identifier);
         if (!mounted) return;

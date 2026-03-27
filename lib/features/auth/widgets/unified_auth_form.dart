@@ -16,8 +16,13 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
   bool _isPhoneMode = true;
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
+  
   bool _agreedToTerms = false;
   String _selectedCountryCode = '+971';
+  bool _showPhoneError = false;
+  bool _showEmailError = false;
 
   final List<Map<String, dynamic>> _countries = [
     {'name': 'UAE', 'code': '+971', 'flag': '🇦🇪', 'hint': 'phone_hint_uae', 'maxLength': 9, 'pattern': r'^(50|52|54|55|56|58)\d{7}$', 'key': 'uae'},
@@ -26,18 +31,31 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
   ];
 
   @override
-  void dispose() {
-    _phoneController.dispose();
-    _emailController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _phoneFocusNode.addListener(_onPhoneFocusChange);
+    _emailFocusNode.addListener(_onEmailFocusChange);
   }
 
-  bool get _isValidInput {
-    final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
-    if (text.isEmpty) return false;
-    if (!_agreedToTerms) return false;
+  void _onPhoneFocusChange() {
+    if (!_phoneFocusNode.hasFocus && _phoneController.text.isNotEmpty) {
+      if (!_isIdentifierValid(_phoneController.text.trim(), true)) {
+        setState(() => _showPhoneError = true);
+      }
+    }
+  }
 
-    if (_isPhoneMode) {
+  void _onEmailFocusChange() {
+    if (!_emailFocusNode.hasFocus && _emailController.text.isNotEmpty) {
+      if (!_isIdentifierValid(_emailController.text.trim(), false)) {
+        setState(() => _showEmailError = true);
+      }
+    }
+  }
+
+  bool _isIdentifierValid(String text, bool isPhone) {
+    if (text.isEmpty) return false;
+    if (isPhone) {
       final country = _countries.firstWhere((c) => c['code'] as String == _selectedCountryCode);
       final pattern = country['pattern'] as String;
       return RegExp(pattern).hasMatch(text);
@@ -45,20 +63,44 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text);
   }
 
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _emailController.dispose();
+    _phoneFocusNode.removeListener(_onPhoneFocusChange);
+    _emailFocusNode.removeListener(_onEmailFocusChange);
+    _phoneFocusNode.dispose();
+    _emailFocusNode.dispose();
+    super.dispose();
+  }
+
+  bool get _isValidInput {
+    final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
+    return _isIdentifierValid(text, _isPhoneMode);
+  }
+
   Future<void> _handleSendOtp() async {
     FocusScope.of(context).unfocus();
 
-    if (!_isValidInput) return;
+    String text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
+    final bool isInputValid = _isIdentifierValid(text, _isPhoneMode);
+    
+    if (!isInputValid) {
+      setState(() {
+        if (_isPhoneMode) _showPhoneError = true;
+        else _showEmailError = true;
+      });
+      return;
+    }
 
     final authController = context.read<AuthController>();
-    String text = _phoneController.text.trim();
     if (_isPhoneMode && text.startsWith('0')) {
       text = text.substring(1);
     }
 
     final identifier = _isPhoneMode 
         ? (_selectedCountryCode.startsWith('+') ? '$_selectedCountryCode$text' : '+$_selectedCountryCode$text')
-        : _emailController.text.trim();
+        : text;
 
     final success = await authController.requestOtp(identifier: identifier);
     
@@ -329,10 +371,17 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
           Expanded(
             child: TextField(
               controller: _phoneController,
+              focusNode: _phoneFocusNode,
               keyboardType: TextInputType.phone,
               maxLength: currentCountry['maxLength'] as int,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onChanged: (_) => setState(() {}),
+              onChanged: (value) {
+                if (_showPhoneError) {
+                  setState(() => _showPhoneError = false);
+                } else {
+                  setState(() {}); // Still need to update "Send OTP" button state
+                }
+              },
               decoration: InputDecoration(
                 hintText: tr(context, currentCountry['hint'] as String),
                 hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 16),
@@ -363,8 +412,15 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
           Expanded(
             child: TextField(
               controller: _emailController,
+              focusNode: _emailFocusNode,
               keyboardType: TextInputType.emailAddress,
-              onChanged: (_) => setState(() {}),
+              onChanged: (value) {
+                if (_showEmailError) {
+                  setState(() => _showEmailError = false);
+                } else {
+                  setState(() {});
+                }
+              },
               decoration: InputDecoration(
                 hintText: tr(context, 'enter_email_hint'),
                 hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 16),
@@ -396,22 +452,14 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
       );
     }
 
-    // 2. Fallback to Local Validation Error (only show if input is not empty and invalid)
+    // 2. Fallback to Local Validation Error (only show if intended)
+    final bool shouldShowError = _isPhoneMode ? _showPhoneError : _showEmailError;
+    if (!shouldShowError) return const SizedBox.shrink();
+
     final text = _isPhoneMode ? _phoneController.text.trim() : _emailController.text.trim();
     if (text.isEmpty) return const SizedBox.shrink();
     
-    // Check if input is valid but terms are not - we usually only show error on submit or live
-    // For now, let's keep it simple and only show if the identifier itself is invalid
-    bool isIdentifierValid = false;
-    if (_isPhoneMode) {
-      final country = _countries.firstWhere((c) => c['code'] as String == _selectedCountryCode);
-      final pattern = country['pattern'] as String;
-      isIdentifierValid = RegExp(pattern).hasMatch(text);
-    } else {
-      isIdentifierValid = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text);
-    }
-
-    if (isIdentifierValid) return const SizedBox.shrink();
+    if (_isIdentifierValid(text, _isPhoneMode)) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 4),
