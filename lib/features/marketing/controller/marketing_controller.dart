@@ -10,6 +10,22 @@ class MarketingController extends ChangeNotifier {
   String? _error;
 
   List<MarketingModel> get banners => _banners;
+  
+  List<MarketingModel> get popups {
+    final now = DateTime.now();
+    return _banners.where((m) {
+      // Basic visibility checks
+      if (m.position?.toLowerCase() != 'popup' || !m.isActive) return false;
+      
+      // Date validity checks
+      if (m.startAt != null && m.startAt!.isAfter(now)) return false;
+      if (m.endAt != null && m.endAt!.isBefore(now)) return false;
+      
+      return true;
+    }).toList()
+    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  }
+
   bool get isLoading => _isLoading;
   String? get error => _error;
 

@@ -27,6 +27,8 @@ import 'package:uae_ecom_project/features/auth/controller/address_controller.dar
 import 'package:uae_ecom_project/features/marketing/controller/marketing_controller.dart';
 import 'package:uae_ecom_project/core/network/connectivity_provider.dart';
 import 'package:uae_ecom_project/core/error/no_internet_screen.dart';
+import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
+import 'package:uae_ecom_project/features/emirate/screens/emirate_selection_screen.dart';
 
 import 'package:uae_ecom_project/core/error/error_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -87,6 +89,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => OrderController()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => MarketingController()),
+        ChangeNotifierProvider(create: (_) => EmirateController()..init()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, langProvider, child) {
@@ -111,6 +114,7 @@ class _MyAppState extends State<MyApp> {
             routes: {
               '/': (_) => const SplashScreen(),
               '/language_selection': (_) => const LanguageSelectionScreen(),
+              '/emirate_selection': (_) => const EmirateSelectionScreen(),
               '/register': (_) => const RegisterScreen(),
               '/otp': (_) => const OtpScreen(),
               '/home': (_) => const HomeShell(),

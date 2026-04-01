@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
-import 'package:uae_ecom_project/core/localization/language_provider.dart';
+import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 
-class LanguageSelectionScreen extends StatelessWidget {
-  const LanguageSelectionScreen({super.key});
+class EmirateSelectionScreen extends StatelessWidget {
+  const EmirateSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final langProvider = context.watch<LanguageProvider>();
-    final currentLocale = langProvider.locale;
-
-    final languages = [
-      {'code': 'en', 'name': 'English', 'native': 'English', 'flag': '🇺🇸'},
-      {'code': 'cn', 'name': 'Chinese', 'native': '中文', 'flag': '🇨🇳'},
-      {'code': 'ar', 'name': 'Arabic', 'native': 'العربية', 'flag': '🇦🇪'},
-    ];
+    final emirateProvider = context.watch<EmirateController>();
+    final currentEmirate = emirateProvider.selectedEmirate;
 
     return Scaffold(
       body: Container(
@@ -47,14 +41,14 @@ class LanguageSelectionScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.language_rounded,
+                    Icons.location_on_rounded,
                     color: AppColors.primary,
                     size: 40,
                   ),
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Choose Language',
+                  'Select Your Emirate',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -63,7 +57,7 @@ class LanguageSelectionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Please select your preferred language\nto explore the best experience',
+                  'Choose your location to see available\nfresh products in your area',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
@@ -72,19 +66,19 @@ class LanguageSelectionScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 48),
-                // Language List
+                // Emirate List
                 Expanded(
                   child: ListView.builder(
-                    itemCount: languages.length,
+                    itemCount: emirateProvider.emirates.length,
                     itemBuilder: (context, index) {
-                      final lang = languages[index];
-                      final isSelected = currentLocale == lang['code'];
+                      final emirate = emirateProvider.emirates[index];
+                      final isSelected = currentEmirate == emirate['id'];
                       
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: InkWell(
                           onTap: () {
-                            context.read<LanguageProvider>().setLocale(lang['code']!);
+                            context.read<EmirateController>().setEmirate(emirate['id']!);
                           },
                           borderRadius: BorderRadius.circular(20),
                           child: AnimatedContainer(
@@ -111,50 +105,33 @@ class LanguageSelectionScreen extends StatelessWidget {
                                     ]
                                   : [],
                             ),
-                            child: Directionality(
-                              textDirection: TextDirection.ltr,
-                              child: Row(
-                                children: [
-                                  Text(
-                                    lang['flag']!,
-                                    style: const TextStyle(fontSize: 32),
+                            child: Row(
+                              children: [
+                                Text(
+                                  emirate['flag']!,
+                                  style: const TextStyle(fontSize: 32),
+                                ),
+                                const SizedBox(width: 20),
+                                Text(
+                                  emirate['name']!,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : theme.colorScheme.onSurface,
                                   ),
-                                  const SizedBox(width: 20),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        lang['native']!,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.w600,
-                                          color: isSelected
-                                              ? AppColors.primary
-                                              : theme.colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      Text(
-                                        lang['name']!,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: isSelected
-                                              ? AppColors.primary.withOpacity(0.7)
-                                              : theme.colorScheme.onSurface.withOpacity(0.5),
-                                        ),
-                                      ),
-                                    ],
+                                ),
+                                const Spacer(),
+                                if (isSelected)
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.primary,
+                                    size: 28,
                                   ),
-                                  const Spacer(),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check_circle_rounded,
-                                      color: AppColors.primary,
-                                      size: 28,
-                                    ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
                         ),
@@ -167,12 +144,15 @@ class LanguageSelectionScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/emirate_selection');
-                    },
+                    onPressed: currentEmirate == null 
+                      ? null 
+                      : () {
+                          Navigator.pushReplacementNamed(context, '/home');
+                        },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
+                      disabledBackgroundColor: theme.disabledColor.withOpacity(0.12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -180,7 +160,7 @@ class LanguageSelectionScreen extends StatelessWidget {
                       shadowColor: AppColors.primary.withOpacity(0.4),
                     ),
                     child: const Text(
-                      'Continue',
+                      'Confirm Selection',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

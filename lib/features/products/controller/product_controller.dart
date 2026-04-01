@@ -7,7 +7,10 @@ class ProductController extends ChangeNotifier {
   final ProductService _service = ProductService();
 
   List<ProductModel> _products = [];
-  List<ProductModel> get products => _products;
+  List<ProductModel> get products {
+    if (_activeEmirate == null || _activeEmirate!.isEmpty) return _products;
+    return _products.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
+  }
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -19,13 +22,17 @@ class ProductController extends ChangeNotifier {
   ProductModel? _selectedProduct;
   ProductModel? get selectedProduct => _selectedProduct;
 
+  // ─── Emirate Filter ─────────────────────────────────────────────
+  String? _activeEmirate;
+  String? get activeEmirate => _activeEmirate;
+
   // ─── Category Filter ────────────────────────────────────────────
   String _selectedCategory = 'All';
   String get selectedCategory => _selectedCategory;
 
   /// Unique category names extracted from loaded products.
   List<String> get categories {
-    final cats = _products
+    final cats = products
         .map((p) => p.categoryName)
         .where((c) => c.isNotEmpty)
         .toSet()
@@ -53,6 +60,10 @@ class ProductController extends ChangeNotifier {
   List<ProductModel> get filteredProducts {
     var list = _products;
 
+    if (_activeEmirate != null && _activeEmirate!.isNotEmpty) {
+      list = list.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
+    }
+
     if (_selectedCategory != 'All') {
       list = list.where((p) => p.categoryName == _selectedCategory).toList();
     }
@@ -72,7 +83,7 @@ class ProductController extends ChangeNotifier {
   // ─── Trending (Top Rated) ───────────────────────────────────────
   /// Top-rated products (rating > 0), sorted descending by rating.
   List<ProductModel> get trendingProducts {
-    final rated = _products.where((p) => p.rating > 0).toList();
+    final rated = products.where((p) => p.rating > 0).toList();
     rated.sort((a, b) => b.rating.compareTo(a.rating));
     return rated.take(10).toList();
   }
@@ -80,7 +91,7 @@ class ProductController extends ChangeNotifier {
   // ─── On Sale ────────────────────────────────────────────────────
   /// Products that have a discount price set.
   List<ProductModel> get onSaleProducts {
-    return _products.where((p) => p.discountPrice != null).toList();
+    return products.where((p) => p.discountPrice != null).toList();
   }
 
   // ─── Fallback Image ─────────────────────────────────────────────
@@ -98,13 +109,15 @@ class ProductController extends ChangeNotifier {
   // ─── Fetching (Offline-First) ────────────────────────────────
   /// Loads products from cache instantly, then silently refreshes
   /// from API in the background if the cache is stale.
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts({String? emirate}) async {
+    _activeEmirate = emirate;
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       _products = await _service.fetchProducts(
+        emirate: emirate,
         // This callback fires when background API refresh completes.
         // It updates the product list and the UI seamlessly.
         onRefresh: (freshProducts) {

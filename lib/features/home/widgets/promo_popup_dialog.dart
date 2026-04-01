@@ -2,25 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
+import 'package:uae_ecom_project/features/marketing/model/marketing_model.dart';
 
 /// A promotional popup dialog that displays a featured product or offer.
 /// Shows automatically after a configurable delay.
 class PromoPopupDialog extends StatelessWidget {
-  final ProductModel product;
+  final ProductModel? product;
+  final MarketingModel? marketing;
   final VoidCallback onShopNow;
   final VoidCallback onClose;
 
   const PromoPopupDialog({
     super.key,
-    required this.product,
+    this.product,
+    this.marketing,
     required this.onShopNow,
     required this.onClose,
-  });
+  }) : assert(product != null || marketing != null);
 
   /// Shows the promo popup after [delay] duration.
   static Future<Object?> showAfterDelay({
     required BuildContext context,
-    required ProductModel product,
+    ProductModel? product,
+    MarketingModel? marketing,
     required VoidCallback onShopNow,
     Duration delay = const Duration(seconds: 5),
   }) async {
@@ -36,6 +40,7 @@ class PromoPopupDialog extends StatelessWidget {
       pageBuilder: (context, animation, secondaryAnimation) {
         return PromoPopupDialog(
           product: product,
+          marketing: marketing,
           onShopNow: onShopNow,
           onClose: () => Navigator.of(context).pop(),
         );
@@ -63,10 +68,16 @@ class PromoPopupDialog extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final dialogWidth = screenWidth * 0.75;
 
-    // Calculate discount percentage if available
-    final hasDiscount = product.discountPrice != null && product.discountPrice! > 0;
+    // Data mapping based on which model is provided
+    final imageUrl = product?.thumbnail ?? marketing?.image ?? '';
+    final title = product != null ? trText(context, product!.name) : (marketing?.title ?? '');
+    final subtitle = marketing?.subtitle ?? (product != null ? trText(context, product!.categoryName) : '');
+    final ctaText = marketing?.ctaText ?? tr(context, 'shop_now');
+    
+    // Calculate discount percentage if available (only for products)
+    final hasDiscount = product != null && product!.discountPrice != null && product!.discountPrice! > 0;
     final discountPercent = hasDiscount
-        ? ((1 - product.finalPrice / product.price) * 100).round()
+        ? ((1 - product!.finalPrice / product!.price) * 100).round()
         : 0;
 
     return Center(
@@ -105,9 +116,9 @@ class PromoPopupDialog extends StatelessWidget {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          // Product image
+                          // Product or Marketing image
                           Image.network(
-                            product.thumbnail,
+                            imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               color: isDark
@@ -197,7 +208,7 @@ class PromoPopupDialog extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  trText(context, product.name),
+                                  title,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -234,8 +245,8 @@ class PromoPopupDialog extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              trText(context, product.categoryName).toUpperCase(),
-                              style: TextStyle(
+                              subtitle.toUpperCase(),
+                              style: const TextStyle(
                                 color: AppColors.primary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -244,12 +255,13 @@ class PromoPopupDialog extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          // Price row
+                          // Price row (only for products)
+                          if (product != null)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'AED ${product.finalPrice.toStringAsFixed(2)}',
+                                'AED ${product!.finalPrice.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   color: AppColors.primary,
                                   fontSize: 20,
@@ -259,7 +271,7 @@ class PromoPopupDialog extends StatelessWidget {
                               if (hasDiscount) ...[
                                 const SizedBox(width: 10),
                                 Text(
-                                  'AED ${product.price.toStringAsFixed(2)}',
+                                  'AED ${product!.price.toStringAsFixed(2)}',
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface
                                         .withOpacity(0.4),
@@ -298,7 +310,7 @@ class PromoPopupDialog extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    tr(context, 'shop_now'),
+                                    ctaText,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w800,

@@ -32,11 +32,14 @@ class ProductService {
   /// [onRefresh] is called if the API returns newer data so the
   /// controller can update the UI without blocking.
   Future<List<ProductModel>> fetchProducts({
+    String? emirate,
     void Function(List<ProductModel>)? onRefresh,
   }) async {
+    final cacheKey = emirate != null ? '${_productsCacheKey}_$emirate' : _productsCacheKey;
+
     // ── Step 1: Try to return cached data instantly ─────────────
     final cachedData = _cache.getFromCache(
-      _productsCacheKey,
+      cacheKey,
       ignoreExpiry: true, // Return data regardless of age.
     );
 
@@ -45,7 +48,7 @@ class ProductService {
       final cachedProducts = _parseProductList(cachedData);
 
       // Check if cache is still fresh → no need to call API.
-      final freshData = _cache.getFromCache(_productsCacheKey);
+      final freshData = _cache.getFromCache(cacheKey);
       if (freshData != null) {
         debugPrint('   ↳ Cache is fresh, skipping API call');
         return cachedProducts;
@@ -53,7 +56,7 @@ class ProductService {
 
       // Cache is stale → try refreshing from API in background.
       debugPrint('   ↳ Cache is stale, refreshing in background...');
-      _refreshProductsInBackground(onRefresh);
+      _refreshProductsInBackground(emirate, onRefresh);
 
       // Return stale cached data immediately so UI is never blank.
       return cachedProducts;
@@ -62,7 +65,7 @@ class ProductService {
     // ── Step 2: No cache at all → must call API ────────────────
     debugPrint('📡 No cache found, fetching products from API...');
     try {
-      final products = await _fetchProductsFromApi();
+      final products = await _fetchProductsFromApi(emirate: emirate);
       debugPrint('🌐 Fetched products from API (first load)');
       return products;
     } catch (e) {
@@ -123,8 +126,12 @@ class ProductService {
   // ═══════════════════════════════════════════════════════════════
 
   /// Fetches the product list from the API and saves it to cache.
-  Future<List<ProductModel>> _fetchProductsFromApi() async {
-    final response = await _dio.get('products/products/');
+  Future<List<ProductModel>> _fetchProductsFromApi({String? emirate}) async {
+    final String url = emirate != null 
+        ? 'products/products/?available_emirates=$emirate' 
+        : 'products/products/';
+        
+    final response = await _dio.get(url);
     final data = response.data;
 
     final List<dynamic> rawList;
@@ -137,7 +144,8 @@ class ProductService {
     }
 
     // Save to cache.
-    await _cache.saveToCache(_productsCacheKey, rawList);
+    final cacheKey = emirate != null ? '${_productsCacheKey}_$emirate' : _productsCacheKey;
+    await _cache.saveToCache(cacheKey, rawList);
     return rawList.map((e) => ProductModel.fromJson(e)).toList();
   }
 
@@ -145,9 +153,10 @@ class ProductService {
   /// If successful, saves to cache and calls [onRefresh].
   /// If it fails, does nothing — old cached data stays in use.
   void _refreshProductsInBackground(
+    String? emirate,
     void Function(List<ProductModel>)? onRefresh,
   ) {
-    _fetchProductsFromApi().then((freshProducts) {
+    _fetchProductsFromApi(emirate: emirate).then((freshProducts) {
       debugPrint('🔄 Background refresh complete — products updated');
       onRefresh?.call(freshProducts);
     }).catchError((e) {

@@ -10,6 +10,12 @@ class MarketingModel {
   final String? tag;
   final String? ctaText;
 
+  final String? position;
+  final bool isActive;
+  final DateTime? startAt;
+  final DateTime? endAt;
+  final int sortOrder;
+
   MarketingModel({
     required this.id,
     required this.image,
@@ -19,6 +25,11 @@ class MarketingModel {
     this.type,
     this.tag,
     this.ctaText,
+    this.position,
+    this.isActive = true,
+    this.startAt,
+    this.endAt,
+    this.sortOrder = 0,
   });
 
   factory MarketingModel.fromJson(Map<String, dynamic> json) {
@@ -57,6 +68,11 @@ class MarketingModel {
                nonEmpty(json['cta_button']) ?? 
                nonEmpty(json['cta']) ?? 
                'Shop Now',
+      position: json['position'],
+      isActive: json['is_active'] ?? true,
+      startAt: json['start_at'] != null ? DateTime.tryParse(json['start_at'].toString()) : null,
+      endAt: json['end_at'] != null ? DateTime.tryParse(json['end_at'].toString()) : null,
+      sortOrder: json['sort_order'] ?? 0,
     );
   }
 }

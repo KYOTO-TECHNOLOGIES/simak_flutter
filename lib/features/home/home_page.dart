@@ -21,6 +21,7 @@ import 'package:uae_ecom_project/features/auth/widgets/name_input_dialog.dart';
 import 'package:uae_ecom_project/features/home/widgets/language_selection_icon.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
+import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,7 +40,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     // Fetch products once when the page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductController>().fetchProducts();
+      final emirate = context.read<EmirateController>().selectedEmirate;
+      context.read<ProductController>().fetchProducts(emirate: emirate);
       context.read<MarketingController>().fetchBanners();
       context.read<OrderController>().fetchHomeReviews();
       _schedulePromoPopup();
@@ -85,32 +87,34 @@ class _HomePageState extends State<HomePage> {
   void _schedulePromoPopup() {
     Future.delayed(const Duration(seconds: 5), () {
       if (!mounted || _hasShownPromo) return;
+
+      final marketingController = context.read<MarketingController>();
+      final popups = marketingController.popups;
+      
+      // If no active popups found in Marketing Media, do not show anything
+      if (popups.isEmpty) return;
+
+      // Use the first popup (sorted by sortOrder in controller)
+      final activePopup = popups.first;
       _hasShownPromo = true;
-
-      final controller = context.read<ProductController>();
-      final products = controller.products;
-      if (products.isEmpty) return;
-
-      // Pick an on-sale product if available, otherwise a random one
-      final onSale = products.where((p) =>
-          p.discountPrice != null && p.discountPrice! > 0).toList();
-      final featured = onSale.isNotEmpty
-          ? onSale[Random().nextInt(onSale.length)]
-          : products[Random().nextInt(products.length)];
-
       _promoScheduledThisSession = true;
 
       PromoPopupDialog.showAfterDelay(
         context: context,
-        product: featured,
-        delay: Duration.zero, // Already waited 5s above
+        marketing: activePopup,
+        delay: Duration.zero,
         onShopNow: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProductDetailScreen(product: featured),
-            ),
-          );
+          if (activePopup.link != null && activePopup.link!.isNotEmpty) {
+            // Handle navigation based on link if needed
+            // For now, if it starts with http, it could be external, 
+            // otherwise it might be a route or product slug.
+            if (activePopup.link!.startsWith('http')) {
+              // Open browser or handle external link
+            } else {
+              // Try navigating to the link as a path
+              Navigator.pushNamed(context, activePopup.link!);
+            }
+          }
         },
       ).then((_) {
         if (!mounted) return;

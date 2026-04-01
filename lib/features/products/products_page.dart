@@ -9,6 +9,7 @@ import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
+import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -34,7 +35,8 @@ class _ProductsPageState extends State<ProductsPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller = context.read<ProductController>();
       if (controller.products.isEmpty) {
-        controller.fetchProducts().then((_) {
+        final emirate = context.read<EmirateController>().selectedEmirate;
+        controller.fetchProducts(emirate: emirate).then((_) {
           if (mounted) _fadeController.forward();
         });
       } else {

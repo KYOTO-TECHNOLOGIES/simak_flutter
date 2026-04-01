@@ -18,6 +18,7 @@ class ProductModel {
   final String? expectedDeliveryTime;
   final bool isAvailable;
   final String? mainImage;
+  final List<String> availableEmirates;
 
   ProductModel({
     required this.id,
@@ -36,6 +37,7 @@ class ProductModel {
     this.expectedDeliveryTime,
     this.isAvailable = true,
     this.mainImage,
+    this.availableEmirates = const [],
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,10 @@ class ProductModel {
       expectedDeliveryTime: json['expected_delivery_time'],
       isAvailable: json['is_available'] ?? true,
       mainImage: json['image'] != null ? getAbsoluteUrl(json['image']) : null,
+      availableEmirates: (json['available_emirates'] as List<dynamic>?)
+              ?.map((e) => e.toString().toLowerCase())
+              .toList() ??
+          [],
     );
   }
 
