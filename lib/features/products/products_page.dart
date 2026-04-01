@@ -325,60 +325,65 @@ class _ProductsPageState extends State<ProductsPage>
                             ),
                           ),
                           const SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(context, '/cart');
-                            },
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: AppColors.primary.withOpacity(0.15)),
-                                  ),
-                                  child: const Icon(
-                                    Icons.shopping_cart_rounded,
-                                    color: AppColors.primary,
-                                    size: 20,
-                                  ),
-                                ),
-                                // Small Badge showing actual cart count
-                                Consumer<CartController>(
-                                  builder: (context, controller, child) {
-                                    if (controller.uniqueItemCount == 0) return const SizedBox.shrink();
-                                    return Positioned(
-                                      top: -4,
-                                      right: -4,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: AppColors.accent,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        constraints: const BoxConstraints(
-                                          minWidth: 16,
-                                          minHeight: 16,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${controller.uniqueItemCount}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 8,
-                                              fontWeight: FontWeight.bold,
+                          Consumer<AuthController>(
+                            builder: (context, auth, _) {
+                              if (!auth.isLoggedIn) return const SizedBox.shrink();
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/cart');
+                                },
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            color: AppColors.primary.withOpacity(0.15)),
+                                      ),
+                                      child: const Icon(
+                                        Icons.shopping_cart_rounded,
+                                        color: AppColors.primary,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    // Small Badge showing actual cart count
+                                    Consumer<CartController>(
+                                      builder: (context, controller, child) {
+                                        if (controller.uniqueItemCount == 0) return const SizedBox.shrink();
+                                        return Positioned(
+                                          top: -4,
+                                          right: -4,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: const BoxDecoration(
+                                              color: AppColors.accent,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            constraints: const BoxConstraints(
+                                              minWidth: 16,
+                                              minHeight: 16,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '${controller.uniqueItemCount}',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
                         ],
                       ),

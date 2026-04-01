@@ -366,14 +366,13 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                               return DropdownMenuItem(
                                 value: c,
                                 child: Container(
-                                  constraints: const BoxConstraints(minWidth: 140),
+                                  constraints: const BoxConstraints(minWidth: 100, maxWidth: 200),
                                   child: Row(
-                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(c.flag,
                                           style: const TextStyle(fontSize: 18)),
-                                      const SizedBox(width: 10),
-                                      Flexible(
+                                      const SizedBox(width: 8),
+                                      Expanded(
                                         child: Text(
                                           c.name,
                                           overflow: TextOverflow.ellipsis,
@@ -383,7 +382,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                                               fontWeight: FontWeight.w500),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: 4),
                                       Text(
                                         c.code,
                                         style: TextStyle(

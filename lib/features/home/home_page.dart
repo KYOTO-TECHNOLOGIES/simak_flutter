@@ -243,18 +243,11 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       const Spacer(),
-                      // Language Selection Icon (Visible only if NOT logged in)
-                      Consumer<AuthController>(
-                        builder: (context, auth, _) {
-                          if (!auth.isLoggedIn) {
-                            return const Padding(
-                              padding: EdgeInsets.only(right: 12),
-                              child: LanguageSelectionIcon(),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
+                       // Language Selection Icon (Always visible)
+                       const Padding(
+                         padding: EdgeInsets.only(right: 12),
+                         child: LanguageSelectionIcon(),
+                       ),
                       // Floating Animated Cart Icon
                       const FloatingCartIcon(),
                     ],
