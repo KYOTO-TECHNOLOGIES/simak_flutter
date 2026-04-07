@@ -100,8 +100,8 @@ class ProductModel {
     if (path.startsWith('http')) return path;
     
     // Remove /api/ from end of baseUrl if present to get root URL
-    // Env.baseUrl is 'http://187.77.189.139/api/'
-    // Target is 'http://187.77.189.139/media/...'
+    // Env.baseUrl is 'https://simakfresh.ae/api/'
+    // Target is 'https://simakfresh.ae/media/...'
     String baseUrl = Env.baseUrl;
     if (baseUrl.endsWith('/api/')) {
       baseUrl = baseUrl.replaceAll('/api/', '');

@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
         ChangeNotifierProvider(create: (_) => AddressController()..fetchAddresses()),
-        ChangeNotifierProvider(create: (_) => CheckoutController()),
+        ChangeNotifierProvider(create: (_) => CheckoutController()..init()),
         ChangeNotifierProvider(create: (_) => OrderController()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => MarketingController()),

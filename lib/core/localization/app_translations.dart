@@ -405,6 +405,7 @@ final Map<String, Map<String, String>> _translations = {
     'payment_cod': 'Cash on Delivery',
     'payment_cod_desc': 'Pay in cash when your order is delivered',
     'payment_online_telr': 'Pay Online (Telr)',
+    'payment_online': 'Online Payment',
     'payment_online_telr_desc': 'Pay securely using cards or online payment',
     'currency_aed': 'AED',
     'tip': 'Tip',
@@ -596,14 +597,8 @@ final Map<String, Map<String, String>> _translations = {
 
     'free_delivery_threshold': 'Free delivery on orders above AED 999',
 
-    // Bulk Order
-    'bulk_order': 'Bulk Order',
-    'bulk_order_sub': 'Save more with bulk pricing',
-    'bulk_order_desc':
-        'Looking for bulk quantities? Contact us for special pricing and expedited large-scale delivery.',
-    'min_order_badge': 'MINIMUM ORDER: 50 UNITS',
-    'whatsapp_button': 'Reach out on WhatsApp',
-    'whatsapp_message': 'Hello, I am interested in bulk ordering {product}.',
+
+
 
     // Search Empty State
     'search_no_results_title': 'No matches found',
@@ -685,6 +680,14 @@ final Map<String, Map<String, String>> _translations = {
     'stats_earned': 'Coupons Earned',
     'start_referring': 'Start Referring, Start Earning!',
     'copy_link': 'Copy Link',
+    'have_coupon': 'Have a coupon?',
+    'enter_coupon_code': 'Enter coupon code',
+    'apply': 'Apply',
+    'coupon_applied': 'Coupon applied!',
+    'tip_info': '100% of the tip goes to your delivery partner',
+    'discount': 'Discount',
+    'available_coupons': 'Available Coupons',
+    'tap_to_apply': 'TAP TO APPLY',
   },
 
   // ═════════════════════════════════════════════════════════════════
@@ -991,6 +994,7 @@ final Map<String, Map<String, String>> _translations = {
     'payment_cod': '货到付款',
     'payment_cod_desc': '订单送达时以现金支付',
     'payment_online_telr': '在线支付 (Telr)',
+    'payment_online': '在线支付',
     'payment_online_telr_desc': '使用银行卡或在线支付方式安全支付',
     'currency_aed': 'AED',
     'tip': '小费',
@@ -1172,13 +1176,8 @@ final Map<String, Map<String, String>> _translations = {
 
     'free_delivery_threshold': '订单满 AED 999 免运费',
 
-    // Bulk Order
-    'bulk_order': '批量订单',
-    'bulk_order_sub': '通过批量定价节省更多',
-    'bulk_order_desc': '在寻找批量采购吗？联系我们以获取特殊价格和快速的大规模交付。',
-    'min_order_badge': '最小订单量：50 件',
-    'whatsapp_button': '通过 WhatsApp 联系',
-    'whatsapp_message': '您好，我对批量订购 {product} 感感兴趣。',
+
+
 
     // Search Empty State
     'search_no_results_title': '未找到匹配结果',
@@ -1291,6 +1290,14 @@ final Map<String, Map<String, String>> _translations = {
     'stats_earned': '已获优惠券',
     'start_referring': '开始推荐，开始赚钱！',
     'copy_link': '复制链接',
+    'have_coupon': '有优惠券吗？',
+    'enter_coupon_code': '输入优惠券代码',
+    'apply': '应用',
+    'coupon_applied': '优惠券已应用！',
+    'tip_info': '100%的小费归配送伙伴所有',
+    'discount': '折扣',
+    'available_coupons': '可用优惠券',
+    'tap_to_apply': '点击应用',
   },
 
   // ═════════════════════════════════════════════════════════════════
@@ -1631,6 +1638,7 @@ final Map<String, Map<String, String>> _translations = {
     'payment_cod': 'الدفع عند الاستلام',
     'payment_cod_desc': 'ادفع نقداً عند تسليم طلبك',
     'payment_online_telr': 'الدفع الإلكتروني (Telr)',
+    'payment_online': 'الدفع عبر الإنترنت',
     'payment_online_telr_desc': 'ادفع بأمان باستخدام البطاقات أو الدفع الإلكتروني',
     'currency_aed': 'درهم',
     'tip': 'إكرامية',
@@ -1826,13 +1834,8 @@ final Map<String, Map<String, String>> _translations = {
 
     'free_delivery_threshold': 'توصيل مجاني للطلبات فوق 999 درهم',
 
-    // Bulk Order
-    'bulk_order': 'طلب بالجملة',
-    'bulk_order_sub': 'وفر أكثر بأسعار الجملة',
-    'bulk_order_desc': 'هل تبحث عن كميات كبيرة؟ اتصل بنا للحصول على أسعار خاصة وتسليم سريع على نطاق واسع.',
-    'min_order_badge': 'الحد الأدنى للطلب: 50 قطعة',
-    'whatsapp_button': 'تواصل معنا عبر الواتساب',
-    'whatsapp_message': 'مرحباً، أنا مهتم بطلب {product} بالجملة.',
+
+
 
     // Search Empty State
     'search_no_results_title': 'لم يتم العثور على نتائج',
@@ -1915,5 +1918,13 @@ final Map<String, Map<String, String>> _translations = {
     'stats_earned': 'الكوبونات المكتسبة',
     'start_referring': 'ابدأ الإحالة، ابدأ الربح!',
     'copy_link': 'نسخ الرابط',
+    'have_coupon': 'هل لديك قسيمة؟',
+    'enter_coupon_code': 'أدخل رمز القسيمة',
+    'apply': 'تطبيق',
+    'coupon_applied': 'تم تطبيق القسيمة!',
+    'tip_info': '100% من الإكرامية تذهب إلى شريك التوصيل الخاص بك',
+    'discount': 'الخصم',
+    'available_coupons': 'الكوبونات المتاحة',
+    'tap_to_apply': 'اضغط للتطبيق',
   },
 };

@@ -1194,7 +1194,7 @@ import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
-import 'package:uae_ecom_project/features/products/widgets/bulk_order_card.dart';
+
 
 class ProductDetailScreen extends StatefulWidget {
   final ProductModel product;
@@ -1956,15 +1956,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 32),
-
-                          // ── Customer Reviews Section ─────────────
                           _buildReviewsSection(theme),
 
-                          const SizedBox(height: 32),
 
-                          // ── Bulk Order Section ──────────────────
-                          BulkOrderCard(productName: widget.product.name),
 
                           const SizedBox(height: 100),
                         ],
@@ -2189,11 +2183,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   // ── Customer Reviews Section ────────────────────────────────────────
   Widget _buildReviewsSection(ThemeData theme) {
+    if (!_isLoadingReviews && _reviews.isEmpty) {
+      return const SizedBox.shrink();
+    }
     final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 32),
         // Section header
         Row(
           children: [
@@ -2293,6 +2291,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             _reviews.length > 5 ? 5 : _reviews.length,
             (index) => _buildReviewCard(_reviews[index], theme, isDark),
           ),
+        const SizedBox(height: 32),
       ],
     );
   }

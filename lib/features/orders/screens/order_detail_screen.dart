@@ -822,6 +822,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
+  String _getPaymentMethodDisplay(String method) {
+    if (method.isEmpty) return tr(context, 'payment_online');
+    final m = method.toUpperCase();
+    if (m == 'COD' || m.contains('CASH')) {
+      return tr(context, 'payment_cod');
+    }
+    if (m == 'TELR' || m == 'ZIINA' || m.contains('ONLINE') || m.contains('PAY')) {
+      return tr(context, 'payment_online');
+    }
+    return trText(context, method);
+  }
+
   String _formatTime(DateTime date) {
     final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
     final amPm = date.hour >= 12 ? 'PM' : 'AM';
@@ -925,7 +937,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const SizedBox(height: 20),
           Text(tr(context, 'order_payment_method'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text(order.paymentMethod, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+          Text(
+            _getPaymentMethodDisplay(order.paymentMethod.isNotEmpty ? order.paymentMethod : (order.paymentInfo?.method ?? 'Online Payment')),
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+          ),
         ],
       ),
     );

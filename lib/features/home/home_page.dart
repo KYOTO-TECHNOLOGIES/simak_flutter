@@ -845,10 +845,11 @@ class _BannerSlider extends StatefulWidget {
 
 class _BannerSliderState extends State<_BannerSlider>
     with TickerProviderStateMixin {
-  final PageController _pageController = PageController();
+  static const int _infiniteCount = 10000;
+  late final PageController _pageController;
   int _currentPage = 0;
-  bool _forward = true;
   Timer? _autoPlayTimer;
+  bool _initialized = false;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
@@ -862,36 +863,18 @@ class _BannerSliderState extends State<_BannerSlider>
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
     _fadeController.forward();
+    _pageController = PageController();
   }
 
-  void _startAutoPlay(int itemCount) {
-    if (itemCount <= 1) return;
+  void _startAutoPlay() {
     _autoPlayTimer?.cancel();
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
 
-      int next;
-      if (_forward) {
-        next = _currentPage + 1;
-        if (next >= itemCount) {
-          _forward = false;
-          next = _currentPage - 1;
-        }
-      } else {
-        next = _currentPage - 1;
-        if (next < 0) {
-          _forward = true;
-          next = _currentPage + 1;
-        }
-      }
-
-      if (next >= 0 && next < itemCount) {
-        _pageController.animateToPage(
-          next,
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubic,
-        );
-      }
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+      );
     });
   }
 
@@ -921,12 +904,19 @@ class _BannerSliderState extends State<_BannerSlider>
           return const SizedBox.shrink();
         }
 
-        // Restart autoplay when items load
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_autoPlayTimer == null || !_autoPlayTimer!.isActive) {
-            _startAutoPlay(controller.banners.length);
-          }
-        });
+        // Initialize to middle once banners are loaded
+        if (!_initialized && controller.banners.isNotEmpty) {
+          _initialized = true;
+          final bannersCount = controller.banners.length;
+          final initialPage = (_infiniteCount ~/ 2) - ((_infiniteCount ~/ 2) % bannersCount);
+          _currentPage = 0;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_pageController.hasClients) {
+              _pageController.jumpToPage(initialPage);
+              _startAutoPlay();
+            }
+          });
+        }
 
         return Stack(
           alignment: Alignment.bottomCenter,
@@ -937,15 +927,17 @@ class _BannerSliderState extends State<_BannerSlider>
                   height: bannerHeight,
                   child: PageView.builder(
                     controller: _pageController,
-                    itemCount: controller.banners.length,
+                    itemCount: _infiniteCount,
                     onPageChanged: (i) {
-                      setState(() => _currentPage = i);
+                      setState(() => _currentPage = i % controller.banners.length);
                       _fadeController
                         ..reset()
                         ..forward();
                     },
                     itemBuilder: (context, index) {
-                      final slide = controller.banners[index];
+                      final banners = controller.banners;
+                      if (banners.isEmpty) return const SizedBox.shrink();
+                      final slide = banners[index % banners.length];
                       return _BannerSlide(slide: slide, fadeAnim: _fadeAnim);
                     },
                   ),

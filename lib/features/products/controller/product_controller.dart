@@ -8,8 +8,10 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> _products = [];
   List<ProductModel> get products {
-    if (_activeEmirate == null || _activeEmirate!.isEmpty) return _products;
-    return _products.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
+    // TEMPORARY: Disable emirate filtering
+    // if (_activeEmirate == null || _activeEmirate!.isEmpty) return _products;
+    // return _products.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
+    return _products;
   }
 
   bool _isLoading = false;
@@ -60,9 +62,10 @@ class ProductController extends ChangeNotifier {
   List<ProductModel> get filteredProducts {
     var list = _products;
 
-    if (_activeEmirate != null && _activeEmirate!.isNotEmpty) {
-      list = list.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
-    }
+    // TEMPORARY: Disable emirate filtering
+    // if (_activeEmirate != null && _activeEmirate!.isNotEmpty) {
+    //   list = list.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
+    // }
 
     if (_selectedCategory != 'All') {
       list = list.where((p) => p.categoryName == _selectedCategory).toList();
@@ -110,14 +113,15 @@ class ProductController extends ChangeNotifier {
   /// Loads products from cache instantly, then silently refreshes
   /// from API in the background if the cache is stale.
   Future<void> fetchProducts({String? emirate}) async {
-    _activeEmirate = emirate;
+    // TEMPORARY: ignore emirate parameter
+    _activeEmirate = null;
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       _products = await _service.fetchProducts(
-        emirate: emirate,
+        emirate: null, // Force fetch all
         // This callback fires when background API refresh completes.
         // It updates the product list and the UI seamlessly.
         onRefresh: (freshProducts) {

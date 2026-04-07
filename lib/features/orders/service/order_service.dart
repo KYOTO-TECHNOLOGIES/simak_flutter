@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
 
 class OrderService {
@@ -13,6 +14,7 @@ class OrderService {
     String? deliverySlot,
     String? deliveryNotes,
     double tipAmount = 0.0,
+    String? couponCode,
   }) async {
     final response = await _dio.post(
       'orders/checkout/',
@@ -23,11 +25,77 @@ class OrderService {
         'preferred_delivery_slot': deliverySlot,
         'delivery_notes': deliveryNotes,
         'tip_amount': tipAmount,
+        if (couponCode != null) 'coupon_code': couponCode,
         if (productId != null) 'product_id': productId,
         if (quantity != null) 'quantity': quantity,
       },
     );
     return response.data;
+  }
+
+  Future<Map<String, dynamic>> validateCoupon(String couponCode, double cartTotal) async {
+    final response = await _dio.post(
+      'orders/validate_coupon/',
+      data: {
+        'coupon_code': couponCode,
+        'cart_total': cartTotal,
+      },
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> getCheckoutSummary({
+    required dynamic addressId,
+    int? productId,
+    int? quantity,
+    String? couponCode,
+    double tipAmount = 0.0,
+  }) async {
+    final response = await _dio.post(
+      'orders/checkout_summary/',
+      data: {
+        'address_id': addressId,
+        'tip_amount': tipAmount,
+        if (couponCode != null) 'coupon_code': couponCode,
+        if (productId != null) 'product_id': productId,
+        if (quantity != null) 'quantity': quantity,
+      },
+    );
+    return response.data;
+  }
+
+  Future<List<Map<String, dynamic>>> getAvailableCoupons() async {
+    try {
+      // Try the primary endpoint first
+      final response = await _dio.get('orders/available_coupons/');
+      final dynamic data = response.data;
+      List<Map<String, dynamic>> results = [];
+      
+      if (data is List) {
+        results = List<Map<String, dynamic>>.from(data);
+      } else if (data is Map && data.containsKey('results')) {
+        results = List<Map<String, dynamic>>.from(data['results']);
+      }
+      
+      if (results.isNotEmpty) return results;
+    } catch (e) {
+      debugPrint('Error fetching from orders/available_coupons/: $e');
+    }
+
+    // fallback to marketing/coupons/ if the first one is empty or fails
+    try {
+      final response = await _dio.get('marketing/coupons/');
+      final dynamic data = response.data;
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      } else if (data is Map && data.containsKey('results')) {
+        return List<Map<String, dynamic>>.from(data['results']);
+      }
+    } catch (e) {
+      debugPrint('Error fetching from marketing/coupons/: $e');
+    }
+    
+    return [];
   }
 
   Future<List<Map<String, dynamic>>> getMyOrders() async {

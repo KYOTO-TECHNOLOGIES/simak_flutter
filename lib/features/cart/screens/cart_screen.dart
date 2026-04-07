@@ -15,8 +15,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final double _freeShippingThreshold = 500.0;
-  final double _shippingFee = 50.0;
 
   @override
   void initState() {
@@ -264,11 +262,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildOrderSummary(BuildContext context, ThemeData theme, CartController controller) {
-    final subtotal = controller.totalPrice;
-    final isFreeShipping = subtotal >= _freeShippingThreshold;
-    final shipping = isFreeShipping ? 0.0 : _shippingFee;
-    final total = subtotal + shipping;
-    final remainingForFreeHeader = _freeShippingThreshold - subtotal;
+    final subtotal = controller.cart!.totalPrice;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -292,23 +286,14 @@ class _CartScreenState extends State<CartScreen> {
             style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
           ),
           const SizedBox(height: 20),
-          _buildSummaryRow(tr(context, 'subtotal'), 'AED ${controller.cart!.totalPrice.toStringAsFixed(2)}'),
-          _buildSummaryRow(tr(context, 'shipping'), 'AED $shipping'),
-          if (!isFreeShipping)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                tr(context, 'free_shipping_hint', args: {'amount': (999 - controller.cart!.totalPrice).toStringAsFixed(0)}),
-                style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
-              ),
-            ),
-          if (!isFreeShipping) ...[
-            const SizedBox(height: 8),
-            Text(
-              tr(context, 'free_shipping_hint').replaceAll('{amount}', 'AED ${remainingForFreeHeader.toStringAsFixed(1)}'),
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
-            ),
-          ],
+          _buildSummaryRow(tr(context, 'subtotal'), 'AED ${subtotal.toStringAsFixed(2)}'),
+          const SizedBox(height: 12),
+          _buildSummaryRow(tr(context, 'shipping'), 'Calculated at checkout', valueColor: Colors.grey),
+          const SizedBox(height: 8),
+          Text(
+            'Delivery is free for orders AED 40 or more after discount.',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+          ),
           
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
@@ -319,15 +304,16 @@ class _CartScreenState extends State<CartScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                tr(context, 'total'),
+                'Items total',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
-                'AED ${total.toStringAsFixed(2)}',
+                'AED ${subtotal.toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.primary),
               ),
             ],
           ),
+
           
           const SizedBox(height: 32),
           
@@ -377,6 +363,7 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
+
 
   Widget _buildSummaryRow(String label, String value, {Color? valueColor}) {
     return Row(

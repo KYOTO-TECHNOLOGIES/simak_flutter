@@ -148,31 +148,14 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     );
                   },
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.05),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.primary.withOpacity(0.1),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.1),
-                          blurRadius: 40,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
                     child: const Center(
-                      child: Text(
-                        '🦞',
-                        style: TextStyle(fontSize: 60),
+                      child: Image(
+                        image: AssetImage('assets/images/home_logo.png'),
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ),
                 ),
 
                 const SizedBox(height: 36),

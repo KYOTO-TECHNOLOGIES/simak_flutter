@@ -168,7 +168,8 @@ class LanguageSelectionScreen extends StatelessWidget {
                   height: 60,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/emirate_selection');
+                      // TEMPORARY: Bypass emirate selection
+                      Navigator.pushReplacementNamed(context, '/home');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
