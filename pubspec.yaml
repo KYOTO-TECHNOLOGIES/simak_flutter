@@ -50,9 +50,11 @@ dependencies:
   firebase_core: ^4.6.0
   firebase_messaging: ^16.1.3
   flutter_local_notifications: ^21.0.0
+  webview_flutter: ^4.10.0
+  flutter_svg: ^2.2.4
   google_maps_flutter: ^2.5.3
-  geolocator: ^10.1.0
   geocoding: ^2.1.1
+  geolocator: ^10.1.0
 
 dev_dependencies:
   flutter_test:
@@ -99,6 +101,7 @@ flutter:
   assets:
     - assets/images/no_internet_fish.png
     - assets/images/home_logo.png
+    - assets/images/simak_logo.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

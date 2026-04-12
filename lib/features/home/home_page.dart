@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -90,7 +91,7 @@ class _HomePageState extends State<HomePage> {
 
       final marketingController = context.read<MarketingController>();
       final popups = marketingController.popups;
-      
+
       // If no active popups found in Marketing Media, do not show anything
       if (popups.isEmpty) return;
 
@@ -106,7 +107,7 @@ class _HomePageState extends State<HomePage> {
         onShopNow: () {
           if (activePopup.link != null && activePopup.link!.isNotEmpty) {
             // Handle navigation based on link if needed
-            // For now, if it starts with http, it could be external, 
+            // For now, if it starts with http, it could be external,
             // otherwise it might be a route or product slug.
             if (activePopup.link!.startsWith('http')) {
               // Open browser or handle external link
@@ -178,174 +179,168 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
-        ),
+        decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
         child: SafeArea(
           bottom: false,
           child: CustomScrollView(
-          slivers: [
-            // ─── App Bar ─────────────────────────────────────────
-            SliverAppBar(
-              floating: true,
-              snap: true,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              backgroundColor: theme.scaffoldBackgroundColor,
-              automaticallyImplyLeading: false,
-              toolbarHeight: 80,
-              title: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        height: 44,
-                        width: 44,
-                        child: Image.asset(
-                          'assets/images/home_logo.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: tr(context, 'app_name_simak'),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const TextSpan(text: ' '),
-                                TextSpan(
-                                  text: tr(context, 'app_name_fresh'),
-                                  style: const TextStyle(
-                                    color: AppColors.actionBlue,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
+            slivers: [
+              // ─── App Bar ─────────────────────────────────────────
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                backgroundColor: theme.scaffoldBackgroundColor,
+                automaticallyImplyLeading: false,
+                toolbarHeight: 80,
+                title: Padding(
+                  padding: const EdgeInsets.only(left: 12, top: 4), // Breathing room
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: SizedBox(
+                              height: 44, // Professional height
+                              child: SvgPicture.asset(
+                                'assets/images/simak_logo.svg',
+                                fit: BoxFit.contain,
+                                alignment: Alignment.centerLeft,
+                              ),
                             ),
                           ),
+                        ),
+                        const Spacer(),
+                        // Language Selection Icon (Always visible)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 12),
+                          child: LanguageSelectionIcon(),
+                        ),
+                        // Floating Animated Cart Icon
+                        const FloatingCartIcon(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ─── Search Bar ──────────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverToBoxAdapter(
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to Products tab in HomeShell with auto-focus flag
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/home',
+                        arguments: {'index': 1, 'focusSearch': true},
+                      );
+                    },
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.dividerColor.withOpacity(0.8),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 12),
                           Text(
-                            tr(context, 'tagline'),
+                            tr(context, 'search_hint'),
                             style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(0.5),
-                              fontSize: 12,
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.4,
+                              ),
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
-                      const Spacer(),
-                       // Language Selection Icon (Always visible)
-                       const Padding(
-                         padding: EdgeInsets.only(right: 12),
-                         child: LanguageSelectionIcon(),
-                       ),
-                      // Floating Animated Cart Icon
-                      const FloatingCartIcon(),
+                    ),
+                  ),
+                ),
+              ),
+
+              // ─── Banner Slider ────────────────────────────────────
+              const SliverPadding(
+                padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                sliver: SliverToBoxAdapter(child: _BannerSlider()),
+              ),
+
+              // ─── Categories ──────────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr(context, 'shop_by_category'),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 110,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            _CategoryCard(
+                              index: 0,
+                              imageUrl:
+                                  'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400&auto=format&fit=crop',
+                              label: tr(context, 'cat_live_fish'),
+                            ),
+                            _CategoryCard(
+                              index: 1,
+                              imageUrl:
+                                  'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=400&auto=format&fit=crop',
+                              label: tr(context, 'cat_fresh_fish'),
+                            ),
+                            _CategoryCard(
+                              index: 2,
+                              imageUrl:
+                                  'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=400&auto=format&fit=crop',
+                              label: tr(context, 'cat_dry_fish'),
+                            ),
+                            _CategoryCard(
+                              index: 3,
+                              imageUrl:
+                                  'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?q=80&w=400&auto=format&fit=crop',
+                              label: tr(context, 'cat_frozen_fish'),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
 
-            // ─── Search Bar ──────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverToBoxAdapter(
-                child: GestureDetector(
-                  onTap: () {
-                    // Navigate to Products tab in HomeShell with auto-focus flag
-                    Navigator.pushReplacementNamed(context, '/home', arguments: {'index': 1, 'focusSearch': true});
-                  },
-                  child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.dividerColor.withOpacity(0.8)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.search_rounded,
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
-                            size: 22),
-                        const SizedBox(width: 12),
-                        Text(
-                          tr(context, 'search_hint'),
-                          style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(0.4),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // ─── Banner Slider ────────────────────────────────────
-            const SliverPadding(
-              padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: _BannerSlider(),
-              ),
-            ),
-
-            // ─── Categories ──────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      tr(context, 'shop_by_category'),
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 110,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          _CategoryCard(index: 0, imageUrl: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400&auto=format&fit=crop', label: tr(context, 'cat_live_fish')),
-                          _CategoryCard(index: 1, imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=400&auto=format&fit=crop', label: tr(context, 'cat_fresh_fish')),
-                          _CategoryCard(index: 2, imageUrl: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=400&auto=format&fit=crop', label: tr(context, 'cat_dry_fish')),
-                          _CategoryCard(index: 3, imageUrl: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?q=80&w=400&auto=format&fit=crop', label: tr(context, 'cat_frozen_fish')),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ─── Product Grid Title ──────────────────────────────
+              // ─── Product Grid Title ──────────────────────────────
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
                 sliver: SliverToBoxAdapter(
@@ -401,7 +396,9 @@ class _HomePageState extends State<HomePage> {
                     return SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.all(40),
-                        child: FishLoader(message: tr(context, 'loading_products')),
+                        child: FishLoader(
+                          message: tr(context, 'loading_products'),
+                        ),
                       ),
                     );
                   }
@@ -426,10 +423,12 @@ class _HomePageState extends State<HomePage> {
                         child: Padding(
                           padding: const EdgeInsets.all(40),
                           child: Text(
-                             tr(context, 'no_products'),
+                            tr(context, 'no_products'),
                             style: TextStyle(
-                                color: theme.colorScheme.onSurface
-                                    .withOpacity(0.6)),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -446,30 +445,27 @@ class _HomePageState extends State<HomePage> {
                     sliver: SliverGrid(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        childAspectRatio: 0.7,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final product = controller.products[index];
-                          return _ProductCard(
-                            product: product,
-                            fallbackImageUrl: controller.fallbackImageUrl,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      ProductDetailScreen(product: product),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        childCount: displayCount,
-                      ),
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 14,
+                            crossAxisSpacing: 14,
+                            childAspectRatio: 0.7,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final product = controller.products[index];
+                        return _ProductCard(
+                          product: product,
+                          fallbackImageUrl: controller.fallbackImageUrl,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ProductDetailScreen(product: product),
+                              ),
+                            );
+                          },
+                        );
+                      }, childCount: displayCount),
                     ),
                   );
                 },
@@ -478,56 +474,49 @@ class _HomePageState extends State<HomePage> {
               // ─── How It Works ──────────────────────────────────
               const SliverPadding(
                 padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: HowItWorksSection(),
-                ),
+                sliver: SliverToBoxAdapter(child: HowItWorksSection()),
               ),
 
               // ─── Why Choose Us ──────────────────────────────────
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(child: _WhyChooseUs(),
-                ),
+                sliver: SliverToBoxAdapter(child: _WhyChooseUs()),
               ),
 
               // ─── Stats Bar (New) ────────────────────────────────
               const SliverPadding(
                 padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _HomeStatsBar(),
-                ),
+                sliver: SliverToBoxAdapter(child: _HomeStatsBar()),
               ),
 
               // ─── Highlighted Testimonial (New) ──────────────────
               const SliverPadding(
                 padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _HighlightedTestimonial(),
-                ),
+                sliver: SliverToBoxAdapter(child: _HighlightedTestimonial()),
               ),
 
               // ─── User Reviews ───────────────────────────────────
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _UserReviews(),
-                ),
+                sliver: SliverToBoxAdapter(child: _UserReviews()),
               ),
 
               // ─── Featured Recipe ────────────────────────────────
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 32, 20, 100), // Keep 100 padding at the very bottom
-                sliver: SliverToBoxAdapter(child: _FeaturedRecipe(),
-                ),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  32,
+                  20,
+                  100,
+                ), // Keep 100 padding at the very bottom
+                sliver: SliverToBoxAdapter(child: _FeaturedRecipe()),
               ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 }
 
 class _CategoryCard extends StatefulWidget {
@@ -545,7 +534,8 @@ class _CategoryCard extends StatefulWidget {
   State<_CategoryCard> createState() => _CategoryCardState();
 }
 
-class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderStateMixin {
+class _CategoryCardState extends State<_CategoryCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _floatingController;
   late Animation<double> _floatingAnimation;
   bool _isPressed = false;
@@ -577,7 +567,7 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 600 + (widget.index * 150)),
@@ -616,7 +606,9 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
                     decoration: BoxDecoration(
                       color: theme.cardColor,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
+                      border: Border.all(
+                        color: theme.dividerColor.withOpacity(0.5),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: theme.shadowColor.withOpacity(0.06),
@@ -640,9 +632,10 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  value: loadingProgress.expectedTotalBytes != null
+                                  value:
+                                      loadingProgress.expectedTotalBytes != null
                                       ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
+                                            loadingProgress.expectedTotalBytes!
                                       : null,
                                   color: AppColors.primary.withOpacity(0.3),
                                 ),
@@ -652,8 +645,10 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: AppColors.primary.withOpacity(0.05),
-                          child: Icon(Icons.set_meal_rounded,
-                              color: AppColors.primary.withOpacity(0.2)),
+                          child: Icon(
+                            Icons.set_meal_rounded,
+                            color: AppColors.primary.withOpacity(0.2),
+                          ),
                         ),
                       ),
                     ),
@@ -682,11 +677,16 @@ class _ProductCard extends StatelessWidget {
   final VoidCallback onTap;
   final String fallbackImageUrl;
 
-  const _ProductCard({required this.product, required this.onTap, required this.fallbackImageUrl});
+  const _ProductCard({
+    required this.product,
+    required this.onTap,
+    required this.fallbackImageUrl,
+  });
 
   int get discountPercent {
     if (product.price <= 0 || product.finalPrice >= product.price) return 0;
-    return (((product.price - product.finalPrice) / product.price) * 100).round();
+    return (((product.price - product.finalPrice) / product.price) * 100)
+        .round();
   }
 
   @override
@@ -700,12 +700,12 @@ class _ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: theme.dividerColor),
           boxShadow: [
-             BoxShadow(
+            BoxShadow(
               color: theme.shadowColor.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
-          ]
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -716,30 +716,35 @@ class _ProductCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     child: product.thumbnail.isNotEmpty
                         ? Image.network(
                             product.thumbnail,
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => Image.network(
-                              fallbackImageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: theme.cardColor,
-                                child: const Icon(Icons.error_outline),
-                              ),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.network(
+                                  fallbackImageUrl,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                        color: theme.cardColor,
+                                        child: const Icon(Icons.error_outline),
+                                      ),
+                                ),
                           )
                         : Image.network(
                             fallbackImageUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: theme.cardColor,
-                              child: const Icon(Icons.error_outline),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: theme.cardColor,
+                                  child: const Icon(Icons.error_outline),
+                                ),
                           ),
                   ),
                   // Discount badge
@@ -748,7 +753,10 @@ class _ProductCard extends StatelessWidget {
                       top: 8,
                       left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.error,
                           borderRadius: BorderRadius.circular(8),
@@ -791,7 +799,7 @@ class _ProductCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  
+
                   // Price Section (Flipped: Real Price on top, Offer Price under)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -808,7 +816,7 @@ class _ProductCard extends StatelessWidget {
                       else
                         // Spacer to maintain height consistency
                         const SizedBox(height: 15),
-                      
+
                       const SizedBox(height: 2),
                       Text(
                         'AED ${product.finalPrice}',
@@ -828,9 +836,7 @@ class _ProductCard extends StatelessWidget {
       ),
     );
   }
-
 }
-
 
 // ═════════════════════════════════════════════════════════════════════
 //  ANIMATED BANNER SLIDER
@@ -908,7 +914,8 @@ class _BannerSliderState extends State<_BannerSlider>
         if (!_initialized && controller.banners.isNotEmpty) {
           _initialized = true;
           final bannersCount = controller.banners.length;
-          final initialPage = (_infiniteCount ~/ 2) - ((_infiniteCount ~/ 2) % bannersCount);
+          final initialPage =
+              (_infiniteCount ~/ 2) - ((_infiniteCount ~/ 2) % bannersCount);
           _currentPage = 0;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_pageController.hasClients) {
@@ -929,7 +936,9 @@ class _BannerSliderState extends State<_BannerSlider>
                     controller: _pageController,
                     itemCount: _infiniteCount,
                     onPageChanged: (i) {
-                      setState(() => _currentPage = i % controller.banners.length);
+                      setState(
+                        () => _currentPage = i % controller.banners.length,
+                      );
                       _fadeController
                         ..reset()
                         ..forward();
@@ -972,7 +981,6 @@ class _BannerSliderState extends State<_BannerSlider>
       },
     );
   }
-
 }
 
 class _BannerSlide extends StatelessWidget {
@@ -1011,7 +1019,11 @@ class _BannerSlide extends StatelessWidget {
                   ),
                 ),
                 child: const Center(
-                  child: Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                  child: Icon(
+                    Icons.broken_image,
+                    color: Colors.white24,
+                    size: 48,
+                  ),
                 ),
               ),
             ),
@@ -1042,7 +1054,8 @@ class _BannerSlide extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // ── Tags row ─────────────────────────────
-                    if ((slide.tag != null && slide.tag!.isNotEmpty) || (slide.type != null && slide.type!.isNotEmpty)) ...[
+                    if ((slide.tag != null && slide.tag!.isNotEmpty) ||
+                        (slide.type != null && slide.type!.isNotEmpty)) ...[
                       Wrap(
                         spacing: 8,
                         runSpacing: 4,
@@ -1050,7 +1063,10 @@ class _BannerSlide extends StatelessWidget {
                           if (slide.tag != null && slide.tag!.isNotEmpty)
                             _buildPillTag(slide.tag!, AppColors.accent),
                           if (slide.type != null && slide.type!.isNotEmpty)
-                            _buildPillTag(slide.type!, Colors.white.withOpacity(0.15)),
+                            _buildPillTag(
+                              slide.type!,
+                              Colors.white.withOpacity(0.15),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -1103,8 +1119,13 @@ class _BannerSlide extends StatelessWidget {
                           backgroundColor: AppColors.actionBlue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          minimumSize: const Size(0, 36), // Ensure it stays compact
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          minimumSize: const Size(
+                            0,
+                            36,
+                          ), // Ensure it stays compact
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -1237,10 +1258,7 @@ class _WhyChooseUs extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 10),
@@ -1339,7 +1357,11 @@ class _FeaturedRecipe extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.timer_outlined, color: Colors.white70, size: 14),
+                const Icon(
+                  Icons.timer_outlined,
+                  color: Colors.white70,
+                  size: 14,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   tr(context, 'recipe_time'),
@@ -1347,7 +1369,10 @@ class _FeaturedRecipe extends StatelessWidget {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -1392,7 +1417,7 @@ class _UserReviews extends StatelessWidget {
         Consumer<OrderController>(
           builder: (context, controller, _) {
             final reviews = controller.homeReviews;
-            
+
             if (controller.isLoading && reviews.isEmpty) {
               return const SizedBox(
                 height: 180,
@@ -1408,7 +1433,10 @@ class _UserReviews extends StatelessWidget {
               height: 200, // Slightly taller to account for product badge
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: min(reviews.length, 10), // Show up to 10 latest reviews
+                itemCount: min(
+                  reviews.length,
+                  10,
+                ), // Show up to 10 latest reviews
                 padding: EdgeInsets.zero,
                 clipBehavior: Clip.none,
                 itemBuilder: (context, index) {
@@ -1423,7 +1451,11 @@ class _UserReviews extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewCard(BuildContext context, ReviewModel review, ThemeData theme) {
+  Widget _buildReviewCard(
+    BuildContext context,
+    ReviewModel review,
+    ThemeData theme,
+  ) {
     return Container(
       width: 300,
       margin: const EdgeInsets.only(right: 16),
@@ -1456,11 +1488,15 @@ class _UserReviews extends StatelessWidget {
                 );
               }),
               const Spacer(),
-              const Icon(Icons.format_quote_rounded, color: Color(0xFFE0E0E0), size: 28),
+              const Icon(
+                Icons.format_quote_rounded,
+                color: Color(0xFFE0E0E0),
+                size: 28,
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          
+
           // Comment
           Expanded(
             child: Text(
@@ -1475,7 +1511,7 @@ class _UserReviews extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Product Badge
           if (review.productName != null) ...[
             const SizedBox(height: 10),
@@ -1488,7 +1524,11 @@ class _UserReviews extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.shopping_bag_outlined, size: 10, color: AppColors.actionBlue.withOpacity(0.7)),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 10,
+                    color: AppColors.actionBlue.withOpacity(0.7),
+                  ),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
@@ -1506,9 +1546,9 @@ class _UserReviews extends StatelessWidget {
               ),
             ),
           ],
-          
+
           const SizedBox(height: 16),
-          
+
           // User Info
           Row(
             children: [
@@ -1526,7 +1566,9 @@ class _UserReviews extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    review.userName.isNotEmpty ? review.userName[0].toUpperCase() : 'U',
+                    review.userName.isNotEmpty
+                        ? review.userName[0].toUpperCase()
+                        : 'U',
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 14,
@@ -1541,7 +1583,9 @@ class _UserReviews extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review.userName.isNotEmpty ? review.userName : 'Anonymous',
+                      review.userName.isNotEmpty
+                          ? review.userName
+                          : 'Anonymous',
                       style: TextStyle(
                         color: theme.colorScheme.onSurface,
                         fontSize: 13,
@@ -1551,8 +1595,11 @@ class _UserReviews extends StatelessWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Icon(Icons.verified_user, 
-                             color: Colors.green.shade600, size: 11),
+                        Icon(
+                          Icons.verified_user,
+                          color: Colors.green.shade600,
+                          size: 11,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           tr(context, 'verified_customer'),
@@ -1622,7 +1669,7 @@ class _HomeStatsBar extends StatelessWidget {
               _buildStatItem('98%', tr(context, 'stat_ontime_delivery')),
             ],
           );
-        }
+        },
       ),
     );
   }
@@ -1746,10 +1793,7 @@ class _GuestPromptOverlayState extends State<_GuestPromptOverlay>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1.5),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     // Auto-dismiss after 8 seconds
     Future.delayed(const Duration(seconds: 8), () {
@@ -1867,9 +1911,11 @@ class _GuestPromptOverlayState extends State<_GuestPromptOverlay>
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    icon: Icon(Icons.close, 
-                         color: theme.colorScheme.onSurface.withOpacity(0.3),
-                         size: 16),
+                    icon: Icon(
+                      Icons.close,
+                      color: theme.colorScheme.onSurface.withOpacity(0.3),
+                      size: 16,
+                    ),
                     onPressed: _handleDismiss,
                   ),
                 ],
@@ -1881,5 +1927,3 @@ class _GuestPromptOverlayState extends State<_GuestPromptOverlay>
     );
   }
 }
-
-

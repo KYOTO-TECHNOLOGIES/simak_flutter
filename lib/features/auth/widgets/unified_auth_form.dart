@@ -232,37 +232,48 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
         const SizedBox(height: 24),
 
         // ─── Google Sign In (Website Style) ───────────────────────
-        SizedBox(
-          height: 54,
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: theme.dividerColor),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
-                  height: 20,
-                  width: 20,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 24),
+        Consumer<AuthController>(
+          builder: (context, auth, _) {
+            return SizedBox(
+              height: 54,
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: auth.isLoading ? null : () async {
+                  final success = await auth.signInWithGoogle();
+                  if (success && mounted) {
+                    Navigator.of(context).pushReplacementNamed('/home');
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: theme.dividerColor),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  tr(context, 'google_sign_in'),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.8),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    letterSpacing: 0.5,
+                child: auth.isLoading && auth.errorMessage == null 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.network(
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
+                        height: 20,
+                        width: 20,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        tr(context, 'google_sign_in'),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withOpacity(0.8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ],
     );

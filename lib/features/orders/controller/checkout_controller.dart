@@ -6,8 +6,9 @@ import 'package:uae_ecom_project/features/payment/service/payment_service.dart';
 import 'package:uae_ecom_project/features/payment/model/payment_model.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/orders/model/coupon_model.dart';
+import 'package:uae_ecom_project/features/orders/model/delivery_slot_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 
 enum CheckoutStep { address, summary, payment }
 
@@ -67,15 +68,33 @@ class CheckoutController extends ChangeNotifier {
     super.dispose();
   }
 
+  DateTime? _minDeliveryDate;
+  DateTime? get minDeliveryDate => _minDeliveryDate;
+
+  int? _maxDeliveryDays;
+  int? get maxDeliveryDays => _maxDeliveryDays;
+
   // Delivery Preferences
   DateTime? _deliveryDate;
   DateTime? get deliveryDate => _deliveryDate;
 
-  String? _deliverySlot;
-  String? get deliverySlot => _deliverySlot;
+  int? _deliverySlotId;
+  int? get deliverySlotId => _deliverySlotId;
+
+  String? _deliverySlotName;
+  String? get deliverySlotName => _deliverySlotName;
 
   String? _deliveryNotes;
   String? get deliveryNotes => _deliveryNotes;
+
+  List<DeliverySlotModel> _availableSlots = [];
+  List<DeliverySlotModel> get availableSlots => _availableSlots;
+
+  bool _isLoadingSlots = false;
+  bool get isLoadingSlots => _isLoadingSlots;
+
+  ProductModel? _currentProduct;
+  int? _currentQuantity;
 
   // Payment & Tipping
   String _paymentMethod = 'Online Payment (Telr)'; 
@@ -86,6 +105,9 @@ class CheckoutController extends ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  bool _isLoadingDelivery = false;
+  bool get isLoadingDelivery => _isLoadingDelivery;
 
   String? _error;
   String? get error => _error;
@@ -99,6 +121,7 @@ class CheckoutController extends ChangeNotifier {
 
   Map<String, dynamic>? _summaryData;
   Map<String, dynamic>? get summaryData => _summaryData;
+
 
   List<CouponModel> _availableCoupons = [];
   List<CouponModel> get availableCoupons => _availableCoupons;
@@ -116,6 +139,8 @@ class CheckoutController extends ChangeNotifier {
   double get summaryTotal => double.tryParse(_summaryData?['final_total']?.toString() ?? '0') ?? 0.0;
   
   bool get hasSummary => _summaryData != null;
+
+  get deliverySlot => null;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -158,11 +183,20 @@ class CheckoutController extends ChangeNotifier {
     _selectedAddressId = addressId;
     _error = null;
     notifyListeners();
+    // Re-fetch delivery estimation when address changes
+    fetchEstimatedDelivery(product: _currentProduct, quantity: _currentQuantity);
   }
 
-  void setDeliveryPreferences({DateTime? date, String? slot, String? notes}) {
-    if (date != null) _deliveryDate = date;
-    if (slot != null) _deliverySlot = slot;
+  void setDeliveryPreferences({DateTime? date, int? slotId, String? slotName, String? notes}) {
+    if (date != null) {
+      _deliveryDate = date;
+      // When date changes, reset slot and fetch new ones
+      _deliverySlotId = null;
+      _deliverySlotName = null;
+      fetchAvailableSlots(date);
+    }
+    if (slotId != null) _deliverySlotId = slotId;
+    if (slotName != null) _deliverySlotName = slotName;
     if (notes != null) _deliveryNotes = notes;
     notifyListeners();
   }
@@ -221,6 +255,71 @@ class CheckoutController extends ChangeNotifier {
       return false;
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchEstimatedDelivery({
+    ProductModel? product,
+    int? quantity,
+  }) async {
+    // Store context for address changes
+    _currentProduct = product;
+    _currentQuantity = quantity;
+    
+    _isLoadingDelivery = true;
+    notifyListeners();
+    try {
+      dynamic finalAddressId = _selectedAddressId;
+      if (_selectedAddressId != null && RegExp(r'^\d+$').hasMatch(_selectedAddressId!)) {
+        finalAddressId = int.parse(_selectedAddressId!);
+      }
+
+      final response = await _service.getDeliveryEstimate(
+        addressId: finalAddressId,
+        productId: (product != null && product.id != 0) ? product.id : null,
+        quantity: (product != null && product.id != 0) ? quantity : null,
+      );
+      
+      if (response.containsKey('estimated_delivery_date') && response['estimated_delivery_date'] != null) {
+        final parsedDate = DateTime.parse(response['estimated_delivery_date']);
+        // Strip time component
+        _minDeliveryDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+        
+        // AUTO-SELECT: If no date is selected yet, or selected date is before min, auto-pick it
+        if (_deliveryDate == null || _deliveryDate!.isBefore(_minDeliveryDate!)) {
+          _deliveryDate = _minDeliveryDate;
+          _deliverySlotId = null;
+          _deliverySlotName = null;
+          // Fetch slots for the newly auto-selected date
+          fetchAvailableSlots(_deliveryDate!);
+        }
+        _maxDeliveryDays = response['max_delivery_days'];
+      }
+    } catch (e) {
+      debugPrint('Error fetching estimate: $e');
+    } finally {
+      _isLoadingDelivery = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAvailableSlots(DateTime date) async {
+    _isLoadingSlots = true;
+    _availableSlots = [];
+    notifyListeners();
+    try {
+      final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final response = await _service.getAvailableSlots(dateStr);
+      
+      if (response.containsKey('available_slots')) {
+        final List<dynamic> slotsJson = response['available_slots'];
+        _availableSlots = slotsJson.map((e) => DeliverySlotModel.fromJson(e)).toList();
+      }
+    } catch (e) {
+      debugPrint('Error fetching slots: $e');
+    } finally {
+      _isLoadingSlots = false;
       notifyListeners();
     }
   }
@@ -297,21 +396,16 @@ class CheckoutController extends ChangeNotifier {
         productId: (product != null && product.id != 0) ? product.id : null,
         quantity: (product != null && product.id != 0) ? quantity : null,
         paymentMethod: _paymentMethod,
-        deliveryDate: _deliveryDate?.toIso8601String().split('T').first, // Format as YYYY-MM-DD
-        deliverySlot: _deliverySlot,
+        deliveryDate: _deliveryDate?.toIso8601String().split('T').first,
+        deliverySlotId: _deliverySlotId,
         deliveryNotes: _deliveryNotes,
         tipAmount: _tipAmount,
         couponCode: _isCouponValid ? _couponCode : null,
       );
 
-      // Handle TELR/Ziina redirection
+      // Payment redirection will be handled by the UI
       if (response.containsKey('payment_url') && response['payment_url'] != null) {
-        final url = Uri.parse(response['payment_url']);
-        // Use inAppBrowserView for a more integrated experience inside the app
-        await launchUrl(
-          url, 
-          mode: LaunchMode.inAppBrowserView,
-        );
+        debugPrint('CheckoutController: payment_url found, delegating to UI');
       }
 
       // Store order info for tracking
@@ -343,7 +437,9 @@ class CheckoutController extends ChangeNotifier {
     _currentStep = CheckoutStep.address;
     _selectedAddressId = null;
     _deliveryDate = null;
-    _deliverySlot = null;
+    _deliverySlotId = null;
+    _deliverySlotName = null;
+    _availableSlots = [];
     _deliveryNotes = null;
     _tipAmount = 0.0;
     _paymentMethod = 'Online Payment (Telr)';
@@ -353,7 +449,10 @@ class CheckoutController extends ChangeNotifier {
     _isCouponValid = false;
     _summaryData = null;
     _lastOrderId = null;
-    _lastPayment = null;
+    _minDeliveryDate = null;
+    _maxDeliveryDays = null;
+    _currentProduct = null;
+    _currentQuantity = null;
     notifyListeners();
   }
 }

@@ -11,4 +11,7 @@ class Env {
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
   static const String userKey = 'user_data';
+  
+  /// Google Client ID for Android/Web authentication (Use Web Client ID for mobile idToken).
+  static const String googleClientId = '850588370229-jtaul330kpqmi0m239itt4jrodshko78.apps.googleusercontent.com';
 }

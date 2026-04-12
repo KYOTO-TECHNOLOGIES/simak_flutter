@@ -2069,8 +2069,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         context,
                                         '/order',
                                         arguments: {
-                                          'product': ProductModel.empty(),
-                                          'quantity': 0,
+                                          'isCartMode': true,
+                                          'product': widget.product,
+                                          'quantity': _quantity,
                                         },
                                       );
                                     } else if (mounted) {

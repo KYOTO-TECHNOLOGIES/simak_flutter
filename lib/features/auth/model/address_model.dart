@@ -27,7 +27,12 @@ class AddressModel {
     this.country = 'AE',
     this.landmark,
     this.isDefault = false,
+    this.latitude,
+    this.longitude,
   });
+
+  final double? latitude;
+  final double? longitude;
 
   // Keep old getters for backward compatibility if possible, or update usages
   String? get name => (firstName != null || lastName != null) 
@@ -61,6 +66,8 @@ class AddressModel {
       country: json['country'] as String? ?? 'AE',
       landmark: json['landmark'] as String?,
       isDefault: json['is_default'] as bool? ?? false,
+      latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+      longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
     );
   }
 
@@ -80,6 +87,8 @@ class AddressModel {
       'emirate': _getEmirateCode(state), // Updated to use lowercase keys
       'country': 'AE', // Fix: Ensure <= 2 characters
       'is_default': isDefault,
+      'latitude': latitude,
+      'longitude': longitude,
     };
     if (landmark != null && landmark!.isNotEmpty) data['landmark'] = landmark;
     if (id != null) data['id'] = id;

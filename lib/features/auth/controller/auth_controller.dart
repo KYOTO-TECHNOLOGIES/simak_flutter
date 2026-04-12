@@ -7,10 +7,17 @@ import 'package:uae_ecom_project/features/auth/model/register_model.dart';
 import 'package:uae_ecom_project/features/auth/model/user_model.dart';
 import 'package:uae_ecom_project/features/auth/service/auth_service.dart';
 import 'package:uae_ecom_project/service/token_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:uae_ecom_project/core/config/env.dart';
 
 class AuthController extends ChangeNotifier {
   final AuthService _authService = AuthService();
   final TokenStorage _tokenStorage = TokenStorage();
+  
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: Env.googleClientId,
+    scopes: ['email', 'profile'],
+  );
 
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -374,12 +381,83 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  // ─── Google Auth ────────────────────────────────────────────
-  Future<bool> googleLogin(String idToken) async {
+  // ─── Google Auth (Higher Level) ─────────────────────────────
+  Future<bool> signInWithGoogle() async {
     _setLoading(true);
     _setError(null);
     try {
-      final response = await _authService.googleAuth(idToken);
+      // Step 1: Trigger Google Sign In
+      debugPrint('--- signInWithGoogle: Starting flow ---');
+      final GoogleSignInAccount? account = await _googleSignIn.signIn();
+      
+      if (account == null) {
+        debugPrint('--- signInWithGoogle: User cancelled ---');
+        _setLoading(false);
+        return false;
+      }
+
+      // Capture name/email from Google account as fallback/display
+      debugPrint('--- signInWithGoogle: Account retrieved ---');
+      debugPrint('Email: ${account.email}');
+      debugPrint('Display Name: ${account.displayName}');
+      
+      // Step 2: Retrieve Authentication (idToken)
+      final GoogleSignInAuthentication auth = await account.authentication;
+      final String? idToken = auth.idToken;
+      
+      if (idToken == null) {
+        debugPrint('--- signInWithGoogle: Failed to get idToken ---');
+        _setError('Failed to retrieve authentication token from Google.');
+        _setLoading(false);
+        return false;
+      }
+      
+      debugPrint('--- signInWithGoogle: idToken retrieved, authenticating with backend ---');
+      
+      // Step 3: Authenticate with Backend
+      final success = await googleLogin(idToken);
+      
+      if (success && _currentUser != null) {
+        // Step 4: Sync Profile Data (If missing)
+        // If the backend user doesn't have a name yet, sync it from the Google account
+        final bool noFirstName = _currentUser!.firstName.trim().isEmpty;
+        final bool noLastName = _currentUser!.lastName.trim().isEmpty;
+        
+        if ((noFirstName || noLastName) && account.displayName != null) {
+          debugPrint('--- signInWithGoogle: Syncing name from Google to backend ---');
+          final nameParts = account.displayName!.split(' ');
+          final String firstName = nameParts.length > 1 ? nameParts.sublist(0, nameParts.length - 1).join(' ') : account.displayName!;
+          final String lastName = nameParts.length > 1 ? nameParts.last : '';
+          
+          await updateProfile({
+            'first_name': firstName,
+            'last_name': lastName,
+          });
+        }
+      }
+      
+      if (!success) {
+        debugPrint('--- signInWithGoogle: Backend authentication failed ---');
+        // Sign out from Google to allow the user to select another account on next try
+        await _googleSignIn.signOut();
+      }
+
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      debugPrint('--- signInWithGoogle: Error: $e ---');
+      _setError('Google Sign-In failed: $e');
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  // ─── Google Auth (Backend Logic) ────────────────────────────
+  Future<bool> googleLogin(String code) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      final response = await _authService.googleAuth(code);
       await _handleAuthResponse(response);
       _setLoading(false);
       return true;

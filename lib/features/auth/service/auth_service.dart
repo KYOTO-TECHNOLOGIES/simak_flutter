@@ -46,10 +46,10 @@ class AuthService {
   }
 
   // ─── Google Auth ────────────────────────────────────────────
-  Future<AuthResponse> googleAuth(String idToken) async {
+  Future<AuthResponse> googleAuth(String token) async {
     final response = await _dio.post(
-      'auth/google/',
-      data: {'token': idToken},
+      'auth/google/callback/',
+      data: {'code': token},
     );
     return AuthResponse.fromJson(response.data as Map<String, dynamic>);
   }

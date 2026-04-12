@@ -3,6 +3,7 @@ import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/language_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
+import 'package:uae_ecom_project/features/auth/controller/system_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -97,6 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (mounted) {
       final auth = context.read<AuthController>();
+      
       if (auth.isLoggedIn) {
         Navigator.of(context).pushReplacementNamed('/home');
       } else {
@@ -151,8 +153,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: const Center(
                       child: Image(
                         image: AssetImage('assets/images/home_logo.png'),
-                        width: 120,
-                        height: 120,
+                        width: 80,
+                        height: 80,
                         fit: BoxFit.contain,
                       ),
                     ),

@@ -9,7 +9,7 @@ import 'package:uae_ecom_project/features/orders/controller/checkout_controller.
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/model/user_model.dart';
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
-import 'package:uae_ecom_project/features/auth/screens/map_location_picker_screen.dart';
+import 'package:uae_ecom_project/features/auth/widgets/google_map_picker.dart';
 
 class AddAddressDialog extends StatefulWidget {
   const AddAddressDialog({super.key});
@@ -31,6 +31,8 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
   final _cityController = TextEditingController();
   String _emirate = 'Dubai';
   bool _isDefault = false;
+  double? _lat;
+  double? _lng;
 
   String _selectedCountryCode = '+971';
   String _selectedCountryName = 'UAE';
@@ -153,88 +155,40 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
               ),
               const SizedBox(height: 20),
               
-              // Add location on map button - More prominent
-              InkWell(
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MapLocationPickerScreen()),
-                  );
-                  
-                  if (result != null && result is Map<String, String>) {
-                    setState(() {
-                      if (result['building']?.isNotEmpty == true) {
-                        _buildingController.text = result['building']!;
+              const SizedBox(height: 0),
+              
+              // Google Map Picker
+              _buildLabel(tr(context, 'address_location_on_map')),
+              GoogleMapPicker(
+                onSelect: (result) {
+                  setState(() {
+                    _lat = result.lat;
+                    _lng = result.lng;
+                    
+                    if (result.street != null) {
+                      _streetController.text = result.street!;
+                    }
+                    if (result.area != null) {
+                      _areaController.text = result.area!;
+                    }
+                    if (result.city != null) {
+                      _cityController.text = result.city!;
+                    }
+                    
+                    // Only update emirate if it's in our allowed list to avoid Dropdown errors
+                    if (result.emirate != null) {
+                      final suggestedEmirate = result.emirate!;
+                      final validEmirate = _emirates.firstWhere(
+                        (e) => e.toLowerCase() == suggestedEmirate.toLowerCase() || 
+                               suggestedEmirate.toLowerCase().contains(e.toLowerCase()),
+                        orElse: () => '',
+                      );
+                      if (validEmirate.isNotEmpty) {
+                        _emirate = validEmirate;
                       }
-                      if (result['street']?.isNotEmpty == true) {
-                        _streetController.text = result['street']!;
-                      }
-                      if (result['area']?.isNotEmpty == true) {
-                        _areaController.text = result['area']!;
-                      }
-                      if (result['city']?.isNotEmpty == true) {
-                        _cityController.text = result['city']!;
-                      }
-                      
-                      // Match emirate if possible
-                      final mapEmirate = result['emirate'];
-                      if (mapEmirate != null) {
-                        for (final emirate in _emirates) {
-                          if (mapEmirate.toLowerCase().contains(emirate.toLowerCase())) {
-                            _emirate = emirate;
-                            break;
-                          }
-                        }
-                      }
-                    });
-                  }
+                    }
+                  });
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.15)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.map_rounded, color: AppColors.primary, size: 18),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tr(context, 'add_location_on_map'),
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Pin your location for accurate delivery',
-                              style: TextStyle(
-                                color: AppColors.primary.withOpacity(0.5),
-                                fontSize: 10,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios, color: AppColors.primary, size: 12),
-                    ],
-                  ),
-                ),
               ),
               const SizedBox(height: 24),
 
@@ -649,6 +603,8 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
         postalCode: '00000',
         country: 'UAE',
         isDefault: _isDefault,
+        latitude: _lat,
+        longitude: _lng,
       );
 
       final addressController = context.read<AddressController>();

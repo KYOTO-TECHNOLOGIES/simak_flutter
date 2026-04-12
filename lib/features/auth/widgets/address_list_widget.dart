@@ -184,7 +184,7 @@ class AddressListWidget extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (!isSelected)
+                    if (!isSelected && address.id != null)
                       IconButton(
                         onPressed: () => addressController.deleteAddress(address.id!),
                         icon: Icon(Icons.delete_outline, color: Colors.grey.shade400, size: 20),

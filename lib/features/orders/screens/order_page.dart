@@ -11,6 +11,7 @@ import 'package:uae_ecom_project/features/auth/widgets/address_list_widget.dart'
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
+import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
 
 class OrderPage extends StatefulWidget {
   final ProductModel product;
@@ -48,9 +49,20 @@ class _OrderPageState extends State<OrderPage> {
       
       // Auto-select default address if available
       final addressController = context.read<AddressController>();
-      if (addressController.selectedAddress != null) {
+      if (addressController.selectedAddress != null && addressController.selectedAddress!.id != null) {
         checkout.selectAddress(addressController.selectedAddress!.id!);
       }
+
+      // Fetch estimated delivery
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final displayProduct = args?['product'] as ProductModel? ?? widget.product;
+      final displayQuantity = args?['quantity'] as int? ?? widget.quantity;
+      final isCartMode = args?['isCartMode'] as bool? ?? (displayProduct.id == 0);
+
+      checkout.fetchEstimatedDelivery(
+        product: isCartMode ? null : displayProduct,
+        quantity: isCartMode ? null : displayQuantity,
+      );
     });
   }
 
@@ -63,7 +75,7 @@ class _OrderPageState extends State<OrderPage> {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final displayProduct = args?['product'] as ProductModel? ?? widget.product;
     final displayQuantity = args?['quantity'] as int? ?? widget.quantity;
-    final isCartMode = displayProduct.id == 0;
+    final isCartMode = args?['isCartMode'] as bool? ?? (displayProduct.id == 0);
     final cartController = context.watch<CartController>();
 
     final theme = Theme.of(context);
@@ -293,7 +305,7 @@ class _OrderPageState extends State<OrderPage> {
                     Text('${selectedAddr.addressLine1}', style: const TextStyle(fontWeight: FontWeight.w500)),
                     if (selectedAddr.addressLine2 != null && selectedAddr.addressLine2!.isNotEmpty)
                       Text('${selectedAddr.addressLine2}', style: TextStyle(color: Colors.grey[600])),
-                    if (selectedAddr.landmark != null && selectedAddr.addressLine2!.isNotEmpty)
+                    if (selectedAddr.landmark != null && selectedAddr.landmark!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text('${tr(context, 'landmark')}: ${selectedAddr.landmark}', style: TextStyle(color: Colors.grey[500], fontSize: 12, fontStyle: FontStyle.italic)),
@@ -437,37 +449,51 @@ class _OrderPageState extends State<OrderPage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.local_shipping_outlined, size: 18, color: Colors.orange),
+                    const Icon(Icons.calendar_today_outlined, color: Colors.orange, size: 20),
                     const SizedBox(width: 8),
-                    Text(
-                      tr(context, 'checkout_estimated_delivery_window').toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 12, 
-                        fontWeight: FontWeight.w900, 
-                        color: Color(0xFFCC8400),
-                        letterSpacing: 0.5,
+                    Expanded(
+                      child: Text(
+                        tr(context, 'checkout_estimated_delivery_window').toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                          letterSpacing: 0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  tr(context, 'checkout_delivery_time_0_days'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
+                if (checkout.isLoadingDelivery)
+                  const Text(
+                    'Calculating...',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black),
+                  )
+                else if (checkout.minDeliveryDate != null) ...[
+                  Text(
+                    '${checkout.maxDeliveryDays ?? 0} days delivery time',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  tr(context, 'checkout_delivery_min_date_tomorrow'),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.orange,
-                    fontWeight: FontWeight.w500,
+                  const SizedBox(height: 4),
+                  Text(
+                    'Minimum delivery date is in ${checkout.minDeliveryDate!.difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)).inDays} days',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                ] else
+                  Text(
+                    tr(context, 'checkout_delivery_min_date_tomorrow'),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black),
+                  ),
               ],
             ),
           ),
@@ -491,11 +517,20 @@ class _OrderPageState extends State<OrderPage> {
                     const SizedBox(height: 4),
                     InkWell(
                       onTap: () async {
+                        final now = DateTime.now();
+                        final minDate = checkout.minDeliveryDate ?? DateTime(now.year, now.month, now.day + 1);
+                        
+                        // Ensure initial date is safe
+                        DateTime initialDate = minDate;
+                        if (checkout.deliveryDate != null && !checkout.deliveryDate!.isBefore(minDate)) {
+                          initialDate = checkout.deliveryDate!;
+                        }
+
                         final date = await showDatePicker(
                           context: context,
-                          initialDate: DateTime.now().add(const Duration(days: 1)),
-                          firstDate: DateTime.now().add(const Duration(days: 1)),
-                          lastDate: DateTime.now().add(const Duration(days: 7)),
+                          initialDate: initialDate,
+                          firstDate: minDate,
+                          lastDate: minDate.add(Duration(days: checkout.maxDeliveryDays ?? 7)),
                         );
                         if (date != null) checkout.setDeliveryPreferences(date: date);
                       },
@@ -511,9 +546,12 @@ class _OrderPageState extends State<OrderPage> {
                             Expanded(
                               child: Text(
                                 checkout.deliveryDate == null 
-                                  ? 'dd - mm - yyyy' 
-                                  : '${checkout.deliveryDate!.day} - ${checkout.deliveryDate!.month} - ${checkout.deliveryDate!.year}',
-                                style: TextStyle(color: checkout.deliveryDate == null ? Colors.grey : Colors.black),
+                                  ? 'Pick a date' 
+                                  : '${checkout.deliveryDate!.day.toString().padLeft(2, '0')} / ${checkout.deliveryDate!.month.toString().padLeft(2, '0')} / ${checkout.deliveryDate!.year}',
+                                style: TextStyle(
+                                  color: checkout.deliveryDate == null ? Colors.grey : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
@@ -543,24 +581,26 @@ class _OrderPageState extends State<OrderPage> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade200),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        underline: const SizedBox(),
-                        value: checkout.deliverySlot,
-                        hint: Text(tr(context, 'checkout_select_slot'), style: const TextStyle(fontSize: 14)),
-                        items: [
-                          tr(context, 'checkout_slot_morning'), 
-                          tr(context, 'checkout_slot_afternoon'), 
-                          tr(context, 'checkout_slot_evening')
-                        ]
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 12))))
-                            .toList(),
-                        onChanged: (v) => checkout.setDeliveryPreferences(slot: v),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              checkout.deliverySlotName ?? tr(context, 'checkout_select_slot'),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: checkout.deliverySlotName == null ? Colors.grey : Colors.black,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                        ],
                       ),
                     ),
                   ],
@@ -568,6 +608,91 @@ class _OrderPageState extends State<OrderPage> {
               ),
             ],
           ),
+          
+          if (checkout.deliveryDate != null) ...[
+            const SizedBox(height: 16),
+            if (checkout.isLoadingSlots)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (checkout.availableSlots.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.1)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.red, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'No delivery slots available for this date. Please select another date.',
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: checkout.availableSlots.map((slot) {
+                  final isSelected = checkout.deliverySlotId == slot.id;
+                  return InkWell(
+                    onTap: () {
+                      checkout.setDeliveryPreferences(
+                        slotId: slot.id,
+                        slotName: slot.name,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                        ),
+                        boxShadow: isSelected ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
+                        ] : null,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            slot.name,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            '${slot.startTimeDisplay} - ${slot.endTimeDisplay}',
+                            style: TextStyle(
+                              color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+          ],
           const SizedBox(height: 24),
           Text(tr(context, 'checkout_delivery_notes').toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
           const SizedBox(height: 4),
@@ -1009,7 +1134,7 @@ class _OrderPageState extends State<OrderPage> {
         );
         return;
       }
-      if (checkout.deliveryDate == null || checkout.deliverySlot == null) {
+      if (checkout.deliveryDate == null || checkout.deliverySlotId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select preferred date and delivery slot'), backgroundColor: AppColors.error),
         );
@@ -1022,7 +1147,20 @@ class _OrderPageState extends State<OrderPage> {
       final orderData = await checkout.placeOrder(product: product, quantity: quantity);
       if (orderData != null) {
         if (mounted) {
-          // If payment was triggered, we can start polling for final confirmation
+          // If payment was triggered, show integrated WebView
+          if (orderData.containsKey('payment_url') && orderData['payment_url'] != null) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PaymentWebViewScreen(
+                  url: orderData['payment_url'],
+                  title: tr(context, 'secure_payment'),
+                ),
+              ),
+            );
+          }
+
+          // After payment is complete (or if COD/Direct), perform cleanup and close
           checkout.startPaymentStatusPolling();
           
           // Refresh orders list
@@ -1032,7 +1170,6 @@ class _OrderPageState extends State<OrderPage> {
           checkout.reset();
           context.read<CartController>().clearCart();
           
-          // After the in-app browser is closed (placeOrder completes), redirect to home
           Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
         }
       } else {

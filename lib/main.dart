@@ -23,12 +23,16 @@ import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/core/localization/language_selection_screen.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/orders/screens/order_success_screen.dart';
+import 'package:uae_ecom_project/features/orders/screens/order_pending_screen.dart';
+import 'package:uae_ecom_project/features/orders/screens/payment_failed_screen.dart';
+import 'package:uae_ecom_project/features/orders/screens/payment_success_screen.dart';
 import 'package:uae_ecom_project/features/auth/controller/address_controller.dart';
 import 'package:uae_ecom_project/features/marketing/controller/marketing_controller.dart';
 import 'package:uae_ecom_project/core/network/connectivity_provider.dart';
 import 'package:uae_ecom_project/core/error/no_internet_screen.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 import 'package:uae_ecom_project/features/emirate/screens/emirate_selection_screen.dart';
+import 'package:uae_ecom_project/features/auth/controller/system_controller.dart';
 
 import 'package:uae_ecom_project/core/error/error_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -90,6 +94,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => MarketingController()),
         ChangeNotifierProvider(create: (_) => EmirateController()..init()),
+        ChangeNotifierProvider(create: (_) => SystemController()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, langProvider, child) {
@@ -123,6 +128,18 @@ class _MyAppState extends State<MyApp> {
               '/order-success': (context) {
                 final orderData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
                 return OrderSuccessScreen(orderData: orderData);
+              },
+              '/order-pending': (context) {
+                final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+                return OrderPendingScreen(orderId: orderId);
+              },
+              '/payment-failed': (context) {
+                final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+                return PaymentFailedScreen(orderId: orderId);
+              },
+              '/payment-success': (context) {
+                final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+                return PaymentSuccessScreen(orderId: orderId);
               },
               '/error': (_) => const ErrorScreen(),
             },

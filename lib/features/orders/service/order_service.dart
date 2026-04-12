@@ -11,7 +11,7 @@ class OrderService {
     int? quantity,
     required String paymentMethod,
     String? deliveryDate,
-    String? deliverySlot,
+    int? deliverySlotId,
     String? deliveryNotes,
     double tipAmount = 0.0,
     String? couponCode,
@@ -22,7 +22,7 @@ class OrderService {
         'address_id': addressId,
         'payment_method': paymentMethod,
         'preferred_delivery_date': deliveryDate,
-        'preferred_delivery_slot': deliverySlot,
+        'preferred_delivery_slot': deliverySlotId,
         'delivery_notes': deliveryNotes,
         'tip_amount': tipAmount,
         if (couponCode != null) 'coupon_code': couponCode,
@@ -127,5 +127,31 @@ class OrderService {
         'comment': comment,
       },
     );
+  }
+
+  /// Fetches the earliest available delivery date based on product/address.
+  Future<Map<String, dynamic>> getDeliveryEstimate({
+    dynamic addressId,
+    int? productId,
+    int? quantity,
+  }) async {
+    final response = await _dio.get(
+      'orders/estimate_delivery/',
+      queryParameters: {
+        if (addressId != null) 'address': addressId,
+        if (productId != null) 'product_id': productId,
+        if (quantity != null) 'quantity': quantity,
+      },
+    );
+    return response.data;
+  }
+
+  /// Fetches available timeslots for a specific date.
+  Future<Map<String, dynamic>> getAvailableSlots(String date) async {
+    final response = await _dio.get(
+      'orders/delivery-slots/available/',
+      queryParameters: {'date': date},
+    );
+    return response.data;
   }
 }

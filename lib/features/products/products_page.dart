@@ -111,11 +111,13 @@ class _ProductsPageState extends State<ProductsPage>
                 )
               else ...[
                 // ─── Trending Section ──────────────────────────────
-                if (controller.trendingProducts.isNotEmpty)
+                if (controller.selectedCategory == 'All' && 
+                    controller.trendingProducts.isNotEmpty)
                   _buildTrendingSection(theme, controller),
 
                 // ─── On Sale Section ───────────────────────────────
-                if (controller.onSaleProducts.isNotEmpty)
+                if (controller.selectedCategory == 'All' && 
+                    controller.onSaleProducts.isNotEmpty)
                   _buildOnSaleSection(theme, controller),
 
                 // ─── All Products Header ───────────────────────────

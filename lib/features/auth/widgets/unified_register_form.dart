@@ -141,9 +141,9 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
         // ─── Names ────────────────────────────────────────────────
         Row(
           children: [
-            Expanded(child: _buildInputField(theme, _firstNameController, 'first_name_label', 'first_name_hint')),
+            Expanded(child: _buildInputField(theme, _firstNameController, 'register_first_name_label', 'first_name_hint')),
             const SizedBox(width: 16),
-            Expanded(child: _buildInputField(theme, _lastNameController, 'last_name_label', 'last_name_hint')),
+            Expanded(child: _buildInputField(theme, _lastNameController, 'register_last_name_label', 'last_name_hint')),
           ],
         ),
         const SizedBox(height: 24),

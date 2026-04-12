@@ -49,5 +49,11 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>We need your location to help you select a delivery address on the map.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>We need your location to help you select a delivery address on the map.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>We need your location to help you select a delivery address on the map.</string>
 	</dict>
 </plist>
