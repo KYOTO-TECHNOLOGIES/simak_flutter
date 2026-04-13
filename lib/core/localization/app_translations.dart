@@ -294,6 +294,7 @@ final Map<String, Map<String, String>> _translations = {
 
     // ── Product Detail Screen ────────────────────────────────
     'out_of_stock': 'Out of Stock',
+    'low_stock': 'Low Stock: {count} left',
     'in_stock': 'In Stock',
     'quantity': 'Quantity',
     'free_delivery': 'Free\nDelivery',
@@ -898,6 +899,7 @@ final Map<String, Map<String, String>> _translations = {
     'passwords_no_match': '密码不匹配',
     'create_account_btn': '创建账户',
     'out_of_stock': '缺货',
+    'low_stock': '低库存: 仅剩 {count} 件',
     'in_stock': '有货',
     'quantity': '数量',
     'free_delivery': '免费\n配送',
@@ -1577,6 +1579,7 @@ final Map<String, Map<String, String>> _translations = {
 
     // ── Product Detail Screen ────────────────────────────────
     'out_of_stock': 'غير متوفر',
+    'low_stock': 'مخزون منخفض: تبقى {count}',
     'in_stock': 'متوفر',
     'quantity': 'الكمية',
     'free_delivery': 'توصيل\nمجاني',

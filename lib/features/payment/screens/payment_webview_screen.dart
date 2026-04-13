@@ -36,19 +36,6 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
             setState(() {
               _isLoading = false;
             });
-            // Dynamic check for success/failure in URL
-            // Many gateways redirect to a success page after completion
-            if (url.contains('success') || url.contains('completed') || url.contains('thank-you')) {
-              // Give the user a moment to see the success message on the web page if needed
-              // or just pop back to the app success screen
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted) Navigator.of(context).pop(true);
-              });
-            } else if (url.contains('fail') || url.contains('error') || url.contains('cancel')) {
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted) Navigator.of(context).pop(false);
-              });
-            }
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint('Web Resource Error: ${error.description}');

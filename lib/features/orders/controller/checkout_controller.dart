@@ -391,6 +391,11 @@ class CheckoutController extends ChangeNotifier {
         finalAddressId = int.parse(_selectedAddressId!);
       }
 
+      // Generate deep links for payment redirection
+      const String successUrl = 'myapp://payment/success';
+      const String cancelUrl = 'myapp://payment/cancel';
+      const String pendingUrl = 'myapp://payment/pending';
+
       final response = await _service.checkout(
         addressId: finalAddressId,
         productId: (product != null && product.id != 0) ? product.id : null,
@@ -401,6 +406,9 @@ class CheckoutController extends ChangeNotifier {
         deliveryNotes: _deliveryNotes,
         tipAmount: _tipAmount,
         couponCode: _isCouponValid ? _couponCode : null,
+        successUrl: successUrl,
+        cancelUrl: cancelUrl,
+        pendingUrl: pendingUrl,
       );
 
       // Payment redirection will be handled by the UI

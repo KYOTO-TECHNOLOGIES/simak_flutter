@@ -15,6 +15,9 @@ class OrderService {
     String? deliveryNotes,
     double tipAmount = 0.0,
     String? couponCode,
+    String? successUrl,
+    String? cancelUrl,
+    String? pendingUrl,
   }) async {
     final response = await _dio.post(
       'orders/checkout/',
@@ -28,6 +31,9 @@ class OrderService {
         if (couponCode != null) 'coupon_code': couponCode,
         if (productId != null) 'product_id': productId,
         if (quantity != null) 'quantity': quantity,
+        if (successUrl != null) 'success_url': successUrl,
+        if (cancelUrl != null) 'cancel_url': cancelUrl,
+        if (pendingUrl != null) 'pending_url': pendingUrl,
       },
     );
     return response.data;

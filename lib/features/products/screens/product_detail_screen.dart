@@ -1637,7 +1637,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (!_inStock)
+                                if (widget.product.stock == 0 || !widget.product.isAvailable)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 4),
@@ -1654,24 +1654,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       ),
                                     ),
                                   )
-                                else
+                                else if (widget.product.stock < 15)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: AppColors.success.withOpacity(0.1),
+                                      color: AppColors.warning.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.check_circle,
-                                            color: AppColors.success, size: 12),
+                                        const Icon(Icons.info_outline_rounded,
+                                            color: AppColors.warning, size: 12),
                                         const SizedBox(width: 4),
                                         Text(
-                                          tr(context, 'in_stock'),
+                                          tr(context, 'low_stock', args: {'count': widget.product.stock.toString()}),
                                           style: const TextStyle(
-                                            color: AppColors.success,
+                                            color: AppColors.warning,
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),

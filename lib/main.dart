@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+
+import 'dart:async';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/otp_screen.dart';
@@ -33,9 +35,11 @@ import 'package:uae_ecom_project/core/error/no_internet_screen.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 import 'package:uae_ecom_project/features/emirate/screens/emirate_selection_screen.dart';
 import 'package:uae_ecom_project/features/auth/controller/system_controller.dart';
-
 import 'package:uae_ecom_project/core/error/error_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:app_links/app_links.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 
 void main() async {
@@ -57,10 +61,71 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
+  StreamSubscription? _sub;
+  final _appLinks = AppLinks();
+
    @override
   void initState() {
     super.initState();
     setupFCM();
+    _initDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initDeepLinks() async {
+    // 1. Handle initial link (cold start)
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint('Deep Link Error: $e');
+    }
+
+    // 2. Handle subsequent links (app in background/foreground)
+    _sub = _appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    }, onError: (err) {
+      debugPrint('Deep Link Stream Error: $err');
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    debugPrint('Captured Deep Link: $uri');
+    
+    // Only handle myapp://payment links
+    if (uri.scheme == 'myapp' && uri.host == 'payment') {
+      final String path = uri.path;
+      final String orderId = uri.queryParameters['order_id'] ?? '';
+      
+      if (path == '/success') {
+        navigatorKey.currentState?.pushNamedAndRemoveUntil(
+          '/payment-success',
+          (route) => route.isFirst,
+          arguments: orderId,
+        );
+      } else if (path == '/cancel') {
+        navigatorKey.currentState?.pushNamedAndRemoveUntil(
+          '/payment-failed', 
+          (route) => route.isFirst,
+          arguments: orderId,
+        );
+      } else if (path == '/pending') {
+        navigatorKey.currentState?.pushNamedAndRemoveUntil(
+          '/order-pending',
+          (route) => route.isFirst,
+          arguments: orderId,
+        );
+      }
+    }
   }
 
   void setupFCM() async {
@@ -99,6 +164,7 @@ class _MyAppState extends State<MyApp> {
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, langProvider, child) {
           return MaterialApp(
+            navigatorKey: navigatorKey,
             onGenerateTitle: (context) =>
                 '${tr(context, 'app_name_simak')}${tr(context, 'app_name_fresh')}',
             debugShowCheckedModeBanner: false,
