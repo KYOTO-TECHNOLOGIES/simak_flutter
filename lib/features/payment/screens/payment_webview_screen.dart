@@ -27,6 +27,15 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) {
+            final uri = Uri.parse(request.url);
+            if (uri.scheme == 'myapp') {
+              debugPrint('Intercepted Deep Link in WebView: $uri');
+              _handleDeepLink(uri);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
           onPageStarted: (String url) {
             setState(() {
               _isLoading = true;
@@ -43,6 +52,36 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         ),
       )
       ..loadRequest(Uri.parse(widget.url));
+  }
+  
+  void _handleDeepLink(Uri uri) {
+    if (uri.scheme == 'myapp' && uri.host == 'payment') {
+      final String path = uri.path;
+      final String orderId = uri.queryParameters['order_id'] ?? '';
+      
+      if (path == '/success') {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/payment-success',
+          (route) => route.isFirst,
+          arguments: orderId,
+        );
+      } else if (path == '/cancel') {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/payment-failed', 
+          (route) => route.isFirst,
+          arguments: orderId,
+        );
+      } else if (path == '/pending') {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/order-pending',
+          (route) => route.isFirst,
+          arguments: orderId,
+        );
+      }
+    }
   }
 
   @override

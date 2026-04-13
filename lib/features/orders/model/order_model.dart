@@ -34,20 +34,20 @@ class OrderModel {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => OrderItem.fromJson(e))
               .toList() ??
           [],
       totalPrice: double.tryParse((json['total_price'] ?? json['total_amount'])?.toString() ?? '0') ?? 0.0,
-      status: json['status'] ?? 'Pending',
+      status: json['status']?.toString() ?? 'Pending',
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at']) 
           : DateTime.now(),
-      paymentMethod: json['payment_method'] ?? '',
-      preferredDeliveryDate: json['preferred_delivery_date'],
-      preferredDeliverySlot: json['preferred_delivery_slot'],
-      deliveryNotes: json['delivery_notes'],
+      paymentMethod: json['payment_method']?.toString() ?? '',
+      preferredDeliveryDate: json['preferred_delivery_date']?.toString(),
+      preferredDeliverySlot: json['preferred_delivery_slot']?.toString(),
+      deliveryNotes: json['delivery_notes']?.toString(),
       tipAmount: double.tryParse(json['tip_amount']?.toString() ?? '0') ?? 0.0,
       statusHistory: (json['status_history'] as List<dynamic>?)
           ?.map((e) => StatusHistoryItem.fromJson(e))
@@ -84,9 +84,9 @@ class OrderItem {
     } else {
       // Handle flattened structure or just ID from orders API
       product = ProductModel.fromJson({
-        'id': productData is int ? productData : 0,
-        'name': json['product_name'] ?? '',
-        'image': json['product_image'],
+        'id': int.tryParse(productData?.toString() ?? '0') ?? 0,
+        'name': json['product_name']?.toString() ?? '',
+        'image': json['product_image']?.toString(),
         // Use price from item if available
         'price': json['price'],
         'final_price': json['price'] ?? json['subtotal'],
@@ -94,9 +94,9 @@ class OrderItem {
     }
 
     return OrderItem(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       product: product,
-      quantity: json['quantity'] ?? 1,
+      quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       priceAtOrder: double.tryParse(json['price']?.toString() ?? json['unit_price']?.toString() ?? '0') ?? 0.0,
       subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
     );
@@ -116,8 +116,8 @@ class StatusHistoryItem {
 
   factory StatusHistoryItem.fromJson(Map<String, dynamic> json) {
     return StatusHistoryItem(
-      status: json['status'] ?? '',
-      notes: json['notes'],
+      status: json['status']?.toString() ?? '',
+      notes: json['notes']?.toString(),
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
     );
   }
@@ -140,10 +140,10 @@ class PaymentInfo {
 
   factory PaymentInfo.fromJson(Map<String, dynamic> json) {
     return PaymentInfo(
-      transactionId: json['transaction_id'],
+      transactionId: json['transaction_id']?.toString(),
       amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
-      status: json['status'] ?? '',
-      method: json['payment_method'] ?? '',
+      status: json['status']?.toString() ?? '',
+      method: json['payment_method']?.toString() ?? '',
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
     );
   }

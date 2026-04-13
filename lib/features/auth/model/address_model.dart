@@ -44,28 +44,32 @@ class AddressModel {
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     // Handle split names from 'full_name' if first_name/last_name are missing
-    String? fName = json['first_name'] as String?;
-    String? lName = json['last_name'] as String?;
+    String? fName = json['first_name']?.toString();
+    String? lName = json['last_name']?.toString();
+    
     if (fName == null && json['full_name'] != null) {
-      final parts = (json['full_name'] as String).split(' ');
-      fName = parts.length > 1 ? parts.sublist(0, parts.length - 1).join(' ') : parts.first;
-      lName = parts.length > 1 ? parts.last : '';
+      final fullName = json['full_name'].toString();
+      final parts = fullName.split(' ');
+      if (parts.isNotEmpty) {
+        fName = parts.length > 1 ? parts.sublist(0, parts.length - 1).join(' ') : parts.first;
+        lName = parts.length > 1 ? parts.last : '';
+      }
     }
 
     return AddressModel(
       id: json['id']?.toString(), // Handle UUID string or int (if mixed)
-      type: (json['address_type'] ?? json['type']) as String?,
+      type: (json['address_type'] ?? json['type'])?.toString(),
       firstName: fName,
       lastName: lName,
-      phoneNumber: json['phone_number'] as String?,
-      line1: (json['street_address'] ?? json['line1']) as String?,
-      line2: (json['area'] ?? json['line2']) as String?,
-      city: json['city'] as String?,
-      state: (json['emirate'] ?? json['state']) as String?,
-      postalCode: json['postal_code'] as String?,
-      country: json['country'] as String? ?? 'AE',
-      landmark: json['landmark'] as String?,
-      isDefault: json['is_default'] as bool? ?? false,
+      phoneNumber: json['phone_number']?.toString(),
+      line1: (json['street_address'] ?? json['line1'])?.toString(),
+      line2: (json['area'] ?? json['line2'])?.toString(),
+      city: json['city']?.toString(),
+      state: (json['emirate'] ?? json['state'])?.toString(),
+      postalCode: json['postal_code']?.toString(),
+      country: json['country']?.toString() ?? 'AE',
+      landmark: json['landmark']?.toString(),
+      isDefault: json['is_default'] == true || json['is_default'] == 1 || json['is_default'] == 'true',
       latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
       longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
     );

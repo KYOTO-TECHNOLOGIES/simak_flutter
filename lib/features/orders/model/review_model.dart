@@ -44,19 +44,19 @@ class ReviewModel {
     }
 
     return ReviewModel(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       product: json['product'] is int
           ? json['product']
-          : (json['product'] is Map ? json['product']['id'] ?? 0 : 0),
-      productName: json['product'] is Map ? json['product']['name'] : null,
-      user: json['user'] is int ? json['user'] : null,
-      userName: json['user_name'] ?? json['username'] ?? '',
-      rating: json['rating'] ?? 0,
-      comment: json['comment'] ?? json['review'] ?? '',
+          : (json['product'] is Map ? int.tryParse(json['product']['id']?.toString() ?? '0') ?? 0 : 0),
+      productName: json['product'] is Map ? json['product']['name']?.toString() : null,
+      user: int.tryParse(json['user']?.toString() ?? ''),
+      userName: json['user_name']?.toString() ?? json['username']?.toString() ?? '',
+      rating: (json['rating'] is num) ? (json['rating'] as num).toInt() : (int.tryParse(json['rating']?.toString() ?? '0') ?? 0),
+      comment: json['comment']?.toString() ?? json['review']?.toString() ?? '',
       images: parsedImages,
-      isVisible: json['is_visible'] ?? true,
+      isVisible: json['is_visible'] == true || json['is_visible'] == 1 || json['is_visible'] == 'true',
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+          ? DateTime.parse(json['created_at'].toString())
           : DateTime.now(),
     );
   }

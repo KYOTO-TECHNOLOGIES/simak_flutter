@@ -42,12 +42,12 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-      stock: json['stock'] ?? 0,
-      sku: json['sku'],
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      stock: int.tryParse(json['stock']?.toString() ?? '0') ?? 0,
+      sku: json['sku']?.toString(),
       images: (json['images'] as List<dynamic>?)
               ?.map((e) => ProductImage.fromJson(e))
               .toList() ??
@@ -57,15 +57,15 @@ class ProductModel {
               .toList() ??
           [],
       rating: double.tryParse(json['average_rating']?.toString() ?? '0') ?? 0.0,
-      reviewsCount: json['total_reviews'] ?? 0,
+      reviewsCount: int.tryParse(json['total_reviews']?.toString() ?? '0') ?? 0,
       discountPrice: json['discount_price'] != null
           ? double.tryParse(json['discount_price'].toString())
           : null,
-      finalPrice: double.tryParse(json['final_price'].toString()) ?? 0.0,
-      categoryName: json['category_name'] ?? '',
-      expectedDeliveryTime: json['expected_delivery_time'],
-      isAvailable: json['is_available'] ?? true,
-      mainImage: json['image'] != null ? getAbsoluteUrl(json['image']) : null,
+      finalPrice: double.tryParse(json['final_price']?.toString() ?? '0') ?? 0.0,
+      categoryName: json['category_name']?.toString() ?? '',
+      expectedDeliveryTime: json['expected_delivery_time']?.toString(),
+      isAvailable: json['is_available'] == true || json['is_available'] == 1 || json['is_available'] == 'true',
+      mainImage: json['image'] != null ? getAbsoluteUrl(json['image'].toString()) : null,
       availableEmirates: (json['available_emirates'] as List<dynamic>?)
               ?.map((e) => e.toString().toLowerCase())
               .toList() ??
