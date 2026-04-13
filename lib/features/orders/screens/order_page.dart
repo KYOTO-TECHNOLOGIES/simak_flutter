@@ -1149,24 +1149,44 @@ class _OrderPageState extends State<OrderPage> {
         if (mounted) {
           // If payment was triggered, show integrated WebView
           if (orderData.containsKey('payment_url') && orderData['payment_url'] != null) {
-            await Navigator.push(
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => PaymentWebViewScreen(
                   url: orderData['payment_url'],
                   title: tr(context, 'secure_payment'),
+                  orderId: orderData['order_id'],
                 ),
               ),
             );
+            
+            // PaymentWebViewScreen uses pop(result) which resolves the await above
+            if (!mounted) return;
+
+            // Route based on WebView response natively in OrderPage
+            final orderIdStr = orderData['order_id'].toString();
+            if (result == 'success') {
+              checkout.reset();
+              context.read<CartController>().clearCart();
+              context.read<OrderController>().fetchMyOrders();
+              Navigator.of(context).pushNamedAndRemoveUntil('/payment-success', (route) => route.isFirst, arguments: orderIdStr);
+              return;
+            } else if (result == 'failed') {
+              Navigator.of(context).pushNamedAndRemoveUntil('/payment-failed', (route) => route.isFirst, arguments: orderIdStr);
+              return;
+            } else if (result == 'pending') {
+              Navigator.of(context).pushNamedAndRemoveUntil('/order-pending', (route) => route.isFirst, arguments: orderIdStr);
+              return;
+            }
           }
 
-          // After payment is complete (or if COD/Direct), perform cleanup and close
+          // After payment is complete (COD/Direct cases ONLY)
           checkout.startPaymentStatusPolling();
           
           // Refresh orders list
           context.read<OrderController>().fetchMyOrders();
           
-          // Clear local state and go home
+          // Clear local state
           checkout.reset();
           context.read<CartController>().clearCart();
           

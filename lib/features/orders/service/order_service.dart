@@ -120,6 +120,11 @@ class OrderService {
     return response.data;
   }
 
+  Future<String> retryPayment(int id) async {
+    final response = await _dio.post('orders/$id/retry_payment/');
+    return response.data['payment_url']?.toString() ?? '';
+  }
+
   Future<void> addReview({
     required int productId,
     required int rating,

@@ -15,6 +15,7 @@ class OrderModel {
   final List<StatusHistoryItem> statusHistory;
   final PaymentInfo? paymentInfo;
   final AddressModel? shippingAddressDetails;
+  final String? paymentUrl;
 
   OrderModel({
     required this.id,
@@ -30,6 +31,7 @@ class OrderModel {
     this.statusHistory = const [],
     this.paymentInfo,
     this.shippingAddressDetails,
+    this.paymentUrl,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -56,6 +58,7 @@ class OrderModel {
       shippingAddressDetails: json['shipping_address_details'] != null 
           ? AddressModel.fromJson(json['shipping_address_details']) 
           : null,
+      paymentUrl: json['payment_url']?.toString(),
     );
   }
 }
@@ -129,6 +132,7 @@ class PaymentInfo {
   final String status;
   final String method;
   final DateTime createdAt;
+  final String? paymentUrl;
 
   PaymentInfo({
     this.transactionId,
@@ -136,6 +140,7 @@ class PaymentInfo {
     required this.status,
     required this.method,
     required this.createdAt,
+    this.paymentUrl,
   });
 
   factory PaymentInfo.fromJson(Map<String, dynamic> json) {
@@ -145,6 +150,7 @@ class PaymentInfo {
       status: json['status']?.toString() ?? '',
       method: json['payment_method']?.toString() ?? '',
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+      paymentUrl: json['payment_url']?.toString(),
     );
   }
 }

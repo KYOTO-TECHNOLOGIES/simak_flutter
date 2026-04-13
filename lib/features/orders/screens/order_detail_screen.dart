@@ -6,6 +6,8 @@ import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
+import 'package:uae_ecom_project/features/orders/service/order_service.dart';
+import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
@@ -931,8 +933,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           Text(tr(context, 'order_payment_status'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
-            tr(context, 'order_status_${(pay?.status ?? 'PENDING').toLowerCase()}'),
-            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w900, fontSize: 15),
+            (pay?.status ?? order.status).toUpperCase(),
+            style: TextStyle(
+              color: ['SUCCESS', 'PAID', 'COMPLETED'].contains((pay?.status ?? order.status).toUpperCase()) 
+                  ? Colors.green 
+                  : (['FAILED', 'CANCELLED'].contains((pay?.status ?? order.status).toUpperCase()) ? Colors.red : Colors.orange), 
+              fontWeight: FontWeight.w900, 
+              fontSize: 15
+            ),
           ),
           const SizedBox(height: 20),
           Text(tr(context, 'order_payment_method'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
@@ -941,6 +949,63 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             _getPaymentMethodDisplay(order.paymentMethod.isNotEmpty ? order.paymentMethod : (order.paymentInfo?.method ?? 'Online Payment')),
             style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
           ),
+          if ((pay?.status ?? order.status).toUpperCase() == 'PENDING') ...[
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  String url = order.paymentUrl ?? pay?.paymentUrl ?? '';
+                  
+                  // If we don't have it locally, fetch the retry payment URL
+                  if (url.isEmpty) {
+                    showDialog(
+                      context: context, 
+                      barrierDismissible: false,
+                      builder: (ctx) => const Center(child: CircularProgressIndicator())
+                    );
+                    
+                    try {
+                      url = await OrderService().retryPayment(order.id);
+                    } catch (e) {
+                      debugPrint('Error fetching retry url: $e');
+                    }
+                    if (mounted) Navigator.pop(context); // close loader
+                  }
+
+                  if (url.isEmpty) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to generate payment link. Please contact support.')));
+                    }
+                    return;
+                  }
+
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PaymentWebViewScreen(
+                        url: url,
+                        title: tr(context, 'secure_payment'),
+                        orderId: order.id,
+                      ),
+                    ),
+                  );
+                  if (result == 'success' || result == 'failed') {
+                    _fetchDetails(); // Reload the order upon return!
+                  }
+                },
+                icon: const Icon(Icons.payment, size: 18),
+                label: const Text('Retry Payment', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.actionBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

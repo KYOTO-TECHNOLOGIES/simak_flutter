@@ -41,6 +41,15 @@ import 'package:app_links/app_links.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Initialize Firebase in the background isolate
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (_) {}
+  debugPrint("Background message: ${message.notification?.title}");
+}
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +57,20 @@ void main() async {
   await TokenStorage().init();
   // Initialize Hive cache before the app starts.
   await CacheService().init();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  } catch (e) {
+    if (!e.toString().contains('duplicate-app')) rethrow;
+  }
+
+  // Register background messaging handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await TokenStorage().init();
+  await CacheService().init();
+
   runApp(const MyApp());
 }
 

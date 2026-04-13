@@ -6,65 +6,26 @@ import 'package:flutter/foundation.dart';
 class PaymentService {
   final Dio _dio = ApiClient().dio;
 
-  Future<List<PaymentModel>> getPaymentsList({
-    String? search,
-    String? status,
-    String? paymentMethod,
-    String? orderStatus,
-    String? ordering,
-    int page = 1,
-    int? limit,
-    int? offset,
-  }) async {
-    final response = await _dio.get(
-      'orders/payments/',
-      queryParameters: {
-        if (search != null) 'search': search,
-        if (status != null) 'status': status,
-        if (paymentMethod != null) 'payment_method': paymentMethod,
-        if (orderStatus != null) 'order__status': orderStatus,
-        if (ordering != null) 'ordering': ordering,
-        if (limit != null) 'limit': limit,
-        if (offset != null) 'offset': offset,
-        'page': page,
-      },
-    );
 
-    final dynamic data = response.data;
-    List<dynamic> results = [];
-    if (data is List) {
-      results = data;
-    } else if (data is Map && data.containsKey('results')) {
-      results = data['results'] as List<dynamic>;
-    }
-
-    return results.map((e) => PaymentModel.fromJson(e as Map<String, dynamic>)).toList();
-  }
-
-  Future<PaymentModel> getPaymentDetail(int id) async {
-    final response = await _dio.get('orders/payments/$id/');
-    return PaymentModel.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<PaymentModel> updatePaymentStatus(int id, String status) async {
-    final response = await _dio.patch(
-      'orders/payments/$id/',
-      data: {
-        'status': status.toUpperCase(),
-      },
-    );
-    return PaymentModel.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<PaymentModel?> getLatestPaymentForOrder(int orderId) async {
+  Future<Map<String, dynamic>> verifyPayment(int orderId) async {
     try {
-      final payments = await getPaymentsList();
-      for (final p in payments) {
-        if (p.orderId == orderId) return p;
+      final response = await _dio.post('orders/$orderId/verify_payment/');
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final errorMsg = e.response?.data?['error']?.toString() ?? '';
+        if (errorMsg.contains('Payment is not in pending status')) {
+          // The payment was already processed by a webhook. Fetch the actual status from the order!
+          try {
+            final orderResponse = await _dio.get('orders/$orderId/');
+            final String actualStatus = orderResponse.data['payment_status']?.toString() ?? orderResponse.data['status']?.toString() ?? 'COMPLETED';
+            return {'status': actualStatus};
+          } catch (innerE) {
+            debugPrint('Failed to recover actual order status: $innerE');
+          }
+        }
       }
-    } catch (e) {
-      debugPrint('Error fetching latest payment: $e');
+      rethrow;
     }
-    return null;
   }
 }

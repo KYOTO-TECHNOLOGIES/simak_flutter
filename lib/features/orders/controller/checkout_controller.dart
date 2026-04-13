@@ -22,8 +22,6 @@ class CheckoutController extends ChangeNotifier {
   // Order Tracking
   int? _lastOrderId;
   int? get lastOrderId => _lastOrderId;
-  PaymentModel? _lastPayment;
-  PaymentModel? get lastPayment => _lastPayment;
 
   String? _selectedAddressId;
   String? get selectedAddressId => _selectedAddressId;
@@ -41,15 +39,15 @@ class CheckoutController extends ChangeNotifier {
 
     _statusTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
-        final payment = await _paymentService.getLatestPaymentForOrder(_lastOrderId!);
-        if (payment != null) {
-          _lastPayment = payment;
-          if (payment.isPaid) {
-            _isPolledSuccess = true;
-            timer.cancel();
-          } else if (payment.isFailed) {
-            timer.cancel();
-          }
+        final verifyData = await _paymentService.verifyPayment(_lastOrderId!);
+        final String status = verifyData['status']?.toString().toUpperCase() ?? 'PENDING';
+
+        if (status == 'SUCCESS' || status == 'PAID' || status == 'COMPLETED') {
+          _isPolledSuccess = true;
+          timer.cancel();
+          notifyListeners();
+        } else if (status == 'FAILED' || status == 'CANCELLED') {
+          timer.cancel();
           notifyListeners();
         }
       } catch (e) {
@@ -420,9 +418,9 @@ class CheckoutController extends ChangeNotifier {
       if (response.containsKey('order_id')) {
         _lastOrderId = response['order_id'];
         try {
-          _lastPayment = await _paymentService.getLatestPaymentForOrder(_lastOrderId!);
+          await _paymentService.verifyPayment(_lastOrderId!);
         } catch (e) {
-          debugPrint('Error fetching payment after checkout: $e');
+          debugPrint('Error triggering payment verify after checkout: $e');
         }
       }
 
