@@ -18,8 +18,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
   @override
   void initState() {
     super.initState();
-    // Redirect to home after 4 seconds
-    _timer = Timer(const Duration(seconds: 4), () {
+    // Redirect to home after 10 seconds
+    _timer = Timer(const Duration(seconds: 10), () {
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }

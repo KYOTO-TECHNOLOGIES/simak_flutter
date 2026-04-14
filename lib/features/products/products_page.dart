@@ -36,10 +36,11 @@ class _ProductsPageState extends State<ProductsPage>
       final controller = context.read<ProductController>();
       if (controller.products.isEmpty) {
         final emirate = context.read<EmirateController>().selectedEmirate;
-        controller.fetchProducts(emirate: emirate).then((_) {
-          if (mounted) _fadeController.forward();
-        });
+        controller.fetchProducts(emirate: emirate);
+        controller.fetchCategories();
+        if (mounted) _fadeController.forward();
       } else {
+        controller.fetchCategories();
         _fadeController.forward();
       }
 

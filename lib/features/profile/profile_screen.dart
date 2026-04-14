@@ -18,6 +18,7 @@ import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.d
 import 'package:uae_ecom_project/features/auth/widgets/add_address_dialog.dart';
 import 'package:uae_ecom_project/features/profile/screens/notification_screen.dart';
 import 'package:uae_ecom_project/features/profile/screens/referral_screen.dart';
+import 'package:uae_ecom_project/features/profile/controller/notification_controller.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -84,6 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthController>().refreshProfile();
+      context.read<NotificationController>().fetchNotifications();
       if (_tabsScrollController.hasClients) {
         setState(() {
           _showTabsArrow = _tabsScrollController.position.maxScrollExtent > 0;
@@ -231,12 +233,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      leading: IconButton(
-        icon: Icon(Icons.notifications_outlined, color: theme.colorScheme.onSurface),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NotificationScreen()),
+      leading: Consumer<NotificationController>(
+        builder: (context, notifCtrl, _) {
+          return IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.notifications_outlined, color: theme.colorScheme.onSurface),
+                if (notifCtrl.unreadCount > 0)
+                  Positioned(
+                    right: -4,
+                    top: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                      child: Text(
+                        notifCtrl.unreadCount > 99 ? '99+' : '${notifCtrl.unreadCount}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationScreen()),
+              );
+            },
           );
         },
       ),

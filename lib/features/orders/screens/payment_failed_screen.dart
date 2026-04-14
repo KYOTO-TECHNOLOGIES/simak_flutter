@@ -1,14 +1,39 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 
-class PaymentFailedScreen extends StatelessWidget {
+class PaymentFailedScreen extends StatefulWidget {
   final String orderId;
 
   const PaymentFailedScreen({
     super.key,
     required this.orderId,
   });
+
+  @override
+  State<PaymentFailedScreen> createState() => _PaymentFailedScreenState();
+}
+
+class _PaymentFailedScreenState extends State<PaymentFailedScreen> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Redirect to home after 10 seconds
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +128,7 @@ class PaymentFailedScreen extends StatelessWidget {
                   
                   // Order ID
                   Text(
-                    '${tr(context, 'order_id_label')} $orderId',
+                    '${tr(context, 'order_id_label')} ${widget.orderId}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -122,6 +147,20 @@ class PaymentFailedScreen extends StatelessWidget {
                       color: Colors.grey[700],
                     ),
                   ),
+                  const SizedBox(height: 32),
+
+                  // Redirect indication text
+                  Text(
+                    tr(context, 'redirecting_home') != 'redirecting_home'
+                        ? tr(context, 'redirecting_home')
+                        : 'Redirecting to home in 10 seconds...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+
                   const SizedBox(height: 32),
                   
                   // Reasons Container
@@ -164,32 +203,58 @@ class PaymentFailedScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 48),
                   
-                  // Try Again Button
-                  SizedBox(
-                    width: 200,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Return to order/checkout
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(Icons.refresh, size: 20),
-                      label: Text(
-                        tr(context, 'try_again'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _timer?.cancel();
+                            Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                          },
+                          icon: const Icon(Icons.home, size: 20),
+                          label: Text(
+                            tr(context, 'back_to_home'),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(color: Colors.grey[300]!),
+                            foregroundColor: Colors.grey[800],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.actionBlue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _timer?.cancel();
+                            // Return to order/checkout
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.refresh, size: 20),
+                          label: Text(
+                            tr(context, 'try_again'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.actionBlue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
                         ),
-                        elevation: 0,
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 48), // Bottom padding
                 ],

@@ -38,6 +38,8 @@ import 'package:uae_ecom_project/features/auth/controller/system_controller.dart
 import 'package:uae_ecom_project/core/error/error_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:app_links/app_links.dart';
+import 'package:uae_ecom_project/service/notification_service.dart';
+import 'package:uae_ecom_project/features/profile/controller/notification_controller.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -156,14 +158,40 @@ class _MyAppState extends State<MyApp> {
 
     // 📱 Get token
     String? token = await FirebaseMessaging.instance.getToken();
-    print("FCM TOKEN: $token");
+    debugPrint("FCM TOKEN: $token");
+
+    // 📤 Register the device with the backend for push notifications
+    if (token != null) {
+      _registerDeviceToken(token);
+    }
+
+    // 🔄 Listen for token refresh and re-register
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      debugPrint("FCM TOKEN REFRESHED: $newToken");
+      _registerDeviceToken(newToken);
+    });
 
     // 📩 Listen for messages (when app is open)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Notification Received!");
-      print(message.notification?.title);
-      print(message.notification?.body);
+      debugPrint("Notification Received!");
+      debugPrint(message.notification?.title);
+      debugPrint(message.notification?.body);
     });
+  }
+
+  /// Sends the FCM [token] to the backend so it can target this device.
+  Future<void> _registerDeviceToken(String token) async {
+    try {
+      final notificationService = NotificationService();
+      final response = await notificationService.registerDevice(
+        registrationToken: token,
+        deviceType: NotificationService.resolveDeviceType(),
+        deviceName: NotificationService.resolveDeviceName(),
+      );
+      debugPrint("✅ Device registered for push notifications: $response");
+    } catch (e) {
+      debugPrint("⚠ Failed to register device for push notifications: $e");
+    }
   }
 
   @override
@@ -182,6 +210,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => MarketingController()),
         ChangeNotifierProvider(create: (_) => EmirateController()..init()),
         ChangeNotifierProvider(create: (_) => SystemController()),
+        ChangeNotifierProvider(create: (_) => NotificationController()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, langProvider, child) {

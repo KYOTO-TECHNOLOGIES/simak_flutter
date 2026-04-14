@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/config/app_constants.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/model/category_model.dart';
 import 'package:uae_ecom_project/features/products/service/product_service.dart';
 
 class ProductController extends ChangeNotifier {
@@ -20,6 +21,13 @@ class ProductController extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  // ─── Backend Categories ─────────────────────────────────────────
+  List<CategoryModel> _backendCategories = [];
+  List<CategoryModel> get backendCategories => _backendCategories;
+
+  bool _isCategoriesLoading = false;
+  bool get isCategoriesLoading => _isCategoriesLoading;
+
   // Selected product for detail view
   ProductModel? _selectedProduct;
   ProductModel? get selectedProduct => _selectedProduct;
@@ -32,15 +40,25 @@ class ProductController extends ChangeNotifier {
   String _selectedCategory = 'All';
   String get selectedCategory => _selectedCategory;
 
-  /// Unique category names extracted from loaded products.
+  /// Unique category names extracted from backend and loaded products.
   List<String> get categories {
-    final cats = products
-        .map((p) => p.categoryName)
-        .where((c) => c.isNotEmpty)
-        .toSet()
-        .toList();
-    cats.sort();
-    return ['All', ...cats];
+    final Set<String> allCats = {};
+    
+    // 1. Add categories from backend
+    for (var cat in _backendCategories) {
+      if (cat.name.isNotEmpty) allCats.add(cat.name);
+    }
+    
+    // 2. Add categories from products (as fallback or for uncategorized ones)
+    for (var p in products) {
+      if (p.categoryName.isNotEmpty) allCats.add(p.categoryName);
+    }
+    
+    final list = allCats.toList();
+    list.sort();
+    
+    // Ensure 'All' is at the beginning
+    return ['All', ...list];
   }
 
   void selectCategory(String category) {
@@ -135,6 +153,29 @@ class ProductController extends ChangeNotifier {
       debugPrint(e.toString());
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Loads categories from backend (offline-first).
+  Future<void> fetchCategories() async {
+    _isCategoriesLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _backendCategories = await _service.fetchCategories(
+        onRefresh: (freshCategories) {
+          _backendCategories = freshCategories;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      debugPrint('Error fetching categories: $e');
+      // We don't necessarily want to set the main _error here 
+      // as it might override product loading errors.
+    } finally {
+      _isCategoriesLoading = false;
       notifyListeners();
     }
   }

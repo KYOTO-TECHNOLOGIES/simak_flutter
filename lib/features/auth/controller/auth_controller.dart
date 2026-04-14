@@ -478,6 +478,8 @@ class AuthController extends ChangeNotifier {
     try {
       final refreshToken = _tokenStorage.getRefreshToken();
       await _authService.logout(refreshToken: refreshToken);
+      // Also sign out from Google to clear the session
+      await _googleSignIn.signOut();
     } catch (_) {
       // Logout should always clear local state even if API call fails
     }

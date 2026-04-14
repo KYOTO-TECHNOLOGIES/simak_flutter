@@ -874,27 +874,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Text('${addr.line1}, ${addr.line2}', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
             Text('${addr.city}, ${addr.state}', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tr(context, 'phone'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 2),
-                    Text(addr.phoneNumber ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  ],
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    // Open maps?
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: Text(tr(context, 'order_directions'), style: const TextStyle(fontSize: 12)),
-                ),
+                Text(tr(context, 'phone'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text(addr.phoneNumber ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               ],
             ),
           ] else
@@ -990,8 +975,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                   );
-                  if (result == 'success' || result == 'failed') {
-                    _fetchDetails(); // Reload the order upon return!
+
+                  if (mounted) {
+                    final orderIdStr = order.id.toString();
+                    if (result == 'success') {
+                      Navigator.of(context).pushNamedAndRemoveUntil('/payment-success', (route) => route.isFirst, arguments: orderIdStr);
+                    } else if (result == 'failed') {
+                      Navigator.of(context).pushNamedAndRemoveUntil('/payment-failed', (route) => route.isFirst, arguments: orderIdStr);
+                    } else if (result == 'pending') {
+                      Navigator.of(context).pushNamedAndRemoveUntil('/order-pending', (route) => route.isFirst, arguments: orderIdStr);
+                    } else {
+                      _fetchDetails(); // Reload the order if no explicit status was returned
+                    }
                   }
                 },
                 icon: const Icon(Icons.payment, size: 18),

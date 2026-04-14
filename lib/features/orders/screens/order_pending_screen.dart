@@ -1,14 +1,39 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 
-class OrderPendingScreen extends StatelessWidget {
+class OrderPendingScreen extends StatefulWidget {
   final String orderId;
 
   const OrderPendingScreen({
     super.key,
     required this.orderId,
   });
+
+  @override
+  State<OrderPendingScreen> createState() => _OrderPendingScreenState();
+}
+
+class _OrderPendingScreenState extends State<OrderPendingScreen> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Redirect to home after 10 seconds
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,14 +125,14 @@ class OrderPendingScreen extends StatelessWidget {
                 
                 // Order ID
                 Text(
-                  '${tr(context, 'order_id_label')} $orderId',
+                  '${tr(context, 'order_id_label')} ${widget.orderId}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.warning,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 
                 // Description
                 Text(
@@ -119,7 +144,21 @@ class OrderPendingScreen extends StatelessWidget {
                     color: Colors.grey[600],
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
+
+                // Redirect indication text
+                Text(
+                  tr(context, 'redirecting_home') != 'redirecting_home'
+                      ? tr(context, 'redirecting_home')
+                      : 'Redirecting to home in 10 seconds...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
                 
                 // Buttons
                 Row(
@@ -127,7 +166,8 @@ class OrderPendingScreen extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // TODO: Navigate to previous step or order detail
+                          _timer?.cancel();
+                          // Return to order/checkout
                           Navigator.pop(context);
                         },
                         icon: const Icon(Icons.refresh, size: 20),
@@ -147,6 +187,7 @@ class OrderPendingScreen extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {
+                          _timer?.cancel();
                           Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
                         },
                         icon: const Icon(Icons.arrow_back, size: 20),

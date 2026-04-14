@@ -284,12 +284,11 @@ class CheckoutController extends ChangeNotifier {
         // Strip time component
         _minDeliveryDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
         
-        // AUTO-SELECT: If no date is selected yet, or selected date is before min, auto-pick it
-        if (_deliveryDate == null || _deliveryDate!.isBefore(_minDeliveryDate!)) {
+        if (_deliveryDate != null && _deliveryDate!.isBefore(_minDeliveryDate!)) {
           _deliveryDate = _minDeliveryDate;
           _deliverySlotId = null;
           _deliverySlotName = null;
-          // Fetch slots for the newly auto-selected date
+          // Fetch slots for the newly adjusted date
           fetchAvailableSlots(_deliveryDate!);
         }
         _maxDeliveryDays = response['max_delivery_days'];

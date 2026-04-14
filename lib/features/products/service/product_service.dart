@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/model/category_model.dart';
 import 'package:uae_ecom_project/service/cache_service.dart';
 
 /// ------------------------------------------------------------------
@@ -23,6 +24,7 @@ class ProductService {
 
   // ─── Cache Keys ──────────────────────────────────────────────
   static const String _productsCacheKey = 'products';
+  static const String _categoriesCacheKey = 'categories';
   static String _productDetailCacheKey(int id) => 'product_$id';
 
   // ─── Fetch Products (offline-first) ──────────────────────────
@@ -71,6 +73,38 @@ class ProductService {
     } catch (e) {
       // No cache AND API failed → nothing to show.
       debugPrint('❌ No cache and API failed — showing error');
+      rethrow;
+    }
+  }
+
+  // ─── Fetch Categories (offline-first) ────────────────────────
+  Future<List<CategoryModel>> fetchCategories({
+    void Function(List<CategoryModel>)? onRefresh,
+  }) async {
+    const cacheKey = _categoriesCacheKey;
+
+    // ── Step 1: Cache retrieval
+    final cachedData = _cache.getFromCache(cacheKey, ignoreExpiry: true);
+    if (cachedData != null) {
+      debugPrint('✅ Loaded categories from Cache');
+      final cachedCategories = (cachedData as List)
+          .map((e) => CategoryModel.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+
+      final freshData = _cache.getFromCache(cacheKey);
+      if (freshData == null) {
+        debugPrint('   ↳ Cache is stale, refreshing categories in background...');
+        _refreshCategoriesInBackground(onRefresh);
+      }
+      return cachedCategories;
+    }
+
+    // ── Step 2: API fetch
+    debugPrint('📡 No cache for categories, fetching from API...');
+    try {
+      return await _fetchCategoriesFromApi();
+    } catch (e) {
+      debugPrint('❌ No cache and category API failed');
       rethrow;
     }
   }
@@ -186,5 +220,35 @@ class ProductService {
     return list
         .map((e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
+  }
+
+  /// Fetches categories from API and saves to cache.
+  Future<List<CategoryModel>> _fetchCategoriesFromApi() async {
+    final response = await _dio.get('products/categories/');
+    final data = response.data;
+
+    final List<dynamic> rawList;
+    if (data is Map<String, dynamic> && data.containsKey('results')) {
+      rawList = data['results'] as List;
+    } else if (data is List) {
+      rawList = data;
+    } else {
+      rawList = [];
+    }
+
+    await _cache.saveToCache(_categoriesCacheKey, rawList);
+    return rawList.map((e) => CategoryModel.fromJson(e)).toList();
+  }
+
+  /// Silently refreshes categories in background.
+  void _refreshCategoriesInBackground(
+    void Function(List<CategoryModel>)? onRefresh,
+  ) {
+    _fetchCategoriesFromApi().then((freshCategories) {
+      debugPrint('🔄 Background refresh complete — categories updated');
+      onRefresh?.call(freshCategories);
+    }).catchError((e) {
+      debugPrint('⚠️ Background refresh failed for categories');
+    });
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
+import 'package:uae_ecom_project/core/config/app_constants.dart';
 import 'package:uae_ecom_project/core/widgets/fish_loader.dart';
 import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/features/marketing/controller/marketing_controller.dart';
@@ -43,6 +44,7 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final emirate = context.read<EmirateController>().selectedEmirate;
       context.read<ProductController>().fetchProducts(emirate: emirate);
+      context.read<ProductController>().fetchCategories();
       context.read<MarketingController>().fetchBanners();
       context.read<OrderController>().fetchHomeReviews();
       _schedulePromoPopup();
@@ -59,8 +61,8 @@ class _HomePageState extends State<HomePage> {
     final user = auth.currentUser;
     if (user == null) return;
 
-    // Check if user has empty first or last name
-    if (user.firstName.trim().isEmpty || user.lastName.trim().isEmpty) {
+    // Check if user has both first and last name empty
+    if (user.firstName.trim().isEmpty && user.lastName.trim().isEmpty) {
       _hasShownNameDialog = true;
       if (!mounted) return;
       showDialog(
@@ -305,34 +307,44 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(height: 16),
                       SizedBox(
                         height: 110,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            _CategoryCard(
-                              index: 0,
-                              imageUrl:
-                                  'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400&auto=format&fit=crop',
-                              label: tr(context, 'cat_live_fish'),
-                            ),
-                            _CategoryCard(
-                              index: 1,
-                              imageUrl:
-                                  'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=400&auto=format&fit=crop',
-                              label: tr(context, 'cat_fresh_fish'),
-                            ),
-                            _CategoryCard(
-                              index: 2,
-                              imageUrl:
-                                  'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=400&auto=format&fit=crop',
-                              label: tr(context, 'cat_dry_fish'),
-                            ),
-                            _CategoryCard(
-                              index: 3,
-                              imageUrl:
-                                  'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?q=80&w=400&auto=format&fit=crop',
-                              label: tr(context, 'cat_frozen_fish'),
-                            ),
-                          ],
+                        child: Consumer<ProductController>(
+                          builder: (context, controller, child) {
+                            if (controller.isCategoriesLoading && controller.backendCategories.isEmpty) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            
+                            final categories = controller.backendCategories;
+                            if (categories.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  tr(context, 'no_categories'),
+                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                return _CategoryCard(
+                                  index: index,
+                                  imageUrl: category.image ?? AppConstants.kDefaultProductImage,
+                                  label: category.name, // Use backend name directly
+                                  onTap: () {
+                                    // Set selected category and navigate
+                                    controller.selectCategory(category.name);
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/home',
+                                      arguments: {'index': 1},
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -523,11 +535,13 @@ class _CategoryCard extends StatefulWidget {
   final int index;
   final String imageUrl;
   final String label;
+  final VoidCallback? onTap;
 
   const _CategoryCard({
     required this.index,
     required this.imageUrl,
     required this.label,
+    this.onTap,
   });
 
   @override
@@ -587,6 +601,7 @@ class _CategoryCardState extends State<_CategoryCard>
           onTapDown: (_) => setState(() => _isPressed = true),
           onTapUp: (_) => setState(() => _isPressed = false),
           onTapCancel: () => setState(() => _isPressed = false),
+          onTap: widget.onTap,
           child: AnimatedScale(
             scale: _isPressed ? 0.92 : 1.0,
             duration: const Duration(milliseconds: 100),

@@ -405,7 +405,7 @@ final Map<String, Map<String, String>> _translations = {
     'checkout_add_alt_phone': 'Add alternative number for this address',
     'payment_cod': 'Cash on Delivery',
     'payment_cod_desc': 'Pay in cash when your order is delivered',
-    'payment_online_telr': 'Pay Online (Telr)',
+    'payment_online_telr': 'Pay Online',
     'payment_online': 'Online Payment',
     'order_pending_badge': 'ORDER PENDING',
     'order_pending_title': 'Your Order Is Marked as Pending',

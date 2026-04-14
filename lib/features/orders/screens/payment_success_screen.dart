@@ -1,14 +1,39 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 
-class PaymentSuccessScreen extends StatelessWidget {
+class PaymentSuccessScreen extends StatefulWidget {
   final String orderId;
 
   const PaymentSuccessScreen({
     super.key,
     required this.orderId,
   });
+
+  @override
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
+
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Redirect to home after 10 seconds
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +128,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                   
                   // Order ID
                   Text(
-                    '${tr(context, 'order_id_label')} $orderId',
+                    '${tr(context, 'order_id_label')} ${widget.orderId}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -122,7 +147,21 @@ class PaymentSuccessScreen extends StatelessWidget {
                       color: Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 64),
+                  const SizedBox(height: 32),
+
+                  // Redirect indication text
+                  Text(
+                    tr(context, 'redirecting_home') != 'redirecting_home'
+                        ? tr(context, 'redirecting_home')
+                        : 'Redirecting to home in 10 seconds...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
                   
                   // Action Buttons
                   Row(
@@ -130,6 +169,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
+                            _timer?.cancel();
                             Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
                           },
                           icon: const Icon(Icons.home, size: 20),
@@ -151,6 +191,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            _timer?.cancel();
                             // View order details placeholder
                             Navigator.pop(context);
                           },
