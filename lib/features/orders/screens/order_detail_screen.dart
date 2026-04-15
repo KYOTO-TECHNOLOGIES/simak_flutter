@@ -8,6 +8,8 @@ import 'package:uae_ecom_project/features/orders/controller/order_controller.dar
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 import 'package:uae_ecom_project/features/orders/service/order_service.dart';
 import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
@@ -26,6 +28,8 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   OrderModel? _order;
   bool _isLoading = false;
+  String? _resolvedSlotLabel;
+  String? _resolvedSlotRange;
 
   @override
   void initState() {
@@ -33,19 +37,90 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _order = widget.initialOrder;
     if (_order == null) {
       _fetchDetails();
+    } else {
+      _resolveSlotNames(_order!);
     }
   }
 
   Future<void> _fetchDetails() async {
     setState(() => _isLoading = true);
-    final controller = context.read<OrderController>();
-    final fetchedOrder = await controller.fetchOrderDetails(widget.orderId);
-    if (mounted) {
-      setState(() {
-        _order = fetchedOrder;
-        _isLoading = false;
-      });
+    try {
+      final controller = context.read<OrderController>();
+      final data = await controller.fetchOrderDetails(widget.orderId);
+      if (mounted) {
+        setState(() {
+          _order = data;
+          _isLoading = false;
+        });
+        if (data != null) {
+          _resolveSlotNames(data);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  Future<void> _resolveSlotNames(OrderModel order) async {
+    final slot = order.preferredDeliverySlot;
+    if (slot == null || slot.isEmpty) return;
+
+    if (slot.contains('(')) {
+      setState(() {
+        _resolvedSlotRange = slot.substring(0, slot.indexOf('(')).trim();
+        _resolvedSlotLabel = slot.substring(slot.indexOf('(')).replaceAll('(', '').replaceAll(')', '').trim();
+      });
+      return;
+    }
+
+    final date = order.preferredDeliveryDate;
+    if (date == null || date.isEmpty) {
+      setState(() {
+        _resolvedSlotRange = slot;
+        _resolvedSlotLabel = '';
+      });
+      return;
+    }
+
+    try {
+      final response = await OrderService().getAvailableSlots(date);
+      if (response.containsKey('available_slots')) {
+        final List<dynamic> slotsJson = response['available_slots'];
+        final List<String> ids = slot.split(',').map((e) => e.trim()).toList();
+        
+        List<String> labels = [];
+        List<String> ranges = [];
+
+        for (var idStr in ids) {
+          final id = int.tryParse(idStr);
+          if (id != null) {
+            final match = slotsJson.firstWhere((s) => s['id'] == id, orElse: () => null);
+            if (match != null) {
+              if (match['name'] != null && !labels.contains(match['name'])) labels.add(match['name']);
+              final range = '${match['start_time_display']} - ${match['end_time_display']}';
+              if (!ranges.contains(range)) ranges.add(range);
+            }
+          }
+        }
+
+        if (labels.isNotEmpty || ranges.isNotEmpty) {
+          setState(() {
+            _resolvedSlotLabel = labels.join(', ');
+            _resolvedSlotRange = ranges.join(', ');
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error resolving slot names: $e');
+    }
+
+    setState(() {
+      _resolvedSlotRange = slot;
+      _resolvedSlotLabel = '';
+    });
   }
 
   String _formatDate(DateTime date) {
@@ -112,7 +187,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildHeader(BuildContext context, OrderModel order, ThemeData theme, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
-      // ... rest of header code refined for wrap ...
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -284,7 +358,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  // ── Review Dialog ─────────────────────────────────────────────────
   void _showReviewDialog(BuildContext context, OrderItem item) {
     int selectedRating = 0;
     final commentController = TextEditingController();
@@ -317,7 +390,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Handle bar
                     Container(
                       width: 40,
                       height: 4,
@@ -328,7 +400,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Product info row
                     Row(
                       children: [
                         ClipRRect(
@@ -372,7 +443,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Star rating
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (i) {
@@ -408,7 +478,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ],
                     const SizedBox(height: 20),
 
-                    // Comment field
                     TextField(
                       controller: commentController,
                       maxLines: 3,
@@ -426,7 +495,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Image picker section
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -444,7 +512,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        // Selected images
                         ...selectedImages.asMap().entries.map((entry) {
                           return Stack(
                             children: [
@@ -480,7 +547,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             ],
                           );
                         }),
-                        // Add image button
                         GestureDetector(
                           onTap: () async {
                             final picker = ImagePicker();
@@ -524,7 +590,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Submit button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -725,7 +790,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           else
             ...List.generate(order.statusHistory.length, (index) {
               final item = order.statusHistory[index];
-              final isLatest = index == 0; // Historically sorted by API often
+              final isLatest = index == 0;
               final isLast = index == order.statusHistory.length - 1;
               return _buildTimelineItem(
                 item.status, 
@@ -744,13 +809,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Widget _buildTimelineItem(String status, String note, DateTime date, bool isCurrent, bool isLast, ThemeData theme, bool isDark) {
     final statusColor = _getStatusColor(status);
-    final displayColor = isCurrent ? statusColor : Colors.green; // Matches website's active/completed teal-green
+    final displayColor = isCurrent ? statusColor : Colors.green;
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left portion: Icon and line
           SizedBox(
             width: 24,
             child: Column(
@@ -770,14 +834,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   Expanded(
                     child: Container(
                       width: 2,
-                      color: displayColor, // continuous line
+                      color: displayColor,
                     ),
                   ),
               ],
             ),
           ),
           const SizedBox(width: 16),
-          // Right portion: Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -889,8 +952,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
+  Future<void> _openReceipt(String? url) async {
+    if (url == null || url.isEmpty) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open receipt.')),
+        );
+      }
+    }
+  }
+
   Widget _buildPaymentInfo(BuildContext context, OrderModel order, ThemeData theme, bool isDark) {
     final pay = order.paymentInfo;
+    final String status = (pay?.status ?? order.status).toUpperCase();
+    final bool isSuccess = ['SUCCESS', 'PAID', 'COMPLETED'].contains(status);
+    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -909,47 +989,145 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.payment, size: 18, color: AppColors.actionBlue),
-              const SizedBox(width: 10),
-              Text(tr(context, 'order_payment_title'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Icon(Icons.credit_card_outlined, size: 24, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+              const SizedBox(width: 14),
+              Text(
+                tr(context, 'order_payment_title'),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.2),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          Text(tr(context, 'order_payment_status'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
+          const SizedBox(height: 24),
+          
+          Text('Status'.toUpperCase(), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
           const SizedBox(height: 4),
           Text(
-            (pay?.status ?? order.status).toUpperCase(),
+            status,
             style: TextStyle(
-              color: ['SUCCESS', 'PAID', 'COMPLETED'].contains((pay?.status ?? order.status).toUpperCase()) 
-                  ? Colors.green 
-                  : (['FAILED', 'CANCELLED'].contains((pay?.status ?? order.status).toUpperCase()) ? Colors.red : Colors.orange), 
+              color: isSuccess ? const Color(0xFFE69728) : (['FAILED', 'CANCELLED'].contains(status) ? Colors.red : Colors.orange), 
               fontWeight: FontWeight.w900, 
-              fontSize: 15
+              fontSize: 18,
             ),
           ),
           const SizedBox(height: 20),
-          Text(tr(context, 'order_payment_method'), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold)),
+
+          Text('Method'.toUpperCase(), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
           const SizedBox(height: 4),
           Text(
             _getPaymentMethodDisplay(order.paymentMethod.isNotEmpty ? order.paymentMethod : (order.paymentInfo?.method ?? 'Online Payment')),
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
           ),
-          if ((pay?.status ?? order.status).toUpperCase() == 'PENDING') ...[
+          
+          if (pay?.transactionId != null) ...[
+            const SizedBox(height: 20),
+            Text('Transaction ID'.toUpperCase(), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    pay!.transactionId!, 
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.black87),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: pay.transactionId!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Transaction ID copied to clipboard'),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Icon(Icons.copy_rounded, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                ),
+              ],
+            ),
+          ],
+          
+          if (pay?.createdAt != null) ...[
+            const SizedBox(height: 20),
+            Text('Payment Date'.toUpperCase(), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+            const SizedBox(height: 4),
+            Text(_formatDate(pay!.createdAt), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+          ],
+
+          if (order.status.toUpperCase() == 'DELIVERED') ...[
+            const SizedBox(height: 20),
+            const Divider(height: 1),
+            const SizedBox(height: 20),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Receipt Ref.'.toUpperCase(), style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                if (order.receiptRef != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      order.receiptRef!,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    ),
+                  ),
+              ],
+            ),
+            
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openReceipt(order.receiptImage),
+                    icon: const Icon(Icons.image_outlined, size: 18),
+                    label: const Text('Download Image', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.onSurface.withOpacity(0.8),
+                      side: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openReceipt(order.receiptPdf),
+                    icon: const Icon(Icons.file_download_outlined, size: 18),
+                    label: const Text('Download PDF', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.onSurface.withOpacity(0.8),
+                      side: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          
+          if (status == 'PENDING') ...[
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () async {
                   String url = order.paymentUrl ?? pay?.paymentUrl ?? '';
-                  
-                  // If we don't have it locally, fetch the retry payment URL
+                  // ... retry logic (kept same)
                   if (url.isEmpty) {
                     showDialog(
                       context: context, 
                       barrierDismissible: false,
                       builder: (ctx) => const Center(child: CircularProgressIndicator())
                     );
-                    
                     try {
                       url = await OrderService().retryPayment(order.id);
                     } catch (e) {
@@ -957,14 +1135,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     }
                     if (mounted) Navigator.pop(context); // close loader
                   }
-
                   if (url.isEmpty) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to generate payment link. Please contact support.')));
                     }
                     return;
                   }
-
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -975,7 +1151,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                   );
-
                   if (mounted) {
                     final orderIdStr = order.id.toString();
                     if (result == 'success') {
@@ -985,7 +1160,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     } else if (result == 'pending') {
                       Navigator.of(context).pushNamedAndRemoveUntil('/order-pending', (route) => route.isFirst, arguments: orderIdStr);
                     } else {
-                      _fetchDetails(); // Reload the order if no explicit status was returned
+                      _fetchDetails(); 
                     }
                   }
                 },
@@ -1007,6 +1182,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget _buildSummary(BuildContext context, OrderModel order, ThemeData theme, bool isDark) {
+    // Calculate subtotal fallback for older orders
+    final double computedSubtotal = order.subTotal > 0 
+        ? order.subTotal 
+        : order.items.fold(0.0, (sum, item) => sum + item.subtotal);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -1018,9 +1198,52 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           Text(tr(context, 'order_summary_title'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
           const SizedBox(height: 20),
-          _buildSummaryRow(tr(context, 'order_subtotal'), 'AED ${order.totalPrice.toStringAsFixed(2)}', Colors.white, 0.4),
-          _buildSummaryRow(tr(context, 'order_delivery_date'), order.preferredDeliveryDate ?? tr(context, 'not_provided'), Colors.white, 0.4),
-          _buildSummaryRow(tr(context, 'order_time_slot'), order.preferredDeliverySlot ?? tr(context, 'not_provided'), Colors.white, 0.4),
+          
+          _buildSummaryRow(tr(context, 'order_subtotal'), 'AED ${computedSubtotal.toStringAsFixed(2)}', Colors.white, 0.4),
+          
+          if (order.couponCode != null && order.couponCode!.isNotEmpty)
+            _buildSummaryRow('Coupon Applied', order.couponCode!, Colors.white, 0.4),
+          
+          if (order.discountAmount > 0)
+            _buildSummaryRow('Discount Amount', '-AED ${order.discountAmount.toStringAsFixed(2)}', const Color(0xFF4CAF50), 0.9),
+            
+          _buildSummaryRow('Delivery Charge', 'AED ${order.deliveryCharge.toStringAsFixed(2)}', Colors.white, 0.4),
+          
+          if (order.tipAmount > 0)
+            _buildSummaryRow('Tip Amount', 'AED ${order.tipAmount.toStringAsFixed(2)}', Colors.white, 0.4),
+
+          // Always show Delivery Date and Time Slot as requested
+          _buildSummaryRow(tr(context, 'order_delivery_date'), order.preferredDeliveryDate != null && order.preferredDeliveryDate!.isNotEmpty ? order.preferredDeliveryDate! : tr(context, 'not_provided'), Colors.white, 0.4),
+          
+          // Replaced _buildSummaryRow with custom multiline layout for Time Slot as per screenshot
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  tr(context, 'order_time_slot'),
+                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _resolvedSlotRange ?? _getTimeRange(order.preferredDeliverySlot),
+                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    if ((_resolvedSlotLabel != null && _resolvedSlotLabel!.isNotEmpty) || _getPeriod(order.preferredDeliverySlot).isNotEmpty)
+                      Text(
+                        _resolvedSlotLabel ?? _getPeriod(order.preferredDeliverySlot),
+                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
           const SizedBox(height: 20),
           const Divider(color: Colors.white24),
           const SizedBox(height: 12),
@@ -1058,5 +1281,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ],
       ),
     );
+  }
+
+  String _getTimeRange(String? slot) {
+    if (slot == null || slot.isEmpty) return 'Not Provided';
+    if (slot.contains('(')) {
+      return slot.substring(0, slot.indexOf('(')).trim();
+    }
+    return slot;
+  }
+
+  String _getPeriod(String? slot) {
+    if (slot == null || slot.isEmpty) return '';
+    if (slot.contains('(')) {
+      return slot.substring(slot.indexOf('(')).trim();
+    }
+    return '';
   }
 }

@@ -9,6 +9,7 @@ import 'package:uae_ecom_project/features/auth/service/auth_service.dart';
 import 'package:uae_ecom_project/service/token_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uae_ecom_project/core/config/env.dart';
+import 'package:uae_ecom_project/service/notification_service.dart';
 
 class AuthController extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -82,6 +83,8 @@ class AuthController extends ChangeNotifier {
 
     if (_currentUser != null) {
       await _tokenStorage.saveUserData(_currentUser!.toJson());
+      // 🚀 Sync FCM token as soon as we have a valid session
+      NotificationService().syncToken();
     }
     notifyListeners();
   }
@@ -577,6 +580,8 @@ class AuthController extends ChangeNotifier {
         _currentUser = freshUser;
       }
       await _tokenStorage.saveUserData(_currentUser!.toJson());
+      // 🚀 Sync FCM token after a successful auto-login re-fetch
+      NotificationService().syncToken();
       notifyListeners();
       return true;
     } catch (e) {

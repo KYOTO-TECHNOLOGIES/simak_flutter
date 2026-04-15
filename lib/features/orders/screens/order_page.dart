@@ -234,7 +234,7 @@ class _OrderPageState extends State<OrderPage> {
         final selectedAddr = address.selectedAddress;
         
         // Initial summary fetch if needed
-        if (checkout.summaryData == null && !checkout.isLoading && selectedAddr != null) {
+        if (checkout.summaryData == null && !checkout.isLoading && !checkout.summaryFetchAttempted && selectedAddr != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
              checkout.fetchCheckoutSummary(
               product: isCartMode ? null : displayProduct,
@@ -330,7 +330,7 @@ class _OrderPageState extends State<OrderPage> {
             const SizedBox(height: 24),
             
             // Phone Verification Warning
-            _buildVerificationWarning(context, theme),
+            _buildVerificationWarning(context, displayProduct, displayQuantity, isCartMode, theme),
             
             // Coupon Section
             _buildCouponSection(context, checkout, cart, displayProduct, displayQuantity, isCartMode, theme),
@@ -1548,7 +1548,13 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  Widget _buildVerificationWarning(BuildContext context, ThemeData theme) {
+  Widget _buildVerificationWarning(
+    BuildContext context, 
+    ProductModel displayProduct, 
+    int displayQuantity, 
+    bool isCartMode, 
+    ThemeData theme
+  ) {
     final auth = context.watch<AuthController>();
     final user = auth.currentUser;
     final isVerified = user?.isPhoneVerified ?? false;
@@ -1604,6 +1610,13 @@ class _OrderPageState extends State<OrderPage> {
                         // Re-fetch cart to ensure it persists after token changes
                         if (context.mounted) {
                           context.read<CartController>().fetchCart();
+                          
+                          // Re-fetch summary now that the phone is verified!
+                          final checkout = context.read<CheckoutController>();
+                          checkout.fetchCheckoutSummary(
+                            product: isCartMode ? null : displayProduct,
+                            quantity: isCartMode ? null : displayQuantity,
+                          );
                         }
                       },
                     ),

@@ -190,10 +190,6 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            widget.title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
           backgroundColor: Colors.white,
           foregroundColor: AppColors.primary,
           elevation: 0,

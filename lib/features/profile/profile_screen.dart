@@ -18,7 +18,10 @@ import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.d
 import 'package:uae_ecom_project/features/auth/widgets/add_address_dialog.dart';
 import 'package:uae_ecom_project/features/profile/screens/notification_screen.dart';
 import 'package:uae_ecom_project/features/profile/screens/referral_screen.dart';
+import 'package:uae_ecom_project/features/profile/screens/support_screen.dart';
+
 import 'package:uae_ecom_project/features/profile/controller/notification_controller.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -430,7 +433,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       (Icons.location_on_outlined, tr(context, 'my_addresses')),
       (Icons.rate_review_outlined, tr(context, 'my_reviews')),
       (Icons.card_giftcard_outlined, tr(context, 'referrals')),
+      (Icons.support_agent_outlined, tr(context, 'support_center')),
     ];
+
 
     return Stack(
       alignment: Alignment.centerRight,
@@ -458,7 +463,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       context.read<OrderController>().fetchUserReviews(user.id!);
                     }
                   }
+                  setState(() => _selectedSection = i);
                 },
+
+
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -564,8 +572,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return _buildMyReviewsSection(context, theme);
     }
 
-    return const ReferralScreen();
+    if (_selectedSection == 4) {
+      return const ReferralScreen();
+    }
+
+    return const SupportWidget();
   }
+
+
 
   Widget _buildPersonalInfoSection(
     BuildContext context,

@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 /// Service for push-notification device registration and in-app notifications.
 class NotificationService {
@@ -11,6 +11,32 @@ class NotificationService {
   // ═════════════════════════════════════════════════════════════════
   //  DEVICE REGISTRATION
   // ═════════════════════════════════════════════════════════════════
+
+  /// Synchronizes the current FCM token with the backend.
+  /// Should be called on app start, token refresh, and user login.
+  Future<void> syncToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _registerWithToken(token);
+      }
+    } catch (e) {
+      debugPrint("⚠ FCM Sync failed: $e");
+    }
+  }
+
+  Future<void> _registerWithToken(String token) async {
+    try {
+      await registerDevice(
+        registrationToken: token,
+        deviceType: resolveDeviceType(),
+        deviceName: resolveDeviceName(),
+      );
+      debugPrint("✅ Device registered for push notifications successfully.");
+    } catch (e) {
+      debugPrint("⚠ Device registration API failed: $e");
+    }
+  }
 
   /// Registers the device with the backend for push notifications.
   ///

@@ -196,7 +196,10 @@ class _HomePageState extends State<HomePage> {
                 automaticallyImplyLeading: false,
                 toolbarHeight: 80,
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 12, top: 4), // Breathing room
+                  padding: const EdgeInsets.only(
+                    left: 12,
+                    top: 4,
+                  ), // Breathing room
                   child: Directionality(
                     textDirection: TextDirection.ltr,
                     child: Row(
@@ -204,13 +207,77 @@ class _HomePageState extends State<HomePage> {
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.only(left: 4),
-                            child: SizedBox(
-                              height: 44, // Professional height
-                              child: SvgPicture.asset(
-                                'assets/images/simak_logo.svg',
-                                fit: BoxFit.contain,
-                                alignment: Alignment.centerLeft,
-                              ),
+                            child: Row(
+                              children: [
+                                Image.asset(
+                                  'assets/images/home_logo.png',
+                                  height: 38,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: IntrinsicWidth(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                tr(
+                                                  context,
+                                                  'app_name_simak',
+                                                ).toUpperCase(),
+                                                style: GoogleFonts.quicksand(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.black87,
+                                                  height: 1.1,
+                                                ),
+                                              ),
+                                              Text(
+                                                tr(
+                                                  context,
+                                                  'app_name_fresh',
+                                                ).toUpperCase(),
+                                                style: GoogleFonts.quicksand(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.black87,
+                                                  height: 1.1,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          FittedBox(
+                                            fit: BoxFit.fitWidth,
+                                            child: Text(
+                                              tr(
+                                                context,
+                                                'tagline',
+                                              ).toUpperCase(),
+                                              style: GoogleFonts.quicksand(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                color: AppColors.actionBlue,
+                                                letterSpacing: 0.5,
+                                                height: 1.0,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -309,16 +376,22 @@ class _HomePageState extends State<HomePage> {
                         height: 110,
                         child: Consumer<ProductController>(
                           builder: (context, controller, child) {
-                            if (controller.isCategoriesLoading && controller.backendCategories.isEmpty) {
-                              return const Center(child: CircularProgressIndicator());
+                            if (controller.isCategoriesLoading &&
+                                controller.backendCategories.isEmpty) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
                             }
-                            
+
                             final categories = controller.backendCategories;
                             if (categories.isEmpty) {
                               return Center(
                                 child: Text(
                                   tr(context, 'no_categories'),
-                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.5),
+                                  ),
                                 ),
                               );
                             }
@@ -330,8 +403,11 @@ class _HomePageState extends State<HomePage> {
                                 final category = categories[index];
                                 return _CategoryCard(
                                   index: index,
-                                  imageUrl: category.image ?? AppConstants.kDefaultProductImage,
-                                  label: category.name, // Use backend name directly
+                                  imageUrl:
+                                      category.image ??
+                                      AppConstants.kDefaultProductImage,
+                                  label: category
+                                      .name, // Use backend name directly
                                   onTap: () {
                                     // Set selected category and navigate
                                     controller.selectCategory(category.name);

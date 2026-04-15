@@ -120,6 +120,9 @@ class CheckoutController extends ChangeNotifier {
   Map<String, dynamic>? _summaryData;
   Map<String, dynamic>? get summaryData => _summaryData;
 
+  bool _summaryFetchAttempted = false;
+  bool get summaryFetchAttempted => _summaryFetchAttempted;
+
 
   List<CouponModel> _availableCoupons = [];
   List<CouponModel> get availableCoupons => _availableCoupons;
@@ -180,6 +183,8 @@ class CheckoutController extends ChangeNotifier {
   void selectAddress(String addressId) {
     _selectedAddressId = addressId;
     _error = null;
+    _summaryData = null;
+    _summaryFetchAttempted = false;
     notifyListeners();
     // Re-fetch delivery estimation when address changes
     fetchEstimatedDelivery(product: _currentProduct, quantity: _currentQuantity);
@@ -328,6 +333,7 @@ class CheckoutController extends ChangeNotifier {
     if (_selectedAddressId == null) return;
 
     _isLoading = true;
+    _summaryFetchAttempted = true;
     notifyListeners();
 
     try {
@@ -453,6 +459,7 @@ class CheckoutController extends ChangeNotifier {
     _couponCode = null;
     _isCouponValid = false;
     _summaryData = null;
+    _summaryFetchAttempted = false;
     _lastOrderId = null;
     _minDeliveryDate = null;
     _maxDeliveryDays = null;

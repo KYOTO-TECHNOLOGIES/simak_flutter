@@ -352,45 +352,23 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                             value: _selectedCountry,
                             dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                             icon: const Icon(Icons.keyboard_arrow_down, size: 16),
-                            selectedItemBuilder: (context) {
-                              return supportedCountries.map((c) {
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(c.flag, style: const TextStyle(fontSize: 18)),
-                                  ],
-                                );
-                              }).toList();
-                            },
                             items: supportedCountries.map((c) {
                               return DropdownMenuItem(
                                 value: c,
-                                child: Container(
-                                  constraints: const BoxConstraints(minWidth: 100, maxWidth: 200),
-                                  child: Row(
-                                    children: [
-                                      Text(c.flag,
-                                          style: const TextStyle(fontSize: 18)),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          c.name,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              color: isDark ? Colors.white : Colors.black,
-                                              fontWeight: FontWeight.w500),
-                                        ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(c.flag, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      c.code,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: isDark ? Colors.white : Colors.black,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        c.code,
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade500),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               );
                             }).toList(),

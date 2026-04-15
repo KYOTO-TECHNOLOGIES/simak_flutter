@@ -156,19 +156,15 @@ class _MyAppState extends State<MyApp> {
     // 🔔 Ask permission (important for Android 13+ / iOS)
     await FirebaseMessaging.instance.requestPermission();
 
-    // 📱 Get token
-    String? token = await FirebaseMessaging.instance.getToken();
-    debugPrint("FCM TOKEN: $token");
+    final notificationService = NotificationService();
 
-    // 📤 Register the device with the backend for push notifications
-    if (token != null) {
-      _registerDeviceToken(token);
-    }
+    // 📱 Initial Sync
+    notificationService.syncToken();
 
     // 🔄 Listen for token refresh and re-register
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
       debugPrint("FCM TOKEN REFRESHED: $newToken");
-      _registerDeviceToken(newToken);
+      notificationService.syncToken();
     });
 
     // 📩 Listen for messages (when app is open)
@@ -177,21 +173,6 @@ class _MyAppState extends State<MyApp> {
       debugPrint(message.notification?.title);
       debugPrint(message.notification?.body);
     });
-  }
-
-  /// Sends the FCM [token] to the backend so it can target this device.
-  Future<void> _registerDeviceToken(String token) async {
-    try {
-      final notificationService = NotificationService();
-      final response = await notificationService.registerDevice(
-        registrationToken: token,
-        deviceType: NotificationService.resolveDeviceType(),
-        deviceName: NotificationService.resolveDeviceName(),
-      );
-      debugPrint("✅ Device registered for push notifications: $response");
-    } catch (e) {
-      debugPrint("⚠ Failed to register device for push notifications: $e");
-    }
   }
 
   @override

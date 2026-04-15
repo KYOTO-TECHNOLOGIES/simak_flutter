@@ -16,6 +16,13 @@ class OrderModel {
   final PaymentInfo? paymentInfo;
   final AddressModel? shippingAddressDetails;
   final String? paymentUrl;
+  final double subTotal;
+  final double deliveryCharge;
+  final double discountAmount;
+  final String? couponCode;
+  final String? receiptPdf;
+  final String? receiptRef;
+  final String? receiptImage;
 
   OrderModel({
     required this.id,
@@ -32,6 +39,13 @@ class OrderModel {
     this.paymentInfo,
     this.shippingAddressDetails,
     this.paymentUrl,
+    this.subTotal = 0.0,
+    this.deliveryCharge = 0.0,
+    this.discountAmount = 0.0,
+    this.couponCode,
+    this.receiptPdf,
+    this.receiptRef,
+    this.receiptImage,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -59,9 +73,17 @@ class OrderModel {
           ? AddressModel.fromJson(json['shipping_address_details']) 
           : null,
       paymentUrl: json['payment_url']?.toString(),
+      subTotal: double.tryParse(json['sub_total']?.toString() ?? '0') ?? 0.0,
+      deliveryCharge: double.tryParse(json['delivery_charge']?.toString() ?? '0') ?? 0.0,
+      discountAmount: double.tryParse(json['discount_amount']?.toString() ?? '0') ?? 0.0,
+      couponCode: json['coupon_code']?.toString(),
+      receiptPdf: json['receipt_pdf']?.toString(),
+      receiptRef: json['receipt_ref']?.toString(),
+      receiptImage: json['receipt_image']?.toString(),
     );
   }
 }
+
 
 class OrderItem {
   final int id;

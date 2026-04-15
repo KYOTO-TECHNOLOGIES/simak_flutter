@@ -1919,42 +1919,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                           const SizedBox(height: 24),
 
-                          // ── Usage & Preparation (Demo Data) ─────
-                          _SectionTitle(
-                              title: tr(context, 'cooking_prep'),
-                              theme: theme),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.1)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _BuildTip(
-                                  title: tr(context, 'cleaning'),
-                                  desc: tr(context, 'cleaning_desc'),
-                                  theme: theme,
-                                ),
-                                const Divider(height: 24),
-                                _BuildTip(
-                                  title: tr(context, 'best_for'),
-                                  desc: tr(context, 'best_for_desc'),
-                                  theme: theme,
-                                ),
-                                const Divider(height: 24),
-                                _BuildTip(
-                                  title: tr(context, 'storage_tip'),
-                                  desc: tr(context, 'storage_tip_desc'),
-                                  theme: theme,
-                                ),
-                              ],
-                            ),
-                          ),
 
                           _buildReviewsSection(theme),
 
