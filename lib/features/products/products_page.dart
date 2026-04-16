@@ -952,17 +952,19 @@ class _TrendingCard extends StatelessWidget {
                     width: double.infinity,
                     height: 32,
                     child: ElevatedButton(
-                      onPressed: onBuyNow,
+                      onPressed: (product.isAvailable && product.stock > 0) ? onBuyNow : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.actionBlue,
+                        backgroundColor: (product.isAvailable && product.stock > 0) ? AppColors.actionBlue : Colors.grey.shade400,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Text(tr(context, 'buy_now'),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800)),
+                      child: Text(
+                        tr(context, (product.isAvailable && product.stock > 0) ? 'buy_now' : 'out_of_stock'),
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ),
                 ],
@@ -1353,11 +1355,16 @@ class _EnhancedProductCard extends StatelessWidget {
                     width: double.infinity,
                     height: 38,
                     child: ElevatedButton.icon(
-                      onPressed: onBuyNow,
-                      icon: const Icon(Icons.flash_on, size: 14),
-                      label: Text(tr(context, 'buy_now')),
+                      onPressed: (product.isAvailable && product.stock > 0) ? onBuyNow : null,
+                      icon: Icon(
+                        (product.isAvailable && product.stock > 0) ? Icons.flash_on : Icons.block,
+                        size: 14,
+                      ),
+                      label: Text(
+                        tr(context, (product.isAvailable && product.stock > 0) ? 'buy_now' : 'out_of_stock'),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.actionBlue,
+                        backgroundColor: (product.isAvailable && product.stock > 0) ? AppColors.actionBlue : Colors.grey.shade400,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

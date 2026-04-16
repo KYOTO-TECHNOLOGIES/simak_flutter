@@ -1202,15 +1202,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           _buildSummaryRow(tr(context, 'order_subtotal'), 'AED ${computedSubtotal.toStringAsFixed(2)}', Colors.white, 0.4),
           
           if (order.couponCode != null && order.couponCode!.isNotEmpty)
-            _buildSummaryRow('Coupon Applied', order.couponCode!, Colors.white, 0.4),
+            _buildSummaryRow(trText(context, 'Coupon Applied'), order.couponCode!, Colors.white, 0.4),
           
           if (order.discountAmount > 0)
-            _buildSummaryRow('Discount Amount', '-AED ${order.discountAmount.toStringAsFixed(2)}', const Color(0xFF4CAF50), 0.9),
+            _buildSummaryRow(trText(context, 'Discount Amount'), '-AED ${order.discountAmount.toStringAsFixed(2)}', const Color(0xFF4CAF50), 0.9),
             
-          _buildSummaryRow('Delivery Charge', 'AED ${order.deliveryCharge.toStringAsFixed(2)}', Colors.white, 0.4),
+          _buildSummaryRow(trText(context, 'Delivery Charge'), 'AED ${order.deliveryCharge.toStringAsFixed(2)}', Colors.white, 0.4),
           
           if (order.tipAmount > 0)
-            _buildSummaryRow('Tip Amount', 'AED ${order.tipAmount.toStringAsFixed(2)}', Colors.white, 0.4),
+            _buildSummaryRow(trText(context, 'Tip Amount'), 'AED ${order.tipAmount.toStringAsFixed(2)}', Colors.white, 0.4),
 
           // Always show Delivery Date and Time Slot as requested
           _buildSummaryRow(tr(context, 'order_delivery_date'), order.preferredDeliveryDate != null && order.preferredDeliveryDate!.isNotEmpty ? order.preferredDeliveryDate! : tr(context, 'not_provided'), Colors.white, 0.4),

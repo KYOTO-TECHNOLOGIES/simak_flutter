@@ -117,7 +117,10 @@ class ProductModel {
       path = '/$path';
     }
     
-    return '$baseUrl$path';
+    final fullUrl = '$baseUrl$path';
+    // Use encodeFull to handle spaces and other special characters in the URL
+    // but keep the structure of the URL intact.
+    return Uri.encodeFull(fullUrl);
   }
 }
 

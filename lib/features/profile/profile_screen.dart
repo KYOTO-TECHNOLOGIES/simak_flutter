@@ -1370,6 +1370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+
   void _showLogoutConfirmation(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;

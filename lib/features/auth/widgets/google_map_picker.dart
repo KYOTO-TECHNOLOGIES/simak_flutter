@@ -60,12 +60,99 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
   Future<void> _reverseGeocode(LatLng position) async {
     setState(() => _isReverseGeocoding = true);
     
-    // Notify parent that we are updating (useful for showing loading in fields if needed)
     widget.onSelect(MapPickerResult(
       lat: position.latitude,
       lng: position.longitude,
     ));
 
+    try {
+      final apiKey = context.read<SystemController>().config?.googleMapsApiKey;
+      bool success = false;
+      
+      if (apiKey != null && apiKey.isNotEmpty) {
+        success = await _googleReverseGeocode(position, apiKey);
+      }
+      
+      if (!success) {
+        await _nativeReverseGeocode(position);
+      }
+    } catch (e) {
+      debugPrint('Geocoding entry error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isReverseGeocoding = false);
+      }
+    }
+  }
+
+  Future<bool> _googleReverseGeocode(LatLng position, String apiKey) async {
+    try {
+      final url = 'https://maps.googleapis.com/maps/api/geocode/json'
+          '?latlng=${position.latitude},${position.longitude}&key=$apiKey';
+      
+      final response = await context.read<SystemController>().dio.get(url);
+      
+      if (response.statusCode == 200 && response.data['status'] == 'OK') {
+        final results = response.data['results'] as List<dynamic>;
+        if (results.isEmpty) return false;
+
+        final firstResult = results[0];
+        final components = firstResult['address_components'] as List<dynamic>;
+        final fullAddress = firstResult['formatted_address'] as String;
+
+        String street = '';
+        String area = '';
+        String city = '';
+        String emirate = '';
+
+        for (var comp in components) {
+          final types = comp['types'] as List<dynamic>;
+          if (types.contains('route')) {
+            street = comp['long_name'];
+          } else if (types.contains('sublocality') || types.contains('neighborhood')) {
+            area = comp['long_name'];
+          } else if (types.contains('locality')) {
+            city = comp['long_name'];
+          } else if (types.contains('administrative_area_level_1')) {
+            emirate = comp['long_name'];
+          }
+        }
+
+        // Fallbacks for UAE specifically
+        if (city.isEmpty) city = emirate;
+        if (area.isEmpty) {
+          // Check for sublocality_level_1 etc.
+          for (var comp in components) {
+              final types = comp['types'] as List<dynamic>;
+              if (types.any((t) => t.toString().startsWith('sublocality'))) {
+                area = comp['long_name'];
+                break;
+              }
+          }
+        }
+
+        setState(() {
+          _address = fullAddress;
+        });
+
+        widget.onSelect(MapPickerResult(
+          lat: position.latitude,
+          lng: position.longitude,
+          street: street,
+          area: area,
+          city: city,
+          emirate: emirate,
+          fullAddress: fullAddress,
+        ));
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Google Reverse Geocoding Error: $e');
+    }
+    return false;
+  }
+
+  Future<void> _nativeReverseGeocode(LatLng position) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
@@ -75,16 +162,49 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
         
-        // Construct a better readable address
+        // 1. Refine Street Name: Handle cases where thoroughfare is missing or just numbers
+        String streetName = place.thoroughfare ?? '';
+        if (streetName.isEmpty || RegExp(r'^\d+$').hasMatch(streetName)) {
+          streetName = place.street ?? place.name ?? '';
+          // Remove leading house/plot numbers like "123 ", "#123 ", or "12-3 "
+          streetName = streetName.replaceFirst(RegExp(r'^[\#\d\-\s]+'), '').trim();
+          // If after cleaning it's empty, fallback to the original street or name
+          if (streetName.isEmpty) streetName = place.street ?? place.name ?? '';
+        }
+
+        // 2. Refine City: Priority: locality -> subAdministrativeArea -> administrativeArea
+        String city = place.locality ?? '';
+        if (city.isEmpty || city.toLowerCase() == 'uae') {
+          city = place.subAdministrativeArea ?? place.administrativeArea ?? '';
+        }
+
+        // 3. Refine Area/District: Priority: subLocality -> subAdministrativeArea (if not used for city)
+        String area = place.subLocality ?? '';
+        if (area.isEmpty && place.subAdministrativeArea != city) {
+          area = place.subAdministrativeArea ?? '';
+        }
+
+        // 4. Construct a better readable full address without redundancy
         final parts = [
-          if (place.name != null && place.name != place.street) place.name,
-          place.street,
-          place.subLocality,
-          place.locality,
+          if (place.name != null && 
+              place.name != place.street && 
+              place.name != place.thoroughfare && 
+              !RegExp(r'^\d+$').hasMatch(place.name!)) place.name,
+          place.street ?? place.thoroughfare,
+          if (area.isNotEmpty && !(place.street ?? '').contains(area)) area,
+          if (city.isNotEmpty && city != area) city,
           place.administrativeArea,
         ].where((p) => p != null && p!.isNotEmpty).toList();
 
-        final fullAddress = parts.join(', ');
+        // deduplicate consecutive identical parts
+        final uniqueParts = <String>[];
+        for (var part in parts) {
+          if (uniqueParts.isEmpty || uniqueParts.last != part) {
+            uniqueParts.add(part!);
+          }
+        }
+
+        final fullAddress = uniqueParts.join(', ');
 
         setState(() {
           _address = fullAddress;
@@ -93,23 +213,14 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
         widget.onSelect(MapPickerResult(
           lat: position.latitude,
           lng: position.longitude,
-          street: place.street ?? place.name,
-          area: place.subLocality ?? place.subAdministrativeArea,
-          city: place.locality,
+          street: streetName,
+          area: area.isNotEmpty ? area : (place.subAdministrativeArea ?? ''),
+          city: city,
           emirate: place.administrativeArea,
           fullAddress: fullAddress,
         ));
       }
     } catch (e) {
-      debugPrint('Reverse Geocoding Error: $e');
-      // Still send the coordinates back even if geocoding fails
-      widget.onSelect(MapPickerResult(
-        lat: position.latitude,
-        lng: position.longitude,
-      ));
-      if (mounted) {
-        setState(() => _isReverseGeocoding = false);
-      }
     }
   }
 

@@ -13,9 +13,13 @@ class MarketingController extends ChangeNotifier {
   
   List<MarketingModel> get popups {
     final now = DateTime.now();
+    // ignore: avoid_print
+    print('DEBUG: MarketingController banners count: ${_banners.length}');
     return _banners.where((m) {
       // Basic visibility checks
-      if (m.position?.toLowerCase() != 'popup' || !m.isActive) return false;
+      final pos = m.position?.toLowerCase() ?? '';
+      final isPopup = pos == 'popup' || pos == 'promo' || pos == 'ad' || pos == 'advertisement';
+      if (!isPopup || !m.isActive) return false;
       
       // Date validity checks
       if (m.startAt != null && m.startAt!.isAfter(now)) return false;

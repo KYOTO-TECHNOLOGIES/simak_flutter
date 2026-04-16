@@ -33,7 +33,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static bool _hasShownPromo = false;
+  bool _hasShownPromo = false;
   static bool _hasShownNameDialog = false;
   bool _promoScheduledThisSession = false;
 
@@ -48,7 +48,6 @@ class _HomePageState extends State<HomePage> {
       context.read<MarketingController>().fetchBanners();
       context.read<OrderController>().fetchHomeReviews();
       _schedulePromoPopup();
-      _scheduleNameDialogFallback();
     });
   }
 
@@ -73,70 +72,81 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// If no promo popup is scheduled for this session (for example, when there
-  /// are no products or the promo was already shown earlier), show the name
-  /// dialog on its own after a short delay so it does not conflict with
-  /// other overlays.
-  void _scheduleNameDialogFallback() {
-    Future.delayed(const Duration(seconds: 7), () {
-      if (!mounted) return;
-      // If a promo is scheduled for this session, the name dialog will be
-      // triggered from the promo's completion callback instead.
-      if (_promoScheduledThisSession) return;
-      _showNameDialogIfNeeded();
-    });
-  }
 
   void _schedulePromoPopup() {
     Future.delayed(const Duration(seconds: 5), () {
-      if (!mounted || _hasShownPromo) return;
+      if (!mounted) return;
+
+      // If promo already shown or we don't want to show it, trigger fallback eventually
+      if (_hasShownPromo) {
+        _showNameDialogIfNeeded();
+        return;
+      }
 
       final marketingController = context.read<MarketingController>();
-      final popups = marketingController.popups;
 
-      // If no active popups found in Marketing Media, do not show anything
-      if (popups.isEmpty) return;
+      void tryShow() {
+        if (!mounted || _hasShownPromo) return;
+        final popups = marketingController.popups;
 
-      // Use the first popup (sorted by sortOrder in controller)
-      final activePopup = popups.first;
-      _hasShownPromo = true;
-      _promoScheduledThisSession = true;
-
-      PromoPopupDialog.showAfterDelay(
-        context: context,
-        marketing: activePopup,
-        delay: Duration.zero,
-        onShopNow: () {
-          if (activePopup.link != null && activePopup.link!.isNotEmpty) {
-            // Handle navigation based on link if needed
-            // For now, if it starts with http, it could be external,
-            // otherwise it might be a route or product slug.
-            if (activePopup.link!.startsWith('http')) {
-              // Open browser or handle external link
-            } else {
-              // Try navigating to the link as a path
-              Navigator.pushNamed(context, activePopup.link!);
-            }
-          }
-        },
-      ).then((_) {
-        if (!mounted) return;
-        final auth = context.read<AuthController>();
-
-        if (auth.isLoggedIn) {
-          // After the advertisement is closed, wait a bit and then
-          // show the profile completion dialog if the user's name
-          // is still incomplete. This guarantees the ad is fully
-          // dismissed before the box appears.
-          Future.delayed(const Duration(seconds: 2), () {
-            if (!mounted) return;
-            _showNameDialogIfNeeded();
-          });
-        } else {
-          // Show guest notification after the promo popup is closed
-          _showGuestNotification();
+        if (popups.isEmpty) {
+          // If no promo found after fetch, show the name dialog immediately as fallback
+          _showNameDialogIfNeeded();
+          return;
         }
-      });
+
+        final activePopup = popups.first;
+        _hasShownPromo = true;
+        _promoScheduledThisSession = true;
+
+        PromoPopupDialog.showAfterDelay(
+          context: context,
+          marketing: activePopup,
+          delay: Duration.zero,
+          onShopNow: () {
+            if (activePopup.link != null && activePopup.link!.isNotEmpty) {
+              if (activePopup.link!.startsWith('http')) {
+                // Open browser or handle external link
+              } else {
+                Navigator.pushNamed(context, activePopup.link!);
+              }
+            }
+          },
+        ).then((_) {
+          if (!mounted) return;
+          final auth = context.read<AuthController>();
+
+          if (auth.isLoggedIn) {
+            // Priority: Wait for promo to be fully dismissed
+            Future.delayed(const Duration(seconds: 2), () {
+              if (!mounted) return;
+              _showNameDialogIfNeeded();
+            });
+          } else {
+            _showGuestNotification();
+          }
+        });
+      }
+
+      if (!marketingController.isLoading) {
+        tryShow();
+      } else {
+        void listener() {
+          if (!marketingController.isLoading) {
+            marketingController.removeListener(listener);
+            tryShow();
+          }
+        }
+
+        marketingController.addListener(listener);
+        
+        // Safety timeout for the name dialog if backend fetch hangs too long
+        Future.delayed(const Duration(seconds: 10), () {
+          if (mounted && marketingController.isLoading && !_hasShownPromo) {
+             _showNameDialogIfNeeded();
+          }
+        });
+      }
     });
   }
 
@@ -197,25 +207,26 @@ class _HomePageState extends State<HomePage> {
                 toolbarHeight: 80,
                 title: Padding(
                   padding: const EdgeInsets.only(
-                    left: 12,
+                    left: 7,
                     top: 4,
                   ), // Breathing room
                   child: Directionality(
                     textDirection: TextDirection.ltr,
                     child: Row(
                       children: [
-                        Flexible(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 4),
-                            child: Row(
-                              children: [
-                                Image.asset(
-                                  'assets/images/home_logo.png',
-                                  height: 38,
-                                  fit: BoxFit.contain,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Image.asset(
+                                'assets/images/home_logo.png',
+                                height: 30,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  alignment: Alignment.centerLeft,
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
@@ -223,7 +234,8 @@ class _HomePageState extends State<HomePage> {
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.stretch,
-                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -233,27 +245,31 @@ class _HomePageState extends State<HomePage> {
                                                   context,
                                                   'app_name_simak',
                                                 ).toUpperCase(),
-                                                style: GoogleFonts.quicksand(
-                                                  fontSize: 20,
+                                                style: TextStyle(
+                                                  fontSize: 45,
                                                   fontWeight: FontWeight.w900,
-                                                  color: Colors.black87,
-                                                  height: 1.1,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurface,
+                                                  height: 1.0,
                                                 ),
                                               ),
+                                              const SizedBox(width: 4),
                                               Text(
                                                 tr(
                                                   context,
                                                   'app_name_fresh',
                                                 ).toUpperCase(),
-                                                style: GoogleFonts.quicksand(
-                                                  fontSize: 20,
+                                                style: TextStyle(
+                                                  fontSize: 45,
                                                   fontWeight: FontWeight.w900,
-                                                  color: Colors.black87,
-                                                  height: 1.1,
+                                                  color: AppColors.actionBlue,
+                                                  height: 1.0,
                                                 ),
                                               ),
                                             ],
                                           ),
+                                          const SizedBox(height: 1),
                                           FittedBox(
                                             fit: BoxFit.fitWidth,
                                             child: Text(
@@ -261,11 +277,11 @@ class _HomePageState extends State<HomePage> {
                                                 context,
                                                 'tagline',
                                               ).toUpperCase(),
-                                              style: GoogleFonts.quicksand(
-                                                fontSize: 10,
+                                              style: TextStyle(
+                                                fontSize: 20,
                                                 fontWeight: FontWeight.w800,
                                                 color: AppColors.actionBlue,
-                                                letterSpacing: 0.5,
+                                                letterSpacing: 1.0,
                                                 height: 1.0,
                                               ),
                                               maxLines: 1,
@@ -277,14 +293,14 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                         const Spacer(),
                         // Language Selection Icon (Always visible)
                         const Padding(
-                          padding: EdgeInsets.only(right: 12),
+                          padding: EdgeInsets.only(right: 9),
                           child: LanguageSelectionIcon(),
                         ),
                         // Floating Animated Cart Icon
@@ -406,8 +422,7 @@ class _HomePageState extends State<HomePage> {
                                   imageUrl:
                                       category.image ??
                                       AppConstants.kDefaultProductImage,
-                                  label: category
-                                      .name, // Use backend name directly
+                                  label: trText(context, category.name),
                                   onTap: () {
                                     // Set selected category and navigate
                                     controller.selectCategory(category.name);
@@ -591,7 +606,7 @@ class _HomePageState extends State<HomePage> {
 
               // ─── Featured Recipe ────────────────────────────────
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(
+                padding: const EdgeInsets.fromLTRB(
                   20,
                   32,
                   20,

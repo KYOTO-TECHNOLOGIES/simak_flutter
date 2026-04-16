@@ -22,6 +22,7 @@ class OrderService {
     final response = await _dio.post(
       'orders/checkout/',
       data: {
+        'device': 'mobile',
         'address_id': addressId,
         'payment_method': paymentMethod,
         'preferred_delivery_date': deliveryDate,
@@ -60,6 +61,7 @@ class OrderService {
     final response = await _dio.post(
       'orders/checkout_summary/',
       data: {
+        'device': 'mobile',
         'address_id': addressId,
         'tip_amount': tipAmount,
         if (couponCode != null) 'coupon_code': couponCode,

@@ -1194,6 +1194,7 @@ import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/widgets/video_player_widget.dart';
 
 
 class ProductDetailScreen extends StatefulWidget {
@@ -1952,125 +1953,185 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               child: SafeArea(
                 top: false,
-                child: Row(
-                  children: [
-                    // ── Add to Cart ─────────────────────────
-                    Expanded(
-                      flex: 2,
-                      child: OutlinedButton(
-                        onPressed: _inStock
-                            ? () async {
-                                if (_requireLogin(action: trStatic(context, 'action_add_to_cart'))) {
-                                  final success = await context
-                                      .read<CartController>()
-                                      .addToCart(widget.product.id, _quantity);
-                                  if (success) {
-                                    _showAddedToCartSnackbar();
-                                  } else {
-                                    final error = context.read<CartController>().error;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(error ?? 'Failed to add to cart'),
-                                        backgroundColor: AppColors.error,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            : null,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(
-                              color: AppColors.primary, width: 2),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          tr(context, 'add_to_cart'),
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // ── Buy Now ─────────────────────────────
-                    Expanded(
-                      flex: 3,
-                      child: Container(
+                child: !_inStock
+                    ? Container(
+                        width: double.infinity,
+                        height: 54,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: _inStock
-                                ? [AppColors.primary, AppColors.primaryDark]
-                                : [Colors.grey, Colors.grey.shade700],
+                            colors: [AppColors.primary, AppColors.primaryDark],
                           ),
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: _inStock
-                              ? [
-                                  BoxShadow(
-                                    color: AppColors.primary.withOpacity(0.35),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 6),
-                                  )
-                                ]
-                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        child: ElevatedButton(
-                          onPressed: _inStock
-                              ? () async {
-                                  if (_requireLogin(action: trStatic(context, 'action_buy'))) {
-                                    // Add to cart first
-                                    final success = await context
-                                        .read<CartController>()
-                                        .addToCart(widget.product.id, _quantity);
-                                    
-                                    if (success && mounted) {
-                                      // Proceed to order summary (Cart Mode)
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/order',
-                                        arguments: {
-                                          'isCartMode': true,
-                                          'product': widget.product,
-                                          'quantity': _quantity,
-                                        },
-                                      );
-                                    } else if (mounted) {
-                                      final error = context.read<CartController>().error;
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(error ?? 'Failed to prepare order'),
-                                          backgroundColor: AppColors.error,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                }
-                              : null,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // notify me functionality can be added here later
+                          },
+                          icon: const Icon(Icons.notifications_active_outlined, color: Colors.white),
+                          label: Text(
+                            tr(context, 'Notify Me'),
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                                color: Colors.white),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
-                            foregroundColor: AppColors.white,
                             shadowColor: Colors.transparent,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            tr(context, 'buy_now'),
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                           ),
                         ),
+                      )
+                    : Row(
+                        children: [
+                          // ── Add to Cart ─────────────────────────
+                          Expanded(
+                            flex: 2,
+                            child: OutlinedButton(
+                              onPressed: _inStock
+                                  ? () async {
+                                      if (_requireLogin(
+                                          action: trStatic(
+                                              context, 'action_add_to_cart'))) {
+                                        final success = await context
+                                            .read<CartController>()
+                                            .addToCart(
+                                                widget.product.id, _quantity);
+                                        if (success) {
+                                          _showAddedToCartSnackbar();
+                                        } else {
+                                          final error = context
+                                              .read<CartController>()
+                                              .error;
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(error ??
+                                                  'Failed to add to cart'),
+                                              backgroundColor: AppColors.error,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+                                  : null,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                side: const BorderSide(
+                                    color: AppColors.primary, width: 2),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: Text(
+                                tr(context, 'add_to_cart'),
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+
+                          // ── Buy Now ─────────────────────────────
+                          Expanded(
+                            flex: 3,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: _inStock
+                                      ? [
+                                          AppColors.primary,
+                                          AppColors.primaryDark
+                                        ]
+                                      : [Colors.grey, Colors.grey.shade700],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: _inStock
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primary
+                                              .withOpacity(0.35),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
+                                        )
+                                      ]
+                                    : null,
+                              ),
+                              child: ElevatedButton(
+                                onPressed: _inStock
+                                    ? () async {
+                                        if (_requireLogin(
+                                            action: trStatic(
+                                                context, 'action_buy'))) {
+                                          // Add to cart first
+                                          final success = await context
+                                              .read<CartController>()
+                                              .addToCart(
+                                                  widget.product.id, _quantity);
+
+                                          if (success && mounted) {
+                                            // Proceed to order summary (Cart Mode)
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/order',
+                                              arguments: {
+                                                'isCartMode': true,
+                                                'product': widget.product,
+                                                'quantity': _quantity,
+                                              },
+                                            );
+                                          } else if (mounted) {
+                                            final error = context
+                                                .read<CartController>()
+                                                .error;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(error ??
+                                                    'Failed to prepare order'),
+                                                backgroundColor: AppColors.error,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: AppColors.white,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  tr(context,
+                                      _inStock ? 'buy_now' : 'out_of_stock'),
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ],
@@ -2081,33 +2142,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _buildMediaView(_MediaItem item, ThemeData theme) {
     if (item.type == _MediaType.video) {
-      return Container(
-        color: Colors.black,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (item.thumbnail != null)
-              Image.network(item.thumbnail!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (_, __, ___) =>
-                      Container(color: Colors.black))
-            else
-              Container(color: const Color(0xFF1E1E1E)),
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.white, width: 2),
-              ),
-              child:
-                  const Icon(Icons.play_arrow, color: AppColors.white, size: 36),
-            ),
-          ],
-        ),
+      return ProductVideoPlayer(
+        videoUrl: item.url,
+        thumbnail: item.thumbnail,
       );
     }
     return Container(

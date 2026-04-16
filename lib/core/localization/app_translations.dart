@@ -19,9 +19,32 @@ String tr(BuildContext context, String key, {Map<String, String>? args}) {
 /// Translate dynamic text (e.g. from backend) by looking up a known English string.
 String trText(BuildContext context, String englishText) {
   final lang = context.watch<LanguageProvider>().locale;
-  // Try to find if this English text exists as a key, or if it's a value we can reverse-map
-  // For simplicity and performance, we'll use it as a key for lookup.
-  return _translations[lang]?[englishText] ?? _translations['en']?[englishText] ?? englishText;
+  final key = englishText.trim();
+
+  // 1. Try exact match in target language
+  if (_translations[lang]?[key] != null) return _translations[lang]![key]!;
+
+  // 2. Try case-insensitive match in target language
+  final lowerKey = key.toLowerCase();
+  final langMap = _translations[lang];
+  if (langMap != null) {
+    for (var entry in langMap.entries) {
+      if (entry.key.toLowerCase() == lowerKey) return entry.value;
+    }
+  }
+
+  // 3. Try exact match in English
+  if (_translations['en']?[key] != null) return _translations['en']![key]!;
+
+  // 4. Try case-insensitive match in English (to at least get the "canonical" English version)
+  final enMap = _translations['en'];
+  if (enMap != null) {
+    for (var entry in enMap.entries) {
+      if (entry.key.toLowerCase() == lowerKey) return entry.value;
+    }
+  }
+
+  return englishText;
 }
 
 /// Same as tr() but doesn't watch — use inside callbacks/non-build methods.
@@ -39,7 +62,32 @@ String trStatic(BuildContext context, String key, {Map<String, String>? args}) {
 /// Same as trText() but doesn't watch — use inside callbacks/non-build methods.
 String trTextStatic(BuildContext context, String englishText) {
   final lang = context.read<LanguageProvider>().locale;
-  return _translations[lang]?[englishText] ?? _translations['en']?[englishText] ?? englishText;
+  final key = englishText.trim();
+
+  // 1. Try exact match in target language
+  if (_translations[lang]?[key] != null) return _translations[lang]![key]!;
+
+  // 2. Try case-insensitive match in target language
+  final lowerKey = key.toLowerCase();
+  final langMap = _translations[lang];
+  if (langMap != null) {
+    for (var entry in langMap.entries) {
+      if (entry.key.toLowerCase() == lowerKey) return entry.value;
+    }
+  }
+
+  // 3. Try exact match in English
+  if (_translations['en']?[key] != null) return _translations['en']![key]!;
+
+  // 4. Try case-insensitive match in English
+  final enMap = _translations['en'];
+  if (enMap != null) {
+    for (var entry in enMap.entries) {
+      if (entry.key.toLowerCase() == lowerKey) return entry.value;
+    }
+  }
+
+  return englishText;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -189,7 +237,8 @@ final Map<String, Map<String, String>> _translations = {
     'add': 'Add',
     'access_restricted': 'ACCESS RESTRICTED',
     'not_logged_in': "You're not logged in",
-    'sign_in_subtitle': 'Sign in to access your profile,\norders, and personalized experience.',
+    'sign_in_subtitle':
+        'Sign in to access your profile,\norders, and personalized experience.',
     'login_to_account': 'Login to Your Account',
     'create_account': 'Create New Account',
     'logout': 'Logout',
@@ -202,7 +251,8 @@ final Map<String, Map<String, String>> _translations = {
 
     // ── Reviews ─────────────────────────────────────────────
     'review_1': 'Nice ecommerce experience, very smooth!',
-    'review_2': 'Great quality frozen whole fish (various)! Highly recommended.',
+    'review_2':
+        'Great quality frozen whole fish (various)! Highly recommended.',
     'review_3': 'Great quality frozen seafood cocktail! Fresh and tasty.',
     'review_4': 'Great quality frozen fish cutlets! Will buy again.',
     'days_ago': '2 days ago',
@@ -259,7 +309,8 @@ final Map<String, Map<String, String>> _translations = {
     'enter_otp': 'Enter OTP',
     'otp_login': 'OTP Login',
     'otp_sent_msg': 'We sent a 6-digit code to',
-    'otp_enter_msg': 'Enter your phone number or email\nto receive a verification code',
+    'otp_enter_msg':
+        'Enter your phone number or email\nto receive a verification code',
     'phone_or_email': 'Phone or Email',
     'phone_hint': '+971501234567 or you@email.com',
     'enter_phone_email': 'Please enter your phone or email',
@@ -301,7 +352,8 @@ final Map<String, Map<String, String>> _translations = {
     'easy_returns': 'Easy\nReturns',
     'quality_guaranteed': 'Quality\nGuaranteed',
     'product_info': 'Product Information',
-    'default_description': 'Experience the finest quality seafood, sourced daily and handled with the utmost care to ensure peak freshness and flavor delivered straight to your door.',
+    'default_description':
+        'Experience the finest quality seafood, sourced daily and handled with the utmost care to ensure peak freshness and flavor delivered straight to your door.',
     'key_specs': 'Key Specifications',
     'origin': 'Origin',
     'origin_value': 'United Arab Emirates',
@@ -318,6 +370,7 @@ final Map<String, Map<String, String>> _translations = {
     'best_for_desc': 'Grilling, Pan-searing, or Traditional Emarati Machboos.',
     'storage_tip': 'Storage Tip',
     'storage_tip_desc': 'Consume within 24 hours of delivery for best taste.',
+    'Notify Me': 'Notify Me',
     'add_to_cart': 'Add to Cart',
     'buy_now': 'Buy Now',
     'added_to_cart': 'added to cart!',
@@ -337,7 +390,8 @@ final Map<String, Map<String, String>> _translations = {
     'failed_load_details': 'Failed to load product details',
     'my_cart': 'My Cart',
     'cart_empty': 'Your cart is empty',
-    'cart_empty_desc': 'Looks like you haven\'t added any items to your cart yet.',
+    'cart_empty_desc':
+        'Looks like you haven\'t added any items to your cart yet.',
     'start_shopping': 'Start Shopping',
     'continue_shopping': 'Continue Shopping',
     'checkout': 'Checkout',
@@ -390,7 +444,8 @@ final Map<String, Map<String, String>> _translations = {
     'checkout_slot_afternoon': 'Afternoon (12pm - 5pm)',
     'checkout_slot_evening': 'Evening (5pm - 9pm)',
     'checkout_delivery_notes': 'DELIVERY NOTES',
-    'checkout_notes_hint': 'Any specific instructions? (e.g. Leave at front door)',
+    'checkout_notes_hint':
+        'Any specific instructions? (e.g. Leave at front door)',
     'checkout_add_tip': 'Add a Tip',
     'checkout_tip_desc': '100% of the tip goes to your delivery partner',
     'checkout_no_tip': 'No Tip',
@@ -409,13 +464,16 @@ final Map<String, Map<String, String>> _translations = {
     'payment_online': 'Online Payment',
     'order_pending_badge': 'ORDER PENDING',
     'order_pending_title': 'Your Order Is Marked as Pending',
-    'order_pending_desc': 'Your payment was cancelled but your order has been saved as pending. You can return to your order at any time to complete the payment.',
+    'order_pending_desc':
+        'Your payment was cancelled but your order has been saved as pending. You can return to your order at any time to complete the payment.',
     'payment_failed_badge': 'PAYMENT FAILED',
     'payment_unsuccessful_title': 'Payment Unsuccessful',
-    'payment_failed_desc': 'We couldn\'t process your payment. No amount has been charged. Please try again or use a different payment method.',
+    'payment_failed_desc':
+        'We couldn\'t process your payment. No amount has been charged. Please try again or use a different payment method.',
     'payment_successful_badge': 'PAYMENT SUCCESSFUL',
     'payment_successful_title': 'Payment Successful',
-    'payment_successful_desc': 'Your payment has been successfully processed and your order is confirmed. Thank you for your purchase!',
+    'payment_successful_desc':
+        'Your payment has been successfully processed and your order is confirmed. Thank you for your purchase!',
     'view_order': 'View Order',
     'common_reasons_failure': 'Common reasons for failure:',
     'reason_insufficient_balance': 'Insufficient balance in your account',
@@ -450,7 +508,8 @@ final Map<String, Map<String, String>> _translations = {
     'order_directions': 'Directions',
     'order_address_not_avail': 'Address details not available',
     'order_placed_successfully': 'Order Placed Successfully!',
-    'order_preparing_subtext': 'Thank you for your fresh catch. We\'re preparing it now.',
+    'order_preparing_subtext':
+        'Thank you for your fresh catch. We\'re preparing it now.',
     'redirecting_home': 'Redirecting to home...',
     'order_tracking': 'Order Tracking',
     'order_tracking_subtitle': 'Real-time updates on your fresh catch',
@@ -462,7 +521,8 @@ final Map<String, Map<String, String>> _translations = {
     // Support Center
     'support_center': 'Support Center',
     'how_can_we_help': 'How can we help you?',
-    'support_sub_header': 'Our team is here to assist. Reach out and we\'ll help.',
+    'support_sub_header':
+        'Our team is here to assist. Reach out and we\'ll help.',
     'send_us_message': 'Send us a message',
     'send_us_message_sub': 'WE\'LL GET BACK TO YOU WITHIN 24 HOURS',
     'support_full_name': 'Full Name',
@@ -478,8 +538,10 @@ final Map<String, Map<String, String>> _translations = {
     'support_working_hours_val': 'Sat - Thu: 9 AM - 9 PM',
     'support_email_us': 'EMAIL US',
     'support_urgent_help_title': 'Need urgent help?',
-    'support_urgent_help_subtitle': 'For order-related issues, visit your Orders page for quick actions like cancellation or return requests.',
-    'support_verification_warning': 'Please verify your email to send a message.',
+    'support_urgent_help_subtitle':
+        'For order-related issues, visit your Orders page for quick actions like cancellation or return requests.',
+    'support_verification_warning':
+        'Please verify your email to send a message.',
     'support_success': 'Message sent successfully. We will contact you soon.',
     'support_failed': 'Failed to send message. Please try again later.',
 
@@ -581,7 +643,8 @@ final Map<String, Map<String, String>> _translations = {
     'order_hash': 'ORDER #',
     'how_was_it': 'How was it?',
     'rate_product_experience': 'Rate your experience with this product',
-    'tell_us_about_product_hint': 'Tell others what you thought about this product...',
+    'tell_us_about_product_hint':
+        'Tell others what you thought about this product...',
     'thank_you_for_review': 'Thank you for your review!',
     'failed_to_add_review': 'Failed to add review',
     'address_type_home': 'Home',
@@ -591,7 +654,8 @@ final Map<String, Map<String, String>> _translations = {
     'customer_label': 'Customer',
     'no_reviews_yet': 'No Reviews Yet',
     'be_the_first_to_review': 'Be the first to review this product!',
-    'no_reviews_subtitle': 'Your reviews will appear here after you rate products from your orders.',
+    'no_reviews_subtitle':
+        'Your reviews will appear here after you rate products from your orders.',
     'my_reviews_count': 'MY REVIEWS ({count})',
     'edit_your_review': 'EDIT YOUR REVIEW',
     'share_your_experience_hint': 'Share your experience...',
@@ -608,38 +672,42 @@ final Map<String, Map<String, String>> _translations = {
     'product': 'Product',
     // ── Error Screen ──────────────────────────────────────────
     'error_title': 'Oops! Something Went Wrong',
-    'error_message': 'We are having trouble connecting to our servers. Please check your internet or try again later.',
+    'error_message':
+        'We are having trouble connecting to our servers. Please check your internet or try again later.',
     'retry_btn': 'RETRY',
     'back_to_home': 'BACK TO HOME',
     // ── No Internet Screen ────────────────────────────────────
     'no_internet_title': 'No Internet Connection',
-    'no_internet_message': 'Please check your internet connection and try again.',
+    'no_internet_message':
+        'Please check your internet connection and try again.',
 
     // ── How It Works ──────────────────────────────────────────
     'how_it_works': 'HOW IT WORKS',
     'ocean_to_plate': 'From Ocean to Your Plate',
-    'how_it_works_sub': 'Four simple steps to the freshest seafood you\'ve ever tasted. No middlemen, no delays — just pure freshness.',
-    
+    'how_it_works_sub':
+        'Four simple steps to the freshest seafood you\'ve ever tasted. No middlemen, no delays — just pure freshness.',
+
     'step_1_title': 'Browse & Pick',
-    'step_1_desc': 'Explore our daily catch — from Pomfret and Prawns to Squid and Surmai. Filter by type or size.',
+    'step_1_desc':
+        'Explore our daily catch — from Pomfret and Prawns to Squid and Surmai. Filter by type or size.',
     'step_1_tags': 'Cleaned • Steaks • Fillets • Whole',
-    
+
     'step_2_title': 'Add to Cart & Pay',
-    'step_2_desc': 'Choose your quantity, pick a delivery slot, and pay securely via Cards or Cash on Delivery.',
+    'step_2_desc':
+        'Choose your quantity, pick a delivery slot, and pay securely via Cards or Cash on Delivery.',
     'step_2_tags': 'Cards • COD • Wallets',
-    
+
     'step_3_title': 'We Pack & Ship',
-    'step_3_desc': 'Your order is hygienically cleaned, vacuum-packed with ice, and dispatched in insulated cold-chain boxes.',
+    'step_3_desc':
+        'Your order is hygienically cleaned, vacuum-packed with ice, and dispatched in insulated cold-chain boxes.',
     'step_3_tags': 'Ice-packed • Vacuum-sealed • Insulated',
-    
+
     'step_4_title': 'Cook & Enjoy!',
-    'step_4_desc': 'Receive fresh seafood at your door — ready to cook. Try our chef-curated recipes for the perfect dish.',
+    'step_4_desc':
+        'Receive fresh seafood at your door — ready to cook. Try our chef-curated recipes for the perfect dish.',
     'step_4_tags': 'Same-day delivery • Recipe cards',
 
     'free_delivery_threshold': 'Free delivery on orders above AED 999',
-
-
-
 
     // Search Empty State
     'search_no_results_title': 'No matches found',
@@ -656,7 +724,8 @@ final Map<String, Map<String, String>> _translations = {
     'stat_seafood_varieties': 'SEAFOOD\nVARIETIES',
     'stat_average_rating': 'AVERAGE\nRATING',
     'stat_ontime_delivery': 'ON-TIME\nDELIVERY',
-    'testimonial_quote': '"The prawns were incredibly fresh—just like they came off the boat! Packaging was chilled and delivery was spot on."',
+    'testimonial_quote':
+        '"The prawns were incredibly fresh—just like they came off the boat! Packaging was chilled and delivery was spot on."',
     'testimonial_author': '— Priya R., Mumbai',
     'verified_purchase': 'Verified Purchase',
 
@@ -690,10 +759,13 @@ final Map<String, Map<String, String>> _translations = {
     // ── OTP Verification Dialog ──────────────────────────────
     'otp_verify_email_title': 'Verify Email',
     'otp_verify_phone_title': 'Verify Phone Number',
-    'otp_verify_email_subtitle': 'Enter your email address to receive a verification code',
-    'otp_verify_phone_subtitle': 'Enter your phone number to receive a verification code',
+    'otp_verify_email_subtitle':
+        'Enter your email address to receive a verification code',
+    'otp_verify_phone_subtitle':
+        'Enter your phone number to receive a verification code',
     'enter_valid_email': 'Please enter a valid email address.',
-    'valid_phone_for_country': 'Please enter a valid phone number for the selected country.',
+    'valid_phone_for_country':
+        'Please enter a valid phone number for the selected country.',
     'failed_to_send_otp': 'Failed to send OTP. Please try again.',
     'otp_sent_to': 'OTP sent to',
     'enter_otp_label': 'ENTER OTP',
@@ -705,15 +777,19 @@ final Map<String, Map<String, String>> _translations = {
     // ── Referrals ──────────────────────────────────────────
     'referrals': 'Referrals',
     'referral_header': 'Friends Who Refer\nStay Friends Forever',
-    'referral_sub': 'When you refer your friend to Simak Fresh, you get 20% OFF on your next order and so does your friend. Then you both eat healthy ever after!',
+    'referral_sub':
+        'When you refer your friend to Simak Fresh, you get 20% OFF on your next order and so does your friend. Then you both eat healthy ever after!',
     'your_referral_code': 'YOUR REFERRAL CODE',
     'how_it_works': 'HERE IS HOW IT WORKS',
     'referral_step_1_title': 'Invite a Friend',
-    'referral_step_1_sub': 'Share your unique referral code with friends and family. Ask them to register on Simak Fresh.',
+    'referral_step_1_sub':
+        'Share your unique referral code with friends and family. Ask them to register on Simak Fresh.',
     'referral_step_2_title': 'Friend Makes First Purchase',
-    'referral_step_2_sub': 'Your friend enters your referral code at checkout on their first order.',
+    'referral_step_2_sub':
+        'Your friend enters your referral code at checkout on their first order.',
     'referral_step_3_title': 'Both Get 20% Off',
-    'referral_step_3_sub': 'Your friend gets 20% OFF instantly! Once the order is delivered, you also receive a 20% discount coupon.',
+    'referral_step_3_sub':
+        'Your friend gets 20% OFF instantly! Once the order is delivered, you also receive a 20% discount coupon.',
     'referral_code_label': 'REFERRAL CODE (OPTIONAL)',
     'referral_code_hint': 'Enter referral code (if any)',
     'stats_invited': 'Friends Invited',
@@ -729,6 +805,14 @@ final Map<String, Map<String, String>> _translations = {
     'discount': 'Discount',
     'available_coupons': 'Available Coupons',
     'tap_to_apply': 'TAP TO APPLY',
+    'Coupon Applied': 'Coupon Applied',
+    'Discount Amount': 'Discount Amount',
+    'Delivery Charge': 'Delivery Charge',
+    'Tip Amount': 'Tip Amount',
+    'Frozen fish': 'Frozen Fish',
+    'Live fish': 'Live Fish',
+    'Frozen Fish': 'Frozen Fish',
+    'Live Fish': 'Live Fish',
   },
 
   // ═════════════════════════════════════════════════════════════════
@@ -1238,27 +1322,24 @@ final Map<String, Map<String, String>> _translations = {
     'how_it_works': '工作流程',
     'ocean_to_plate': '从海洋到您的餐桌',
     'how_it_works_sub': '四个简单步骤，让您品尝到最真实的新鲜海鲜。无中介，无延迟——只有纯粹的新鲜。',
-    
+
     'step_1_title': '浏览并挑选',
     'step_1_desc': '探索我们的每日捕捞——从鲳鱼、虾到鱿鱼和鲭鱼。按类型或尺寸过滤。',
     'step_1_tags': '已清理 • 鱼排 • 鱼片 • 整鱼',
-    
+
     'step_2_title': '加入购物车并支付',
     'step_2_desc': '选择您的数量，选择送货时段，并通过银行卡或货到付款安全支付。',
     'step_2_tags': '银行卡 • 货到付款 • 钱包',
-    
+
     'step_3_title': '我们打包并运输',
     'step_3_desc': '您的订单将经过卫生清理、真空冰袋包装，并由隔热冷链箱派送。',
     'step_3_tags': '冰袋包装 • 真空密封 • 隔热',
-    
+
     'step_4_title': '烹饪并享用！',
     'step_4_desc': '在家门口接收新鲜海鲜——即刻烹饪。尝试我们厨师精选的食谱，打造完美菜肴。',
     'step_4_tags': '当日送达 • 食谱卡',
 
     'free_delivery_threshold': '订单满 AED 999 免运费',
-
-
-
 
     // Search Empty State
     'search_no_results_title': '未找到匹配结果',
@@ -1323,6 +1404,7 @@ final Map<String, Map<String, String>> _translations = {
     'no_reviews_yet': "暂无评价",
     'be_the_first_to_review': "成为第一个评价此产品的人！",
     'month_jan': '1月',
+    'Notify Me': '有货通知我',
     'month_feb': '2月',
     'month_mar': '3月',
     'month_apr': '4月',
@@ -1355,7 +1437,8 @@ final Map<String, Map<String, String>> _translations = {
     // ── Referrals ──────────────────────────────────────────
     'referrals': '推荐计划',
     'referral_header': '推荐好友\n友谊长存',
-    'referral_sub': '当您向朋友推荐 Simak Fresh 时，您的下一份订单可享受 20% 的折扣，您的朋友也是如此。从此你们都可以健康饮食！',
+    'referral_sub':
+        '当您向朋友推荐 Simak Fresh 时，您的下一份订单可享受 20% 的折扣，您的朋友也是如此。从此你们都可以健康饮食！',
     'your_referral_code': '您的推荐码',
     'how_it_works': '以下是运作方式',
     'referral_step_1_title': '邀请好友',
@@ -1379,6 +1462,15 @@ final Map<String, Map<String, String>> _translations = {
     'discount': '折扣',
     'available_coupons': '可用优惠券',
     'tap_to_apply': '点击应用',
+    'Coupon Applied': '已使用优惠券',
+    'Discount Amount': '折扣金额',
+    'Delivery Charge': '配送费',
+    'Tip Amount': '小费',
+    'Frozen fish': '冷冻鱼',
+    'Live fish': '活鱼',
+    'Frozen Fish': '冷冻鱼',
+    'Live Fish': '活鱼',
+    'Fresh fish': '新鲜鱼类',
   },
 
   // ═════════════════════════════════════════════════════════════════
@@ -1526,7 +1618,8 @@ final Map<String, Map<String, String>> _translations = {
     'add': 'إضافة',
     'access_restricted': 'الوصول مقيد',
     'not_logged_in': 'لم تقم بتسجيل الدخول',
-    'sign_in_subtitle': 'سجّل دخولك للوصول إلى ملفك\nالشخصي وطلباتك وتجربتك المخصصة.',
+    'sign_in_subtitle':
+        'سجّل دخولك للوصول إلى ملفك\nالشخصي وطلباتك وتجربتك المخصصة.',
     'login_to_account': 'تسجيل الدخول إلى حسابك',
     'create_account': 'إنشاء حساب جديد',
     'logout_confirm': 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
@@ -1636,7 +1729,8 @@ final Map<String, Map<String, String>> _translations = {
     'easy_returns': 'إرجاع\nسهل',
     'quality_guaranteed': 'جودة\nمضمونة',
     'product_info': 'معلومات المنتج',
-    'default_description': 'استمتع بأجود المأكولات البحرية، يتم توفيرها يومياً والتعامل معها بعناية فائقة لضمان أقصى درجات النضارة والنكهة حتى باب منزلك.',
+    'default_description':
+        'استمتع بأجود المأكولات البحرية، يتم توفيرها يومياً والتعامل معها بعناية فائقة لضمان أقصى درجات النضارة والنكهة حتى باب منزلك.',
     'key_specs': 'المواصفات الرئيسية',
     'origin': 'المنشأ',
     'origin_value': 'الإمارات العربية المتحدة',
@@ -1653,6 +1747,7 @@ final Map<String, Map<String, String>> _translations = {
     'best_for_desc': 'الشواء أو القلي أو المجبوس الإماراتي التقليدي.',
     'storage_tip': 'نصيحة التخزين',
     'storage_tip_desc': 'يُستهلك خلال 24 ساعة من التوصيل للحصول على أفضل مذاق.',
+    'Notify Me': 'أبلغني عند التوفر',
     'add_to_cart': 'أضف إلى السلة',
     'buy_now': 'اشترِ الآن',
     'added_to_cart': 'تم إضافته إلى السلة!',
@@ -1723,23 +1818,28 @@ final Map<String, Map<String, String>> _translations = {
     'payment_online': 'الدفع عبر الإنترنت',
     'order_pending_badge': 'الطلب معلق',
     'order_pending_title': 'تم تحديد طلبك كطلب معلق',
-    'order_pending_desc': 'تم إلغاء دفعتك ولكن تم حفظ طلبك كطلب معلق. يمكنك العودة إلى طلبك في أي وقت لإكمال عملية الدفع.',
+    'order_pending_desc':
+        'تم إلغاء دفعتك ولكن تم حفظ طلبك كطلب معلق. يمكنك العودة إلى طلبك في أي وقت لإكمال عملية الدفع.',
     'payment_failed_badge': 'فشل الدفع',
     'payment_unsuccessful_title': 'عملية الدفع غير ناجحة',
-    'payment_failed_desc': 'لم نتمكن من معالجة دفعتك. لم يتم خصم أي مبلغ. يرجى المحاولة مرة أخرى أو استخدام طريقة دفع مختلفة.',
+    'payment_failed_desc':
+        'لم نتمكن من معالجة دفعتك. لم يتم خصم أي مبلغ. يرجى المحاولة مرة أخرى أو استخدام طريقة دفع مختلفة.',
     'payment_successful_badge': 'الدفع ناجح',
     'payment_successful_title': 'تم الدفع بنجاح',
-    'payment_successful_desc': 'تمت معالجة دفعتك بنجاح وتم تأكيد طلبك. شكراً لشرائك!',
+    'payment_successful_desc':
+        'تمت معالجة دفعتك بنجاح وتم تأكيد طلبك. شكراً لشرائك!',
     'view_order': 'عرض الطلب',
     'common_reasons_failure': 'الأسباب الشائعة للفشل:',
     'reason_insufficient_balance': 'رصيد غير كافٍ في حسابك',
-    'reason_card_expired': 'البطاقة منتهية الصلاحية أو البيانات المدخلة غير صحيحة',
+    'reason_card_expired':
+        'البطاقة منتهية الصلاحية أو البيانات المدخلة غير صحيحة',
     'reason_transaction_declined': 'تم رفض المعاملة من قبل البنك',
     'reason_network_interruption': 'انقطاع الشبكة أثناء الدفع',
     'try_again': 'أعد المحاولة',
     'return_to_order': 'العودة إلى الطلب',
     'back_to_home': 'العودة إلى الصفحة الرئيسية',
-    'payment_online_telr_desc': 'ادفع بأمان باستخدام البطاقات أو الدفع الإلكتروني',
+    'payment_online_telr_desc':
+        'ادفع بأمان باستخدام البطاقات أو الدفع الإلكتروني',
     'currency_aed': 'درهم',
     'tip': 'إكرامية',
     'default': 'افتراضي',
@@ -1827,8 +1927,10 @@ final Map<String, Map<String, String>> _translations = {
     'support_working_hours_val': 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     'support_email_us': 'راسلنا عبر البريد',
     'support_urgent_help_title': 'هل تحتاج إلى مساعدة عاجلة؟',
-    'support_urgent_help_subtitle': 'بالنسبة للمشكلات المتعلقة بالطلب، قم بزيارة صفحة طلباتي لاتخاذ إجراءات سريعة مثل الإلغاء أو طلبات الإرجاع.',
-    'support_verification_warning': 'يرجى التحقق من بريدك الإلكتروني لإرسال رسالة.',
+    'support_urgent_help_subtitle':
+        'بالنسبة للمشكلات المتعلقة بالطلب، قم بزيارة صفحة طلباتي لاتخاذ إجراءات سريعة مثل الإلغاء أو طلبات الإرجاع.',
+    'support_verification_warning':
+        'يرجى التحقق من بريدك الإلكتروني لإرسال رسالة.',
     'support_success': 'تم إرسال الرسالة بنجاح. سنتصل بك قريباً.',
     'support_failed': 'فشل إرسال الرسالة. يرجى المحاولة مرة أخرى لاحقاً.',
 
@@ -1929,42 +2031,47 @@ final Map<String, Map<String, String>> _translations = {
     'place_order': 'تقديم الطلب',
     // ── Error Screen ──────────────────────────────────────────
     'error_title': 'عذراً! حدث خطأ ما',
-    'error_message': 'نواجه مشكلة في الاتصال بخوادمنا. يرجى التحقق من اتصالك بالإنترنت أو المحاولة مرة أخرى لاحقاً.',
+    'error_message':
+        'نواجه مشكلة في الاتصال بخوادمنا. يرجى التحقق من اتصالك بالإنترنت أو المحاولة مرة أخرى لاحقاً.',
     'retry_btn': 'إعادة المحاولة',
     'back_to_home': 'العودة للرئيسية',
     // ── No Internet Screen ────────────────────────────────────
     'no_internet_title': 'لا يوجد اتصال بالإنترنت',
-    'no_internet_message': 'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
+    'no_internet_message':
+        'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
 
     // ── How It Works ──────────────────────────────────────────
     'how_it_works': 'كيف نعمل',
     'ocean_to_plate': 'من المحيط إلى طبقك',
-    'how_it_works_sub': 'أربع خطوات بسيطة لأذكى مأكولات بحرية تذوقتها على الإطلاق. لا وسطاء، لا تأخير - فقط نضارة نقية.',
-    
+    'how_it_works_sub':
+        'أربع خطوات بسيطة لأذكى مأكولات بحرية تذوقتها على الإطلاق. لا وسطاء، لا تأخير - فقط نضارة نقية.',
+
     'step_1_title': 'تصفح واختر',
-    'step_1_desc': 'استكشف صيدنا اليومي - من الزبيدي والروبيان إلى الحبار والكنعد. تصفية حسب النوع أو الحجم.',
+    'step_1_desc':
+        'استكشف صيدنا اليومي - من الزبيدي والروبيان إلى الحبار والكنعد. تصفية حسب النوع أو الحجم.',
     'step_1_tags': 'منظف • شرائح • فيليه • كامل',
-    
+
     'step_2_title': 'أضف للسلة وادفع',
-    'step_2_desc': 'اختر الكمية، حدد موعد التوصيل، وادفع بأمان عبر البطاقات أو الدفع عند الاستلام.',
+    'step_2_desc':
+        'اختر الكمية، حدد موعد التوصيل، وادفع بأمان عبر البطاقات أو الدفع عند الاستلام.',
     'step_2_tags': 'بطاقات • دفع عند الاستلام • محافظ',
-    
+
     'step_3_title': 'نحن نغلف ونشحن',
-    'step_3_desc': 'يتم تنظيف طلبك صحياً، وتغليفه بالتفريغ الهوائي مع الثلج، وإرساله في صناديق معزولة حرارياً.',
+    'step_3_desc':
+        'يتم تنظيف طلبك صحياً، وتغليفه بالتفريغ الهوائي مع الثلج، وإرساله في صناديق معزولة حرارياً.',
     'step_3_tags': 'مبرد بالثلج • مغلف بالتفريغ • معزول',
-    
+
     'step_4_title': 'اطبخ واستمتع!',
-    'step_4_desc': 'استلم مأكولاتك البحرية الطازجة عند باب منزلك - جاهزة للطبخ. جرب وصفات الشيف المختارة.',
+    'step_4_desc':
+        'استلم مأكولاتك البحرية الطازجة عند باب منزلك - جاهزة للطبخ. جرب وصفات الشيف المختارة.',
     'step_4_tags': 'توصيل في نفس اليوم • بطاقات وصفات',
 
     'free_delivery_threshold': 'توصيل مجاني للطلبات فوق 999 درهم',
 
-
-
-
     // Search Empty State
     'search_no_results_title': 'لم يتم العثور على نتائج',
-    'search_no_results_message': 'حاول تعديل البحث أو الفلاتر للعثور على ما تبحث عنه.',
+    'search_no_results_message':
+        'حاول تعديل البحث أو الفلاتر للعثور على ما تبحث عنه.',
     'search_clear_filters': 'مسح جميع الفلاتر',
     'select_date': 'اختر التاريخ',
     'enter_name_continue': 'يرجى إدخال اسمك للمتابعة',
@@ -1976,7 +2083,8 @@ final Map<String, Map<String, String>> _translations = {
     'stat_seafood_varieties': 'أصناف\nبحرية',
     'stat_average_rating': 'متوسط\nالتقييم',
     'stat_ontime_delivery': 'توصيل\nفي الموعد',
-    'testimonial_quote': '"كان الروبيان طازجًا بشكل لا يصدق - تمامًا كما لو كان قد خرج للتو من القارب! كان التغليف مبردًا وكان التوصيل مثاليًا."',
+    'testimonial_quote':
+        '"كان الروبيان طازجًا بشكل لا يصدق - تمامًا كما لو كان قد خرج للتو من القارب! كان التغليف مبردًا وكان التوصيل مثاليًا."',
     'testimonial_author': "— بريا ر.، مومباي",
     'verified_purchase': "عملية شراء مؤكدة",
 
@@ -2027,15 +2135,19 @@ final Map<String, Map<String, String>> _translations = {
     // ── Referrals ──────────────────────────────────────────
     'referrals': 'الإحالات',
     'referral_header': 'الأصدقاء الذين يحيلون\nيبقون أصدقاء للأبد',
-    'referral_sub': 'عندما تقوم بإحالة صديقك إلى سيماك فريش، تحصل على خصم 20٪ على طلبك التالي وكذلك صديقك. ثم تأكلان معاً بصحة جيدة إلى الأبد!',
+    'referral_sub':
+        'عندما تقوم بإحالة صديقك إلى سيماك فريش، تحصل على خصم 20٪ على طلبك التالي وكذلك صديقك. ثم تأكلان معاً بصحة جيدة إلى الأبد!',
     'your_referral_code': 'كود الإحالة الخاص بك',
     'how_it_works': 'إليك كيف يعمل الأمر',
     'referral_step_1_title': 'ادعُ صديقاً',
-    'referral_step_1_sub': 'شارك كود الإحالة الفريد الخاص بك مع الأصدقاء والعائلة. اطلب منهم التسجيل في سيماك فريش.',
+    'referral_step_1_sub':
+        'شارك كود الإحالة الفريد الخاص بك مع الأصدقاء والعائلة. اطلب منهم التسجيل في سيماك فريش.',
     'referral_step_2_title': 'الصديق يقوم بأول عملية شراء',
-    'referral_step_2_sub': 'يدخل صديقك كود الإحالة الخاص بك عند الدفع في طلبه الأول.',
+    'referral_step_2_sub':
+        'يدخل صديقك كود الإحالة الخاص بك عند الدفع في طلبه الأول.',
     'referral_step_3_title': 'كلاهما يحصل على خصم 20٪',
-    'referral_step_3_sub': 'يحصل صديقك على خصم 20٪ فوراً! بمجرد تسليم الطلب، ستتلقى أنت أيضاً كوبون خصم 20٪.',
+    'referral_step_3_sub':
+        'يحصل صديقك على خصم 20٪ فوراً! بمجرد تسليم الطلب، ستتلقى أنت أيضاً كوبون خصم 20٪.',
     'referral_code_label': 'كود الإحالة (اختياري)',
     'referral_code_hint': 'أدخل كود الإحالة (إن وجد)',
     'stats_invited': 'الأصدقاء المدعوون',
@@ -2051,5 +2163,14 @@ final Map<String, Map<String, String>> _translations = {
     'discount': 'الخصم',
     'available_coupons': 'الكوبونات المتاحة',
     'tap_to_apply': 'اضغط للتطبيق',
+    'Coupon Applied': 'تم تطبيق القسيمة',
+    'Discount Amount': 'قيمة الخصم',
+    'Delivery Charge': 'رسوم التوصيل',
+    'Tip Amount': 'قيمة الإكرامية',
+    'Frozen fish': 'أسماك مجمدة',
+    'Live fish': 'أسماك حية',
+    'Frozen Fish': 'أسماك مجمدة',
+    'Live Fish': 'أسماك حية',
+    'Fresh fish': 'أسماك طازجة',
   },
 };
