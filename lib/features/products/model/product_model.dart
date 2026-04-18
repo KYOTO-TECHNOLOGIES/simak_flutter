@@ -19,6 +19,7 @@ class ProductModel {
   final bool isAvailable;
   final String? mainImage;
   final List<String> availableEmirates;
+  final String unit;
 
   ProductModel({
     required this.id,
@@ -38,6 +39,7 @@ class ProductModel {
     this.isAvailable = true,
     this.mainImage,
     this.availableEmirates = const [],
+    this.unit = 'piece',
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -70,6 +72,7 @@ class ProductModel {
               ?.map((e) => e.toString().toLowerCase())
               .toList() ??
           [],
+      unit: json['unit']?.toString() ?? 'piece',
     );
   }
 
@@ -80,6 +83,7 @@ class ProductModel {
       description: '',
       price: 0.0,
       stock: 0,
+      unit: 'piece',
     );
   }
 

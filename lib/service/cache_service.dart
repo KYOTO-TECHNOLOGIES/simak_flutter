@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// ------------------------------------------------------------------
@@ -131,7 +132,18 @@ class CacheService {
 
   /// Removes ALL cache entries.
   Future<void> clearAllCache() async {
-    await _cacheBox.clear();
+    try {
+      // 1. Clear Hive Storage
+      await _cacheBox.clear();
+      
+      // 2. Clear Flutter Image Cache
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      
+    } catch (e) {
+      // Silent fail or log
+      print('Error clearing cache: $e');
+    }
   }
 
   // ─── Has Cache ───────────────────────────────────────────────

@@ -10,6 +10,7 @@ import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
+import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -69,7 +70,16 @@ class _ProductsPageState extends State<ProductsPage>
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Consumer<ProductController>(
         builder: (context, controller, _) {
-          return CustomScrollView(
+          return RefreshIndicator(
+            onRefresh: () async {
+              final emirate = context.read<EmirateController>().selectedEmirate;
+              await Future.wait([
+                controller.fetchProducts(emirate: emirate),
+                controller.fetchCategories(),
+              ]);
+            },
+            color: AppColors.primary,
+            child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               // ─── Sliver App Bar ──────────────────────────────────
@@ -126,7 +136,7 @@ class _ProductsPageState extends State<ProductsPage>
                   theme,
                   controller.selectedCategory == 'All'
                       ? tr(context, 'all_products')
-                      : trText(context, controller.selectedCategory),
+                      : controller.selectedCategory,
                 ),
 
                 // ─── Product Grid ──────────────────────────────────
@@ -226,7 +236,7 @@ class _ProductsPageState extends State<ProductsPage>
                 const SliverPadding(
                     padding: EdgeInsets.only(bottom: 100)),
               ],
-            ],
+            ]),
           );
         },
       ),
@@ -269,61 +279,27 @@ class _ProductsPageState extends State<ProductsPage>
                       textDirection: TextDirection.ltr,
                       child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8), // Increased from 6
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppColors.primary, AppColors.primaryDark],
-                              ),
-                              borderRadius: BorderRadius.circular(12), // Balanced radius
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.3),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(Icons.set_meal,
-                                color: AppColors.white, size: 20), // Increased from 18
+                          Image.asset(
+                            'assets/images/home_logo.png',
+                            height: 30,
+                            fit: BoxFit.contain,
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: tr(context, 'app_name_simak'),
-                                        style: TextStyle(
-                                          color: theme.colorScheme.onSurface,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                      const TextSpan(text: ' '),
-                                      TextSpan(
-                                        text: tr(context, 'app_name_fresh'),
-                                        style: const TextStyle(
-                                          color: AppColors.actionBlue,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  tr(context, 'categories_title'),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface
-                                        .withOpacity(0.5),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.3,
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    tr(context, 'categories_title').toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: theme.colorScheme.onSurface,
+                                      height: 1.0,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -508,7 +484,7 @@ class _ProductsPageState extends State<ProductsPage>
                         : null,
                   ),
                   child: Text(
-                    trText(context, cat),
+                    cat == 'All' ? tr(context, 'All') : cat,
                     style: TextStyle(
                       color: isSelected
                           ? AppColors.white
@@ -889,11 +865,11 @@ class _TrendingCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Rating Badge — Top Right
+                  // Rating Badge — Bottom Left
                   if (product.rating > 0)
                     Positioned(
-                      top: 10,
-                      right: 10,
+                      bottom: 10,
+                      left: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                         decoration: BoxDecoration(
@@ -917,6 +893,12 @@ class _TrendingCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                  // Add to Cart Button — Top Right
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: QuickAddToCartButton(product: product),
+                  ),
                 ],
               ),
             ),
@@ -952,9 +934,14 @@ class _TrendingCard extends StatelessWidget {
                     width: double.infinity,
                     height: 32,
                     child: ElevatedButton(
-                      onPressed: (product.isAvailable && product.stock > 0) ? onBuyNow : null,
+                      onPressed: (product.isAvailable && product.stock > 0)
+                          ? onBuyNow
+                          : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: (product.isAvailable && product.stock > 0) ? AppColors.actionBlue : Colors.grey.shade400,
+                        backgroundColor:
+                            (product.isAvailable && product.stock > 0)
+                                ? AppColors.actionBlue
+                                : Colors.grey.shade400,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -962,8 +949,9 @@ class _TrendingCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        tr(context, (product.isAvailable && product.stock > 0) ? 'buy_now' : 'out_of_stock'),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
+                        tr(context, 'buy_now'),
+                        style: const TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.w800),
                       ),
                     ),
                   ),
@@ -1096,6 +1084,12 @@ class _OnSaleCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    // Add to Cart — Top Right
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: QuickAddToCartButton(product: product, size: 24, iconSize: 14),
+                    ),
                   ],
                 ),
               ),
@@ -1117,7 +1111,7 @@ class _OnSaleCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        trText(context, product.categoryName).toUpperCase(),
+                        product.categoryName.toUpperCase(),
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           fontSize: 9,
@@ -1141,7 +1135,7 @@ class _OnSaleCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  // Price & Notify Section
                   Row(
                     children: [
                       Flexible(
@@ -1149,22 +1143,23 @@ class _OnSaleCard extends StatelessWidget {
                           'AED ${product.finalPrice}',
                           style: const TextStyle(
                             color: AppColors.accent,
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           'AED ${product.price}',
                           style: TextStyle(
-                            color: theme.colorScheme.onSurface
-                                .withOpacity(0.4),
-                            fontSize: 11,
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            fontSize: 10,
                             decoration: TextDecoration.lineThrough,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1261,7 +1256,7 @@ class _EnhancedProductCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          trText(context, product.categoryName).toUpperCase(),
+                          product.categoryName.toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 7,
@@ -1293,6 +1288,12 @@ class _EnhancedProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                  // Add to Cart — Top Right
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: QuickAddToCartButton(product: product),
+                  ),
                 ],
               ),
             ),
@@ -1355,16 +1356,20 @@ class _EnhancedProductCard extends StatelessWidget {
                     width: double.infinity,
                     height: 38,
                     child: ElevatedButton.icon(
-                      onPressed: (product.isAvailable && product.stock > 0) ? onBuyNow : null,
-                      icon: Icon(
-                        (product.isAvailable && product.stock > 0) ? Icons.flash_on : Icons.block,
+                      onPressed: (product.isAvailable && product.stock > 0)
+                          ? onBuyNow
+                          : null,
+                      icon: const Icon(
+                        Icons.flash_on,
                         size: 14,
                       ),
                       label: Text(
-                        tr(context, (product.isAvailable && product.stock > 0) ? 'buy_now' : 'out_of_stock'),
+                        tr(context, 'buy_now'),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: (product.isAvailable && product.stock > 0) ? AppColors.actionBlue : Colors.grey.shade400,
+                        backgroundColor: (product.isAvailable && product.stock > 0)
+                            ? AppColors.actionBlue
+                            : Colors.grey.shade400,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

@@ -71,7 +71,7 @@ class PromoPopupDialog extends StatelessWidget {
     // Data mapping based on which model is provided
     final imageUrl = product?.thumbnail ?? marketing?.image ?? '';
     final title = product != null ? trText(context, product!.name) : (marketing?.title ?? '');
-    final subtitle = marketing?.subtitle ?? (product != null ? trText(context, product!.categoryName) : '');
+    final subtitle = marketing?.subtitle ?? (product != null ? product!.categoryName : '');
     final ctaText = marketing?.ctaText ?? tr(context, 'shop_now');
     
     // Calculate discount percentage if available (only for products)

@@ -9,8 +9,24 @@ class MarketingController extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  List<MarketingModel> get banners => _banners;
-  
+  List<MarketingModel> get banners {
+    final now = DateTime.now();
+    return _banners.where((m) {
+      final pos = m.position?.toLowerCase() ?? '';
+      final isPopup = pos == 'popup' || pos == 'promo' || pos == 'ad' || pos == 'advertisement';
+      
+      // We only want banners, not popups
+      if (isPopup || !m.isActive) return false;
+      
+      // Date validity checks
+      if (m.startAt != null && m.startAt!.isAfter(now)) return false;
+      if (m.endAt != null && m.endAt!.isBefore(now)) return false;
+      
+      return true;
+    }).toList()
+    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  }
+
   List<MarketingModel> get popups {
     final now = DateTime.now();
     // ignore: avoid_print

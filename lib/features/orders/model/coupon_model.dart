@@ -6,6 +6,8 @@ class CouponModel {
   final String discountAmount;
   final String? minOrderAmount;
   final DateTime? expiryDate;
+  final bool isActive;
+  final bool isUsed;
 
   CouponModel({
     required this.id,
@@ -15,9 +17,50 @@ class CouponModel {
     required this.discountAmount,
     this.minOrderAmount,
     this.expiryDate,
+    this.isActive = true,
+    this.isUsed = false,
   });
 
+  bool get isAvailable {
+    if (!isActive) return false;
+    if (isUsed) return false;
+    if (expiryDate != null && expiryDate!.isBefore(DateTime.now())) return false;
+    return true;
+  }
+
   factory CouponModel.fromJson(Map<String, dynamic> json) {
+    bool active = true;
+    
+    if (json.containsKey('is_active')) {
+      active = json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1';
+    }
+    
+    if (json.containsKey('status') && json['status'] != null) {
+      final statusStr = json['status'].toString().toLowerCase();
+      if (statusStr != 'active' && statusStr != 'published' && statusStr != '1' && statusStr != 'true') {
+        active = false;
+      }
+    }
+
+    // Check usage limits
+    final int usageCount = int.tryParse(json['usage_count']?.toString() ?? json['used_count']?.toString() ?? json['times_used']?.toString() ?? '0') ?? 0;
+    final int usageLimit = int.tryParse(json['usage_limit']?.toString() ?? json['limit']?.toString() ?? json['max_uses']?.toString() ?? '0') ?? 0;
+    if (usageLimit > 0 && usageCount >= usageLimit) {
+      active = false;
+    }
+
+    // Check user-specific limits
+    final int userUsageCount = int.tryParse(json['user_usage_count']?.toString() ?? json['times_used_by_user']?.toString() ?? '0') ?? 0;
+    final int userUsageLimit = int.tryParse(json['user_usage_limit']?.toString() ?? json['max_uses_per_user']?.toString() ?? '0') ?? 0;
+    if (userUsageLimit > 0 && userUsageCount >= userUsageLimit) {
+      active = false;
+    }
+
+    final bool isUsed = json['is_used'] == true || 
+                        json['used'] == true || 
+                        json['limit_reached'] == true || 
+                        json['is_limit_reached'] == true;
+
     return CouponModel(
       id: json['id'] ?? 0,
       code: json['code'] ?? '',
@@ -28,6 +71,8 @@ class CouponModel {
       expiryDate: json['expiry_date'] != null 
           ? DateTime.tryParse(json['expiry_date'].toString()) 
           : null,
+      isActive: active,
+      isUsed: isUsed,
     );
   }
 }

@@ -16,6 +16,8 @@ import 'package:uae_ecom_project/features/home/widgets/promo_popup_dialog.dart';
 import 'package:uae_ecom_project/features/home/screens/all_popular_products_page.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
+import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
+import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
 import 'package:uae_ecom_project/core/widgets/floating_cart_icon.dart';
 import 'package:uae_ecom_project/features/home/widgets/how_it_works_section.dart';
 import 'package:uae_ecom_project/features/marketing/model/marketing_model.dart';
@@ -24,6 +26,7 @@ import 'package:uae_ecom_project/features/home/widgets/language_selection_icon.d
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
+import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -194,7 +197,18 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
         child: SafeArea(
           bottom: false,
-          child: CustomScrollView(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              final emirate = context.read<EmirateController>().selectedEmirate;
+              await Future.wait([
+                context.read<ProductController>().fetchProducts(emirate: emirate),
+                context.read<ProductController>().fetchCategories(),
+                context.read<MarketingController>().fetchBanners(),
+                context.read<OrderController>().fetchHomeReviews(),
+              ]);
+            },
+            color: AppColors.primary,
+            child: CustomScrollView(
             slivers: [
               // ─── App Bar ─────────────────────────────────────────
               SliverAppBar(
@@ -422,7 +436,7 @@ class _HomePageState extends State<HomePage> {
                                   imageUrl:
                                       category.image ??
                                       AppConstants.kDefaultProductImage,
-                                  label: trText(context, category.name),
+                                  label: category.name,
                                   onTap: () {
                                     // Set selected category and navigate
                                     controller.selectCategory(category.name);
@@ -618,8 +632,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _CategoryCard extends StatefulWidget {
@@ -789,6 +804,8 @@ class _ProductCard extends StatelessWidget {
     required this.fallbackImageUrl,
   });
 
+  bool get _inStock => product.isAvailable && product.stock > 0;
+
   int get discountPercent {
     if (product.price <= 0 || product.finalPrice >= product.price) return 0;
     return (((product.price - product.finalPrice) / product.price) * 100)
@@ -854,7 +871,7 @@ class _ProductCard extends StatelessWidget {
                           ),
                   ),
                   // Discount badge
-                  if (discountPercent > 0)
+                  if (discountPercent > 0 && _inStock)
                     Positioned(
                       top: 8,
                       left: 8,
@@ -884,6 +901,12 @@ class _ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                  // Add to Cart Button — Top Right
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: QuickAddToCartButton(product: product),
+                  ),
                 ],
               ),
             ),
@@ -906,11 +929,11 @@ class _ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
 
-                  // Price Section (Flipped: Real Price on top, Offer Price under)
+                  // Price Section
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (discountPercent > 0)
+                      if (discountPercent > 0 && _inStock)
                         Text(
                           'AED ${product.price}',
                           style: TextStyle(
@@ -920,7 +943,6 @@ class _ProductCard extends StatelessWidget {
                           ),
                         )
                       else
-                        // Spacer to maintain height consistency
                         const SizedBox(height: 15),
 
                       const SizedBox(height: 2),

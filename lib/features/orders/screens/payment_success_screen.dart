@@ -192,8 +192,11 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () {
                             _timer?.cancel();
-                            // View order details placeholder
-                            Navigator.pop(context);
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/home', 
+                              (route) => false, 
+                              arguments: {'index': 2, 'profileSection': 1},
+                            );
                           },
                           icon: const Icon(Icons.receipt_long, size: 20),
                           label: Text(

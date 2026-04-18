@@ -5,6 +5,8 @@ import 'package:uae_ecom_project/core/widgets/fish_loader.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
+import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
 
 /// Standalone page that shows all popular products in a grid.
 /// Navigated to from the Home Page "See All" button.
@@ -177,7 +179,7 @@ class AllPopularProductsPage extends StatelessWidget {
 
 // ─── Product Card (matches the home page style) ─────────────────
 class _PopularProductCard extends StatelessWidget {
-  final dynamic product;
+  final ProductModel product;
   final VoidCallback onTap;
   final String fallbackImageUrl;
 
@@ -208,38 +210,48 @@ class _PopularProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             Expanded(
-              child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
-                child: product.thumbnail.isNotEmpty
-                    ? Image.network(
-                        product.thumbnail,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Image.network(
-                          fallbackImageUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            color: theme.cardColor,
-                            child: const Icon(Icons.error_outline),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: product.thumbnail.isNotEmpty
+                        ? Image.network(
+                            product.thumbnail,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.network(
+                              fallbackImageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                color: theme.cardColor,
+                                child: const Icon(Icons.error_outline),
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            fallbackImageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                              color: theme.cardColor,
+                              child: const Icon(Icons.error_outline),
+                            ),
                           ),
-                        ),
-                      )
-                    : Image.network(
-                        fallbackImageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(
-                          color: theme.cardColor,
-                          child: const Icon(Icons.error_outline),
-                        ),
-                      ),
+                  ),
+                  // Add to Cart — Top Right
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: QuickAddToCartButton(product: product),
+                  ),
+                ],
               ),
             ),
 

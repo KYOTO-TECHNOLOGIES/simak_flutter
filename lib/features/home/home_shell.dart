@@ -18,6 +18,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
+  int _profileSection = 0;
   bool _isInit = true;
 
   @override
@@ -38,16 +39,17 @@ class _HomeShellState extends State<HomeShell> {
         _currentIndex = args;
       } else if (args is Map<String, dynamic>) {
         _currentIndex = args['index'] ?? 0;
+        _profileSection = args['profileSection'] ?? 0;
       }
       _isInit = false;
     }
   }
 
   // Keep pages alive for smooth transitions
-  final List<Widget> _pages = const [
-    HomePage(),
-    ProductsPage(),
-    ProfileScreen(),
+  List<Widget> get _pages => [
+    const HomePage(),
+    const ProductsPage(),
+    ProfileScreen(initialSection: _profileSection),
   ];
 
   List<_NavItemData> _getNavItems(BuildContext context) => [

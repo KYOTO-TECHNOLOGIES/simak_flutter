@@ -202,4 +202,23 @@ class ProductController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ─── Notify Me (Back-in-Stock) ──────────────────────────────
+  /// Registers interest in a product. Returns true if successful.
+  Future<bool> notifyMe(int productId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _service.notifyMe(productId);
+      return success;
+    } catch (e) {
+      debugPrint('Error requesting notification: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

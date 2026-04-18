@@ -319,7 +319,9 @@ class _OrderPageState extends State<OrderPage> {
             // Product Section
             _buildSectionHeader(context, tr(context, 'order_summary')),
             if (isCartMode && cart.cart != null)
-              ...cart.cart!.items.map((item) => _buildSummaryItem(context, item.product, item.quantity, theme))
+              ...cart.cart!.items
+                  .where((item) => item.product.stock > 0 && item.product.isAvailable)
+                  .map((item) => _buildSummaryItem(context, item.product, item.quantity, theme))
             else if (!isCartMode)
               _buildSummaryItem(context, displayProduct, displayQuantity, theme),
             
@@ -1428,7 +1430,7 @@ class _OrderPageState extends State<OrderPage> {
               child: Column(
                 children: [
                   Text(
-                    'No coupons available right now',
+                    'No available token',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                   TextButton(

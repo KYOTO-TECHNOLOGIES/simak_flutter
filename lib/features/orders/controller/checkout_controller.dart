@@ -363,8 +363,8 @@ class CheckoutController extends ChangeNotifier {
     try {
       final results = await _service.getAvailableCoupons();
       debugPrint('Available Coupons Raw: $results');
-      _availableCoupons = results.map((e) => CouponModel.fromJson(e)).toList();
-      debugPrint('Parsed Coupons: ${_availableCoupons.length}');
+      _availableCoupons = results.map((e) => CouponModel.fromJson(e)).where((c) => c.isAvailable).toList();
+      debugPrint('Parsed Coupons (Active): ${_availableCoupons.length}');
     } catch (e) {
       debugPrint('Error fetching available coupons: $e');
     } finally {

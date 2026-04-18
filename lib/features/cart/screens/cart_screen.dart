@@ -145,18 +145,21 @@ class _CartScreenState extends State<CartScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                item.product.thumbnail,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+            Opacity(
+              opacity: (item.product.stock == 0 || !item.product.isAvailable) ? 0.5 : 1.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  item.product.thumbnail,
                   width: 80,
                   height: 80,
-                  color: Colors.grey.shade100,
-                  child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 30),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey.shade100,
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 30),
+                  ),
                 ),
               ),
             ),
@@ -188,9 +191,32 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ],
                   ),
-                  const Text(
-                    '1 unit', // Logic can be added if backend provides unit
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  Row(
+                    children: [
+                      Text(
+                        '${item.quantity} ${item.quantity == 1 ? 'unit' : 'units'}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const SizedBox(width: 8),
+                      if (item.product.stock == 0 || !item.product.isAvailable)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                          child: Text(trStatic(context, 'out_of_stock'), style: const TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.bold)),
+                        )
+                      else if (item.quantity > item.product.stock)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                          child: Text(trStatic(context, 'insufficient_stock', args: {'count': item.product.stock.toString()}), style: const TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.bold)),
+                        )
+                      else if (item.product.stock <= 5)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                          child: Text(trStatic(context, 'only_few_left'), style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold)),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   
@@ -212,6 +238,7 @@ class _CartScreenState extends State<CartScreen> {
                             _buildMiniBtn(
                               icon: Icons.remove,
                               onTap: () => controller.updateQuantity(item.product.id, item.quantity - 1),
+                              isDisabled: item.quantity <= 1,
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -223,6 +250,7 @@ class _CartScreenState extends State<CartScreen> {
                             _buildMiniBtn(
                               icon: Icons.add,
                               onTap: () => controller.updateQuantity(item.product.id, item.quantity + 1),
+                              isDisabled: item.product.stock == 0 || !item.product.isAvailable || item.quantity >= item.product.stock,
                             ),
                           ],
                         ),
@@ -248,21 +276,23 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildMiniBtn({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildMiniBtn({required IconData icon, required VoidCallback onTap, bool isDisabled = false}) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: isDisabled ? null : onTap,
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6),
+          color: isDisabled ? Colors.grey.shade100 : Colors.transparent,
         ),
-        child: Icon(icon, size: 16, color: Colors.grey.shade700),
+        child: Icon(icon, size: 16, color: isDisabled ? Colors.grey.shade300 : Colors.grey.shade700),
       ),
     );
   }
 
   Widget _buildOrderSummary(BuildContext context, ThemeData theme, CartController controller) {
-    final subtotal = controller.cart!.totalPrice;
+    // Show the subtotal for in-stock items only if OOS items exist, to be clear to the user
+    final subtotal = controller.hasOutOfStock ? controller.inStockTotalPrice : controller.cart!.totalPrice;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -320,13 +350,35 @@ class _CartScreenState extends State<CartScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                if (controller.cart != null && controller.cart!.items.isNotEmpty) {
-                  Navigator.pushNamed(context, '/order');
-                }
-              },
+              onPressed: controller.isCartValid 
+                  ? () async {
+                      if (controller.hasOutOfStock) {
+                        // Automatically exclude out-of-stock items without interruption
+                        await controller.removeOutOfStockItems();
+                      }
+                      
+                      if (context.mounted) {
+                        Navigator.pushNamed(context, '/order', arguments: {'isCartMode': true});
+                      }
+                    }
+                  : () {
+                      if (controller.cart == null || controller.cart!.items.isEmpty) return;
+                      
+                      String msg = trStatic(context, 'adjust_to_checkout');
+                      if (!controller.hasInStockItems) {
+                        msg = trStatic(context, 'no_items_available'); // Custom message for all OOS
+                      }
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(msg),
+                          backgroundColor: AppColors.error,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: controller.isCartValid ? AppColors.primary : Colors.grey.shade400,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -463,4 +515,5 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
+
 }

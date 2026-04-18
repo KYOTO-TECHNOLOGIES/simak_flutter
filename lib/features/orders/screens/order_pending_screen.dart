@@ -167,8 +167,11 @@ class _OrderPendingScreenState extends State<OrderPendingScreen> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           _timer?.cancel();
-                          // Return to order/checkout
-                          Navigator.pop(context);
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/home', 
+                            (route) => false, 
+                            arguments: {'index': 2, 'profileSection': 1},
+                          );
                         },
                         icon: const Icon(Icons.refresh, size: 20),
                         label: Text(tr(context, 'return_to_order')),

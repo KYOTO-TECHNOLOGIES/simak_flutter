@@ -1,0 +1,26 @@
+﻿Analyzing product_detail_screen.dart...                         
+
+   info - The import of 'package:flutter/services.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\features\products\screens\product_detail_screen.dart:1185:8 - unnecessary_import
+  error - Expected an identifier - lib\features\products\screens\product_detail_screen.dart:1951:27 - missing_identifier
+  error - Expected to find ')' - lib\features\products\screens\product_detail_screen.dart:1951:27 - expected_token
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2061:52 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2067:40 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\products\screens\product_detail_screen.dart:2110:57 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\products\screens\product_detail_screen.dart:2113:64 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2184:47 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2193:59 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2196:66 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2255:29 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2255:33 - unnecessary_underscores
+warning - The declaration '_buildReviewsSection' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2284:10 - unused_element
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2491:39 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2504:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2504:53 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2517:43 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2517:47 - unnecessary_underscores
+warning - The declaration '_ServiceChip' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2590:7 - unused_element
+warning - The declaration '_Divider' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2619:7 - unused_element
+warning - The declaration '_BuildTip' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2628:7 - unused_element
+warning - The declaration '_HighlightRow' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2774:7 - unused_element
+warning - A value for optional parameter 'color' isn't ever given - lib\features\products\screens\product_detail_screen.dart:2854:10 - unused_element_parameter
+

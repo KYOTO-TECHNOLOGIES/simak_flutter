@@ -251,4 +251,19 @@ class ProductService {
       debugPrint('⚠️ Background refresh failed for categories');
     });
   }
+
+  // ─── Notify Me (Back-in-Stock) ──────────────────────────────
+  /// Registers the user's interest in an out-of-stock product.
+  /// POST /api/products/notify-me/
+  Future<bool> notifyMe(int productId) async {
+    try {
+      final response = await _dio.post('products/notify-me/', data: {
+        'product_id': productId,
+      });
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      debugPrint('❌ Failed to register for back-in-stock notification: $e');
+      return false;
+    }
+  }
 }
