@@ -18,11 +18,9 @@ class _SupportWidgetState extends State<SupportWidget> {
   final _messageController = TextEditingController();
   final _supportService = SupportService();
 
-  
   bool _isSubmitting = false;
   bool _canSubmit = false;
   bool _isSuccessSent = false;
-
 
   @override
   void initState() {
@@ -46,9 +44,8 @@ class _SupportWidgetState extends State<SupportWidget> {
     final subject = _subjectController.text.trim();
     final message = _messageController.text.trim();
 
-    final bool isValid = isEmailVerified &&
-        subject.length >= 3 &&
-        message.length >= 10;
+    final bool isValid =
+        isEmailVerified && subject.length >= 3 && message.length >= 10;
 
     if (isValid != _canSubmit) {
       if (mounted) setState(() => _canSubmit = isValid);
@@ -57,13 +54,13 @@ class _SupportWidgetState extends State<SupportWidget> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final auth = context.read<AuthController>();
     final user = auth.currentUser;
     if (user == null) return;
 
     setState(() => _isSubmitting = true);
-    
+
     try {
       await _supportService.submitSupportRequest(
         name: user.fullName,
@@ -71,14 +68,13 @@ class _SupportWidgetState extends State<SupportWidget> {
         subject: _subjectController.text.trim(),
         message: _messageController.text.trim(),
       );
-      
+
       if (mounted) {
         setState(() => _isSuccessSent = true);
         _subjectController.clear();
         _messageController.clear();
       }
     } catch (e) {
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -104,7 +100,6 @@ class _SupportWidgetState extends State<SupportWidget> {
     }
 
     return Padding(
-
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,17 +112,17 @@ class _SupportWidgetState extends State<SupportWidget> {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF00B4DB),
-                  Color(0xFF0083B0),
-                ],
+                colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
               ),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -174,8 +169,11 @@ class _SupportWidgetState extends State<SupportWidget> {
     );
   }
 
-
-  Widget _buildMessageForm(BuildContext context, dynamic user, bool isEmailVerified) {
+  Widget _buildMessageForm(
+    BuildContext context,
+    dynamic user,
+    bool isEmailVerified,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -196,7 +194,11 @@ class _SupportWidgetState extends State<SupportWidget> {
           children: [
             Row(
               children: [
-                const Icon(Icons.chat_bubble_outline, color: AppColors.actionBlue, size: 20),
+                const Icon(
+                  Icons.chat_bubble_outline,
+                  color: AppColors.actionBlue,
+                  size: 20,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -204,11 +206,18 @@ class _SupportWidgetState extends State<SupportWidget> {
                     children: [
                       Text(
                         tr(context, 'send_us_message'),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                       Text(
                         tr(context, 'send_us_message_sub'),
-                        style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -260,12 +269,20 @@ class _SupportWidgetState extends State<SupportWidget> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         tr(context, 'support_verification_warning'),
-                        style: const TextStyle(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -279,17 +296,29 @@ class _SupportWidgetState extends State<SupportWidget> {
               child: ElevatedButton(
                 onPressed: (_canSubmit && !_isSubmitting) ? _submitForm : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB2E0E6), // Light blue as in screenshot
+                  backgroundColor: const Color(
+                    0xFFB2E0E6,
+                  ), // Light blue as in screenshot
                   foregroundColor: const Color(0xFF0083B0),
                   disabledBackgroundColor: Colors.grey[200],
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : Text(
                         tr(context, 'support_send_message'),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 0.5,
+                        ),
                       ),
               ),
             ),
@@ -299,11 +328,22 @@ class _SupportWidgetState extends State<SupportWidget> {
     );
   }
 
-  Widget _buildStaticField({required String label, required String value, required IconData icon}) {
+  Widget _buildStaticField({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -312,7 +352,11 @@ class _SupportWidgetState extends State<SupportWidget> {
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -332,7 +376,14 @@ class _SupportWidgetState extends State<SupportWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -341,11 +392,24 @@ class _SupportWidgetState extends State<SupportWidget> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey[300], fontSize: 13),
-            prefixIcon: icon != null ? Icon(icon, size: 16, color: Colors.grey[300]) : null,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[100]!)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[100]!)),
-            focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.actionBlue)),
+            prefixIcon: icon != null
+                ? Icon(icon, size: 16, color: Colors.grey[300])
+                : null,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[100]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[100]!),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.actionBlue),
+            ),
           ),
           validator: (value) => (value == null || value.isEmpty) ? '' : null,
         ),
@@ -372,18 +436,29 @@ class _SupportWidgetState extends State<SupportWidget> {
         children: [
           Row(
             children: [
-              const Icon(Icons.phone_in_talk_outlined, color: AppColors.actionBlue, size: 20),
+              const Icon(
+                Icons.phone_in_talk_outlined,
+                color: AppColors.actionBlue,
+                size: 20,
+              ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     tr(context, 'support_call_title'),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   Text(
                     tr(context, 'support_call_sub'),
-                    style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -393,7 +468,9 @@ class _SupportWidgetState extends State<SupportWidget> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF009688), // Teal/Green button color as in screenshot
+              color: const Color(
+                0xFF009688,
+              ), // Teal/Green button color as in screenshot
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Row(
@@ -403,7 +480,11 @@ class _SupportWidgetState extends State<SupportWidget> {
                 SizedBox(width: 12),
                 Text(
                   '+971 800 123 456',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -416,8 +497,18 @@ class _SupportWidgetState extends State<SupportWidget> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'support_working_hours'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                  Text(tr(context, 'support_working_hours_val'), style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text(
+                    tr(context, 'support_working_hours'),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    tr(context, 'support_working_hours_val'),
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
                 ],
               ),
             ],
@@ -430,8 +521,22 @@ class _SupportWidgetState extends State<SupportWidget> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'support_email_us'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                  const Text('support@simakfresh.ae', style: TextStyle(fontSize: 12, color: AppColors.actionBlue, fontWeight: FontWeight.bold)),
+                  Text(
+                    tr(context, 'support_email_us'),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const Text(
+                    'support@simakfresh.ae',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.actionBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -453,7 +558,11 @@ class _SupportWidgetState extends State<SupportWidget> {
         children: [
           Text(
             tr(context, 'support_urgent_help_title'),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -470,7 +579,11 @@ class _SupportWidgetState extends State<SupportWidget> {
                   const SizedBox(width: 12),
                   Text(
                     'AVERAGE RESPONSE: UNDER 2 HOURS',
-                    style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -536,7 +649,9 @@ class _SupportWidgetState extends State<SupportWidget> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.actionBlue,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
               child: const Text(
@@ -550,4 +665,3 @@ class _SupportWidgetState extends State<SupportWidget> {
     );
   }
 }
-

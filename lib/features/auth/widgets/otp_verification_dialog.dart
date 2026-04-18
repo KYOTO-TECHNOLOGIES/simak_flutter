@@ -25,16 +25,38 @@ class CountryCode {
 }
 
 const List<CountryCode> supportedCountries = [
-  CountryCode(name: 'UAE', code: '+971', flag: '🇦🇪', hint: '9 digits', maxLength: 9, pattern: r'^(50|52|54|55|56|58)\d{7}$'),
-  CountryCode(name: 'India', code: '+91', flag: '🇮🇳', hint: '10 digits', maxLength: 10, pattern: r'^[6-9]\d{9}$'),
-  CountryCode(name: 'China', code: '+86', flag: '🇨🇳', hint: '11 digits', maxLength: 11, pattern: r'^(13|14|15|16|17|18|19)\d{9}$'),
+  CountryCode(
+    name: 'UAE',
+    code: '+971',
+    flag: '🇦🇪',
+    hint: '9 digits',
+    maxLength: 9,
+    pattern: r'^(50|52|54|55|56|58)\d{7}$',
+  ),
+  CountryCode(
+    name: 'India',
+    code: '+91',
+    flag: '🇮🇳',
+    hint: '10 digits',
+    maxLength: 10,
+    pattern: r'^[6-9]\d{9}$',
+  ),
+  CountryCode(
+    name: 'China',
+    code: '+86',
+    flag: '🇨🇳',
+    hint: '11 digits',
+    maxLength: 11,
+    pattern: r'^(13|14|15|16|17|18|19)\d{9}$',
+  ),
 ];
 
 class OtpVerificationDialog extends StatefulWidget {
   final String type; // 'email' or 'phone'
   final String currentValue;
   final int? userId;
-  final Function(String)? onVerified; // Callback for when verification is successful
+  final Function(String)?
+  onVerified; // Callback for when verification is successful
 
   const OtpVerificationDialog({
     super.key,
@@ -58,7 +80,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
   late CountryCode _selectedCountry;
 
   Timer? _timer;
-  int _secondsRemaining = 120; 
+  int _secondsRemaining = 120;
   bool _canResend = false;
 
   @override
@@ -76,7 +98,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
           for (var country in supportedCountries) {
             if (initialValue.startsWith(country.code)) {
               _selectedCountry = country;
-              _inputController.text = initialValue.substring(country.code.length);
+              _inputController.text = initialValue.substring(
+                country.code.length,
+              );
               found = true;
               break;
             }
@@ -101,12 +125,17 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
 
   bool get _isEmail => widget.type == 'email';
 
-  String get _title => _isEmail ? tr(context, 'otp_verify_email_title') : tr(context, 'otp_verify_phone_title');
+  String get _title => _isEmail
+      ? tr(context, 'otp_verify_email_title')
+      : tr(context, 'otp_verify_phone_title');
   String get _subtitle => _isEmail
       ? tr(context, 'otp_verify_email_subtitle')
       : tr(context, 'otp_verify_phone_subtitle');
-  String get _inputLabel => _isEmail ? tr(context, 'email_address_label') : tr(context, 'phone_number_label');
-  String get _inputHint => _isEmail ? tr(context, 'enter_email_hint') : _selectedCountry.hint;
+  String get _inputLabel => _isEmail
+      ? tr(context, 'email_address_label')
+      : tr(context, 'phone_number_label');
+  String get _inputHint =>
+      _isEmail ? tr(context, 'enter_email_hint') : _selectedCountry.hint;
 
   String get _fullIdentifier {
     final val = _inputController.text.trim();
@@ -152,7 +181,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
     if (!_isInputValid) {
       return;
     }
- 
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -208,9 +237,11 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEmail
-                ? tr(context, 'otp_verify_email_success')
-                : tr(context, 'otp_verify_phone_success')),
+            content: Text(
+              _isEmail
+                  ? tr(context, 'otp_verify_email_success')
+                  : tr(context, 'otp_verify_phone_success'),
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -270,7 +301,11 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                         color: isDark ? Colors.white10 : Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, size: 20, color: Colors.grey),
+                      child: const Icon(
+                        Icons.close,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ],
@@ -288,7 +323,10 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
               if (_errorMessage != null) ...[
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.shade50,
                     borderRadius: BorderRadius.circular(10),
@@ -296,7 +334,11 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, size: 18, color: Colors.red.shade700),
+                      Icon(
+                        Icons.error_outline,
+                        size: 18,
+                        color: Colors.red.shade700,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -314,8 +356,6 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                 const SizedBox(height: 16),
               ],
 
-
-
               if (!_otpSent) ...[
                 Text(
                   _inputLabel,
@@ -331,7 +371,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   TextField(
                     controller: _inputController,
                     keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
                     onChanged: (_) => setState(() => _errorMessage = null),
                     decoration: _inputDecoration(isDark),
                   )
@@ -345,26 +387,40 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                         decoration: BoxDecoration(
                           color: isDark ? Colors.white10 : Colors.grey.shade50,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white24
+                                : Colors.grey.shade300,
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<CountryCode>(
                             value: _selectedCountry,
-                            dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                            icon: const Icon(Icons.keyboard_arrow_down, size: 16),
+                            dropdownColor: isDark
+                                ? const Color(0xFF2C2C2C)
+                                : Colors.white,
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              size: 16,
+                            ),
                             items: supportedCountries.map((c) {
                               return DropdownMenuItem(
                                 value: c,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(c.flag, style: const TextStyle(fontSize: 18)),
+                                    Text(
+                                      c.flag,
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
                                       c.code,
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: isDark ? Colors.white : Colors.black,
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -373,7 +429,8 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                               );
                             }).toList(),
                             onChanged: (v) {
-                              if (v != null) setState(() => _selectedCountry = v);
+                              if (v != null)
+                                setState(() => _selectedCountry = v);
                             },
                           ),
                         ),
@@ -384,12 +441,16 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                           controller: _inputController,
                           keyboardType: TextInputType.phone,
                           maxLength: _selectedCountry.maxLength,
-                          inputFormatters: _isEmail ? null : [FilteringTextInputFormatter.digitsOnly],
-                          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                          onChanged: (_) => setState(() {}),
-                          decoration: _inputDecoration(isDark).copyWith(
-                            counterText: '',
+                          inputFormatters: _isEmail
+                              ? null
+                              : [FilteringTextInputFormatter.digitsOnly],
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
+                          onChanged: (_) => setState(() {}),
+                          decoration: _inputDecoration(
+                            isDark,
+                          ).copyWith(counterText: ''),
                         ),
                       ),
                     ],
@@ -403,7 +464,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00B4DB),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFF00B4DB).withOpacity(0.4),
+                      disabledBackgroundColor: const Color(
+                        0xFF00B4DB,
+                      ).withOpacity(0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -453,7 +516,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   controller: _otpController,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                   decoration: _inputDecoration(isDark).copyWith(
                     hintText: tr(context, 'enter_otp_hint'),
                     counterText: '',
@@ -465,7 +530,10 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: _secondsRemaining <= 30
                             ? Colors.red.withOpacity(0.1)
@@ -574,17 +642,23 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
   InputDecoration _inputDecoration(bool isDark) {
     return InputDecoration(
       hintText: _inputHint,
-      hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.grey.shade400),
+      hintStyle: TextStyle(
+        color: isDark ? Colors.white38 : Colors.grey.shade400,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       filled: true,
       fillColor: isDark ? Colors.white10 : Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+        borderSide: BorderSide(
+          color: isDark ? Colors.white24 : Colors.grey.shade300,
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+        borderSide: BorderSide(
+          color: isDark ? Colors.white24 : Colors.grey.shade300,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
@@ -592,6 +666,4 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
       ),
     );
   }
-
 }
-

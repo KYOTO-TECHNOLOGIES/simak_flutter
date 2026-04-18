@@ -1,9 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/features/cart/model/cart_model.dart';
 import 'package:uae_ecom_project/features/cart/service/cart_service.dart';
 
 class CartController extends ChangeNotifier {
   final CartService _service = CartService();
+
+  final Map<int, Timer> _debounceTimers = {};
+  final Set<int> _updatingItemIds = {};
+
+  bool isItemUpdating(int productId) => _updatingItemIds.contains(productId);
 
   CartModel? _cart;
   CartModel? get cart => _cart;
@@ -66,16 +72,24 @@ class CartController extends ChangeNotifier {
     }
   }
 
-  Future<void> updateQuantity(int productId, int quantity) async {
+  void updateQuantity(int productId, int quantity) {
     if (quantity < 1) return;
     
-    try {
-      await _service.updateQuantity(productId, quantity);
-      await fetchCart();
-    } catch (e) {
-      debugPrint(e.toString());
-      notifyListeners();
-    }
+    _updatingItemIds.add(productId);
+    notifyListeners();
+
+    _debounceTimers[productId]?.cancel();
+    _debounceTimers[productId] = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        await _service.updateQuantity(productId, quantity);
+        await fetchCart();
+      } catch (e) {
+        debugPrint(e.toString());
+      } finally {
+        _updatingItemIds.remove(productId);
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> removeItem(int productId) async {

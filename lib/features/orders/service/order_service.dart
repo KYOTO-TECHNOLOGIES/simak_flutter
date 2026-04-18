@@ -167,4 +167,10 @@ class OrderService {
     );
     return response.data;
   }
+
+  /// Fetches delivery charge settings (min order for free delivery, etc.).
+  Future<Map<String, dynamic>> getDeliveryChargeSettings() async {
+    final response = await _dio.get('orders/delivery_charge_settings/');
+    return response.data;
+  }
 }

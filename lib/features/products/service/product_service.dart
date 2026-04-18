@@ -254,12 +254,10 @@ class ProductService {
 
   // ─── Notify Me (Back-in-Stock) ──────────────────────────────
   /// Registers the user's interest in an out-of-stock product.
-  /// POST /api/products/notify-me/
+  /// POST /api/products/products/{id}/notify_stock/
   Future<bool> notifyMe(int productId) async {
     try {
-      final response = await _dio.post('products/notify-me/', data: {
-        'product_id': productId,
-      });
+      final response = await _dio.post('products/products/$productId/notify_stock/');
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       debugPrint('❌ Failed to register for back-in-stock notification: $e');

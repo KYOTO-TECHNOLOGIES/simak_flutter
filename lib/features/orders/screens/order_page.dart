@@ -17,11 +17,7 @@ class OrderPage extends StatefulWidget {
   final ProductModel product;
   final int quantity;
 
-  const OrderPage({
-    super.key,
-    required this.product,
-    this.quantity = 1,
-  });
+  const OrderPage({super.key, required this.product, this.quantity = 1});
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -38,6 +34,7 @@ class _OrderPageState extends State<OrderPage> {
     couponController.dispose();
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
@@ -46,18 +43,22 @@ class _OrderPageState extends State<OrderPage> {
       final checkout = context.read<CheckoutController>();
       checkout.reset();
       checkout.fetchAvailableCoupons();
-      
+
       // Auto-select default address if available
       final addressController = context.read<AddressController>();
-      if (addressController.selectedAddress != null && addressController.selectedAddress!.id != null) {
+      if (addressController.selectedAddress != null &&
+          addressController.selectedAddress!.id != null) {
         checkout.selectAddress(addressController.selectedAddress!.id!);
       }
 
       // Fetch estimated delivery
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      final displayProduct = args?['product'] as ProductModel? ?? widget.product;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final displayProduct =
+          args?['product'] as ProductModel? ?? widget.product;
       final displayQuantity = args?['quantity'] as int? ?? widget.quantity;
-      final isCartMode = args?['isCartMode'] as bool? ?? (displayProduct.id == 0);
+      final isCartMode =
+          args?['isCartMode'] as bool? ?? (displayProduct.id == 0);
 
       checkout.fetchEstimatedDelivery(
         product: isCartMode ? null : displayProduct,
@@ -70,9 +71,10 @@ class _OrderPageState extends State<OrderPage> {
   Widget build(BuildContext context) {
     final checkoutController = context.watch<CheckoutController>();
     final addressController = context.watch<AddressController>();
-    
+
     // Extract arguments if passed via transparent routing
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final displayProduct = args?['product'] as ProductModel? ?? widget.product;
     final displayQuantity = args?['quantity'] as int? ?? widget.quantity;
     final isCartMode = args?['isCartMode'] as bool? ?? (displayProduct.id == 0);
@@ -102,17 +104,17 @@ class _OrderPageState extends State<OrderPage> {
         children: [
           // ── Stepper Header ───────────────────────────
           _buildStepper(context, checkoutController.currentStep),
-          
+
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: _buildCurrentStepView(
-                  context, 
-                  checkoutController, 
-                  addressController, 
+                  context,
+                  checkoutController,
+                  addressController,
                   cartController,
-                  displayProduct, 
+                  displayProduct,
                   displayQuantity,
                   isCartMode,
                   theme,
@@ -120,12 +122,12 @@ class _OrderPageState extends State<OrderPage> {
               ),
             ),
           ),
-          
+
           // ── Bottom Action Bar ───────────────────────────
           _buildBottomAction(
-            context, 
-            checkoutController, 
-            isCartMode ? null : displayProduct, 
+            context,
+            checkoutController,
+            isCartMode ? null : displayProduct,
             isCartMode ? null : displayQuantity,
             theme,
           ),
@@ -149,37 +151,67 @@ class _OrderPageState extends State<OrderPage> {
       ),
       child: Row(
         children: [
-          _buildStepCircle(context, 1, tr(context, 'address'), currentStep == CheckoutStep.address, currentStep != CheckoutStep.address),
+          _buildStepCircle(
+            context,
+            1,
+            tr(context, 'address'),
+            currentStep == CheckoutStep.address,
+            currentStep != CheckoutStep.address,
+          ),
           _buildStepDivider(currentStep != CheckoutStep.address),
-          _buildStepCircle(context, 2, tr(context, 'order_summary'), currentStep == CheckoutStep.summary, currentStep == CheckoutStep.payment),
+          _buildStepCircle(
+            context,
+            2,
+            tr(context, 'order_summary'),
+            currentStep == CheckoutStep.summary,
+            currentStep == CheckoutStep.payment,
+          ),
           _buildStepDivider(currentStep == CheckoutStep.payment),
-          _buildStepCircle(context, 3, tr(context, 'payment'), currentStep == CheckoutStep.payment, false),
+          _buildStepCircle(
+            context,
+            3,
+            tr(context, 'payment'),
+            currentStep == CheckoutStep.payment,
+            false,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStepCircle(BuildContext context, int step, String label, bool isActive, bool isCompleted) {
+  Widget _buildStepCircle(
+    BuildContext context,
+    int step,
+    String label,
+    bool isActive,
+    bool isCompleted,
+  ) {
     return Column(
       children: [
         Container(
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: isCompleted ? AppColors.primary : (isActive ? AppColors.primary : Colors.grey[300]),
+            color: isCompleted
+                ? AppColors.primary
+                : (isActive ? AppColors.primary : Colors.grey[300]),
             shape: BoxShape.circle,
-            border: isActive ? Border.all(color: AppColors.primary, width: 2) : null,
+            border: isActive
+                ? Border.all(color: AppColors.primary, width: 2)
+                : null,
           ),
           child: Center(
-            child: isCompleted 
-              ? const Icon(Icons.check, color: Colors.white, size: 16)
-              : Text(
-                  '$step',
-                  style: TextStyle(
-                    color: (isActive || isCompleted) ? Colors.white : Colors.grey[600],
-                    fontWeight: FontWeight.bold,
+            child: isCompleted
+                ? const Icon(Icons.check, color: Colors.white, size: 16)
+                : Text(
+                    '$step',
+                    style: TextStyle(
+                      color: (isActive || isCompleted)
+                          ? Colors.white
+                          : Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
           ),
         ),
         const SizedBox(height: 4),
@@ -206,8 +238,8 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Widget _buildCurrentStepView(
-    BuildContext context, 
-    CheckoutController checkout, 
+    BuildContext context,
+    CheckoutController checkout,
     AddressController address,
     CartController cart,
     ProductModel displayProduct,
@@ -220,7 +252,9 @@ class _OrderPageState extends State<OrderPage> {
         return Column(
           children: [
             AddressListWidget(
-              selectedAddress: address.addresses.where((a) => a.id == checkout.selectedAddressId).firstOrNull,
+              selectedAddress: address.addresses
+                  .where((a) => a.id == checkout.selectedAddressId)
+                  .firstOrNull,
               onAddressSelected: (addr) {
                 checkout.selectAddress(addr.id!);
                 address.selectAddress(addr);
@@ -232,14 +266,17 @@ class _OrderPageState extends State<OrderPage> {
         );
       case CheckoutStep.summary:
         final selectedAddr = address.selectedAddress;
-        
+
         // Initial summary fetch if needed
-        if (checkout.summaryData == null && !checkout.isLoading && !checkout.summaryFetchAttempted && selectedAddr != null) {
+        if (checkout.summaryData == null &&
+            !checkout.isLoading &&
+            !checkout.summaryFetchAttempted &&
+            selectedAddr != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-             checkout.fetchCheckoutSummary(
+            checkout.fetchCheckoutSummary(
               product: isCartMode ? null : displayProduct,
               quantity: isCartMode ? null : displayQuantity,
-             );
+            );
           });
         }
 
@@ -247,7 +284,11 @@ class _OrderPageState extends State<OrderPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Deliver to Section
-            _buildSectionHeader(context, tr(context, 'deliver_to'), onAction: () => checkout.setStep(CheckoutStep.address)),
+            _buildSectionHeader(
+              context,
+              tr(context, 'deliver_to'),
+              onAction: () => checkout.setStep(CheckoutStep.address),
+            ),
             if (selectedAddr != null)
               Container(
                 width: double.infinity,
@@ -270,27 +311,41 @@ class _OrderPageState extends State<OrderPage> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             '${selectedAddr.label?.toUpperCase() ?? 'HOME'}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 10),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                         if (selectedAddr.isDefault) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.green.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               tr(context, 'default').toUpperCase(),
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 10),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
                         ],
@@ -302,43 +357,87 @@ class _OrderPageState extends State<OrderPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text('${selectedAddr.addressLine1}', style: const TextStyle(fontWeight: FontWeight.w500)),
-                    if (selectedAddr.addressLine2 != null && selectedAddr.addressLine2!.isNotEmpty)
-                      Text('${selectedAddr.addressLine2}', style: TextStyle(color: Colors.grey[600])),
-                    if (selectedAddr.landmark != null && selectedAddr.landmark!.isNotEmpty)
+                    Text(
+                      '${selectedAddr.addressLine1}',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    if (selectedAddr.addressLine2 != null &&
+                        selectedAddr.addressLine2!.isNotEmpty)
+                      Text(
+                        '${selectedAddr.addressLine2}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    if (selectedAddr.landmark != null &&
+                        selectedAddr.landmark!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text('${tr(context, 'landmark')}: ${selectedAddr.landmark}', style: TextStyle(color: Colors.grey[500], fontSize: 12, fontStyle: FontStyle.italic)),
+                        child: Text(
+                          '${tr(context, 'landmark')}: ${selectedAddr.landmark}',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                       ),
                   ],
                 ),
               ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Product Section
             _buildSectionHeader(context, tr(context, 'order_summary')),
             if (isCartMode && cart.cart != null)
               ...cart.cart!.items
-                  .where((item) => item.product.stock > 0 && item.product.isAvailable)
-                  .map((item) => _buildSummaryItem(context, item.product, item.quantity, theme))
+                  .where(
+                    (item) =>
+                        item.product.stock > 0 && item.product.isAvailable,
+                  )
+                  .map(
+                    (item) => _buildSummaryItem(
+                      context,
+                      item.product,
+                      item.quantity,
+                      theme,
+                    ),
+                  )
             else if (!isCartMode)
-              _buildSummaryItem(context, displayProduct, displayQuantity, theme),
-            
+              _buildSummaryItem(
+                context,
+                displayProduct,
+                displayQuantity,
+                theme,
+              ),
+
             const SizedBox(height: 24),
-            
+
             _buildTipSection(context, checkout, theme),
-            
+
             const SizedBox(height: 24),
-            
+
             // Phone Verification Warning
-            _buildVerificationWarning(context, displayProduct, displayQuantity, isCartMode, theme),
-            
+            _buildVerificationWarning(
+              context,
+              displayProduct,
+              displayQuantity,
+              isCartMode,
+              theme,
+            ),
+
             // Coupon Section
-            _buildCouponSection(context, checkout, cart, displayProduct, displayQuantity, isCartMode, theme),
-            
+            _buildCouponSection(
+              context,
+              checkout,
+              cart,
+              displayProduct,
+              displayQuantity,
+              isCartMode,
+              theme,
+            ),
+
             const SizedBox(height: 24),
-            
+
             // Price Details Block
             Container(
               padding: const EdgeInsets.all(20),
@@ -357,25 +456,25 @@ class _OrderPageState extends State<OrderPage> {
               child: Column(
                 children: [
                   _buildDetailRow(
-                    context, 
-                    tr(context, 'subtotal'), 
-                    'AED ${checkout.hasSummary ? checkout.summarySubtotal.toStringAsFixed(2) : (isCartMode ? cart.totalPrice : displayProduct.finalPrice * displayQuantity).toStringAsFixed(2)}'
+                    context,
+                    tr(context, 'subtotal'),
+                    'AED ${checkout.hasSummary ? checkout.summarySubtotal.toStringAsFixed(2) : (isCartMode ? cart.totalPrice : displayProduct.finalPrice * displayQuantity).toStringAsFixed(2)}',
                   ),
                   _buildDetailRow(
-                    context, 
-                    tr(context, 'discount'), 
+                    context,
+                    tr(context, 'discount'),
                     'AED ${checkout.hasSummary ? checkout.summaryDiscount.toStringAsFixed(2) : '0.00'}',
-                    valueColor: Colors.green
+                    valueColor: Colors.green,
                   ),
                   _buildDetailRow(
-                    context, 
-                    tr(context, 'shipping'), 
-                    'AED ${checkout.hasSummary ? checkout.summaryDeliveryCharge.toStringAsFixed(2) : '0.00'}'
+                    context,
+                    tr(context, 'shipping'),
+                    'AED ${checkout.hasSummary ? checkout.summaryDeliveryCharge.toStringAsFixed(2) : '0.00'}',
                   ),
                   _buildDetailRow(
-                    context, 
-                    tr(context, 'tip'), 
-                    'AED ${(checkout.hasSummary ? checkout.summaryTip : checkout.tipAmount).toStringAsFixed(2)}'
+                    context,
+                    tr(context, 'tip'),
+                    'AED ${(checkout.hasSummary ? checkout.summaryTip : checkout.tipAmount).toStringAsFixed(2)}',
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
@@ -398,18 +497,18 @@ class _OrderPageState extends State<OrderPage> {
           children: [
             _buildSectionHeader(context, tr(context, 'payment_method')),
             _buildPaymentOption(
-              context, 
-              checkout, 
-              tr(context, 'payment_cod'), 
-              Icons.delivery_dining_outlined, 
+              context,
+              checkout,
+              tr(context, 'payment_cod'),
+              Icons.delivery_dining_outlined,
               tr(context, 'payment_cod_desc'),
               isAvailable: false,
             ),
             _buildPaymentOption(
-              context, 
-              checkout, 
-              tr(context, 'payment_online_telr'), 
-              Icons.credit_card_outlined, 
+              context,
+              checkout,
+              tr(context, 'payment_online_telr'),
+              Icons.credit_card_outlined,
               tr(context, 'payment_online_telr_desc'),
               isAvailable: true,
             ),
@@ -418,7 +517,11 @@ class _OrderPageState extends State<OrderPage> {
     }
   }
 
-  Widget _buildDeliveryPreferences(BuildContext context, CheckoutController checkout, ThemeData theme) {
+  Widget _buildDeliveryPreferences(
+    BuildContext context,
+    CheckoutController checkout,
+    ThemeData theme,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -431,13 +534,23 @@ class _OrderPageState extends State<OrderPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.calendar_today_outlined, size: 18, color: Colors.orange.shade300),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 18,
+                color: Colors.orange.shade300,
+              ),
               const SizedBox(width: 8),
-              Text(tr(context, 'checkout_delivery_preferences'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                tr(context, 'checkout_delivery_preferences'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Estimated Delivery Window Box (Orange)
           Container(
             padding: const EdgeInsets.all(16),
@@ -451,11 +564,18 @@ class _OrderPageState extends State<OrderPage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, color: Colors.orange, size: 20),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        tr(context, 'checkout_estimated_delivery_window').toUpperCase(),
+                        tr(
+                          context,
+                          'checkout_estimated_delivery_window',
+                        ).toUpperCase(),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -471,7 +591,11 @@ class _OrderPageState extends State<OrderPage> {
                 if (checkout.isLoadingDelivery)
                   const Text(
                     'Calculating...',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
                   )
                 else if (checkout.minDeliveryDate != null) ...[
                   Text(
@@ -494,12 +618,16 @@ class _OrderPageState extends State<OrderPage> {
                 ] else
                   Text(
                     tr(context, 'checkout_delivery_min_date_tomorrow'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
                   ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
           Row(
             children: [
@@ -509,10 +637,20 @@ class _OrderPageState extends State<OrderPage> {
                   children: [
                     RichText(
                       text: TextSpan(
-                        text: tr(context, 'checkout_preferred_date').toUpperCase(),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+                        text: tr(
+                          context,
+                          'checkout_preferred_date',
+                        ).toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                         children: [
-                          const TextSpan(text: '*', style: TextStyle(color: Colors.red, fontSize: 12)),
+                          const TextSpan(
+                            text: '*',
+                            style: TextStyle(color: Colors.red, fontSize: 12),
+                          ),
                         ],
                       ),
                     ),
@@ -520,11 +658,14 @@ class _OrderPageState extends State<OrderPage> {
                     InkWell(
                       onTap: () async {
                         final now = DateTime.now();
-                        final minDate = checkout.minDeliveryDate ?? DateTime(now.year, now.month, now.day + 1);
-                        
+                        final minDate =
+                            checkout.minDeliveryDate ??
+                            DateTime(now.year, now.month, now.day + 1);
+
                         // Ensure initial date is safe
                         DateTime initialDate = minDate;
-                        if (checkout.deliveryDate != null && !checkout.deliveryDate!.isBefore(minDate)) {
+                        if (checkout.deliveryDate != null &&
+                            !checkout.deliveryDate!.isBefore(minDate)) {
                           initialDate = checkout.deliveryDate!;
                         }
 
@@ -532,12 +673,18 @@ class _OrderPageState extends State<OrderPage> {
                           context: context,
                           initialDate: initialDate,
                           firstDate: minDate,
-                          lastDate: minDate.add(Duration(days: checkout.maxDeliveryDays ?? 7)),
+                          lastDate: minDate.add(
+                            Duration(days: checkout.maxDeliveryDays ?? 7),
+                          ),
                         );
-                        if (date != null) checkout.setDeliveryPreferences(date: date);
+                        if (date != null)
+                          checkout.setDeliveryPreferences(date: date);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey.shade200),
                           borderRadius: BorderRadius.circular(8),
@@ -547,11 +694,13 @@ class _OrderPageState extends State<OrderPage> {
                           children: [
                             Expanded(
                               child: Text(
-                                checkout.deliveryDate == null 
-                                  ? 'Pick a date' 
-                                  : '${checkout.deliveryDate!.day.toString().padLeft(2, '0')} / ${checkout.deliveryDate!.month.toString().padLeft(2, '0')} / ${checkout.deliveryDate!.year}',
+                                checkout.deliveryDate == null
+                                    ? 'Pick a date'
+                                    : '${checkout.deliveryDate!.day.toString().padLeft(2, '0')} / ${checkout.deliveryDate!.month.toString().padLeft(2, '0')} / ${checkout.deliveryDate!.year}',
                                 style: TextStyle(
-                                  color: checkout.deliveryDate == null ? Colors.grey : Colors.black,
+                                  color: checkout.deliveryDate == null
+                                      ? Colors.grey
+                                      : Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -559,7 +708,11 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            const Icon(Icons.calendar_month, size: 16, color: Colors.grey),
+                            const Icon(
+                              Icons.calendar_month,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
                           ],
                         ),
                       ),
@@ -574,16 +727,29 @@ class _OrderPageState extends State<OrderPage> {
                   children: [
                     RichText(
                       text: TextSpan(
-                        text: tr(context, 'checkout_delivery_slot').toUpperCase(),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+                        text: tr(
+                          context,
+                          'checkout_delivery_slot',
+                        ).toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                         children: [
-                          const TextSpan(text: '*', style: TextStyle(color: Colors.red, fontSize: 12)),
+                          const TextSpan(
+                            text: '*',
+                            style: TextStyle(color: Colors.red, fontSize: 12),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade200),
                         borderRadius: BorderRadius.circular(8),
@@ -592,16 +758,23 @@ class _OrderPageState extends State<OrderPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              checkout.deliverySlotName ?? tr(context, 'checkout_select_slot'),
+                              checkout.deliverySlotName ??
+                                  tr(context, 'checkout_select_slot'),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: checkout.deliverySlotName == null ? Colors.grey : Colors.black,
+                                color: checkout.deliverySlotName == null
+                                    ? Colors.grey
+                                    : Colors.black,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                          const Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
                         ],
                       ),
                     ),
@@ -610,7 +783,7 @@ class _OrderPageState extends State<OrderPage> {
               ),
             ],
           ),
-          
+
           if (checkout.deliveryDate != null) ...[
             const SizedBox(height: 16),
             if (checkout.isLoadingSlots)
@@ -655,20 +828,27 @@ class _OrderPageState extends State<OrderPage> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected ? AppColors.primary : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.grey.shade300,
                         ),
-                        boxShadow: isSelected ? [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          )
-                        ] : null,
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -684,7 +864,9 @@ class _OrderPageState extends State<OrderPage> {
                           Text(
                             '${slot.startTimeDisplay} - ${slot.endTimeDisplay}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey,
+                              color: isSelected
+                                  ? Colors.white.withOpacity(0.9)
+                                  : Colors.grey,
                               fontSize: 10,
                             ),
                           ),
@@ -696,7 +878,14 @@ class _OrderPageState extends State<OrderPage> {
               ),
           ],
           const SizedBox(height: 24),
-          Text(tr(context, 'checkout_delivery_notes').toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+          Text(
+            tr(context, 'checkout_delivery_notes').toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
+          ),
           const SizedBox(height: 4),
           TextField(
             onChanged: (v) => checkout.setDeliveryPreferences(notes: v),
@@ -713,9 +902,9 @@ class _OrderPageState extends State<OrderPage> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Order Quantity Info Box (Blue)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -726,19 +915,32 @@ class _OrderPageState extends State<OrderPage> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline, size: 18, color: Color(0xFF3393FF)),
+                const Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: Color(0xFF3393FF),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: RichText(
                     text: TextSpan(
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF3393FF), height: 1.4),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF3393FF),
+                        height: 1.4,
+                      ),
                       children: [
-                        TextSpan(text: tr(context, 'checkout_delivery_time_based_on'), style: const TextStyle(color: Color(0xFF3393FF))),
+                        TextSpan(
+                          text: tr(context, 'checkout_delivery_time_based_on'),
+                          style: const TextStyle(color: Color(0xFF3393FF)),
+                        ),
                         TextSpan(
                           text: tr(context, 'checkout_order_quantity'),
                           style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
-                        TextSpan(text: tr(context, 'checkout_larger_orders_info')),
+                        TextSpan(
+                          text: tr(context, 'checkout_larger_orders_info'),
+                        ),
                       ],
                     ),
                   ),
@@ -751,7 +953,11 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  Widget _buildTipSection(BuildContext context, CheckoutController checkout, ThemeData theme) {
+  Widget _buildTipSection(
+    BuildContext context,
+    CheckoutController checkout,
+    ThemeData theme,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -777,12 +983,20 @@ class _OrderPageState extends State<OrderPage> {
                   color: Colors.cyan.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.delivery_dining_outlined, size: 20, color: Colors.cyan),
+                child: const Icon(
+                  Icons.delivery_dining_outlined,
+                  size: 20,
+                  color: Colors.cyan,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
                 tr(context, 'checkout_add_tip'),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -805,7 +1019,14 @@ class _OrderPageState extends State<OrderPage> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Text(tr(context, 'currency_aed'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey)),
+                Text(
+                  tr(context, 'currency_aed'),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Container(
                   width: 120,
@@ -813,15 +1034,23 @@ class _OrderPageState extends State<OrderPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.cyan.withOpacity(0.5), width: 1.5),
+                    border: Border.all(
+                      color: Colors.cyan.withOpacity(0.5),
+                      width: 1.5,
+                    ),
                   ),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _customTipController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             isDense: true,
@@ -834,12 +1063,17 @@ class _OrderPageState extends State<OrderPage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          final current = double.tryParse(_customTipController.text) ?? 0.0;
+                          final current =
+                              double.tryParse(_customTipController.text) ?? 0.0;
                           final next = current == 0.0 ? 1.0 : current + 0.5;
                           _customTipController.text = next.toStringAsFixed(1);
                           checkout.setTipAmount(next);
                         },
-                        child: Icon(Icons.add, size: 20, color: Colors.cyan.shade700),
+                        child: Icon(
+                          Icons.add,
+                          size: 20,
+                          color: Colors.cyan.shade700,
+                        ),
                       ),
                     ],
                   ),
@@ -852,7 +1086,11 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  Widget _buildTipOption(CheckoutController checkout, double amount, String label) {
+  Widget _buildTipOption(
+    CheckoutController checkout,
+    double amount,
+    String label,
+  ) {
     final isSelected = !_isCustomTip && checkout.tipAmount == amount;
     return GestureDetector(
       onTap: () {
@@ -865,7 +1103,9 @@ class _OrderPageState extends State<OrderPage> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.cyan : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isSelected ? Colors.cyan : Colors.grey.shade100),
+          border: Border.all(
+            color: isSelected ? Colors.cyan : Colors.grey.shade100,
+          ),
         ),
         child: Text(
           label,
@@ -896,7 +1136,9 @@ class _OrderPageState extends State<OrderPage> {
         decoration: BoxDecoration(
           color: _isCustomTip ? Colors.cyan : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _isCustomTip ? Colors.cyan : Colors.grey.shade100),
+          border: Border.all(
+            color: _isCustomTip ? Colors.cyan : Colors.grey.shade100,
+          ),
         ),
         child: Text(
           tr(context, 'checkout_custom'),
@@ -910,7 +1152,11 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, {VoidCallback? onAction}) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title, {
+    VoidCallback? onAction,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -921,20 +1167,17 @@ class _OrderPageState extends State<OrderPage> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           if (onAction != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(tr(context, 'change')),
-            ),
+            TextButton(onPressed: onAction, child: Text(tr(context, 'change'))),
         ],
       ),
     );
   }
 
   Widget _buildPaymentOption(
-    BuildContext context, 
-    CheckoutController checkout, 
-    String method, 
-    IconData icon, 
+    BuildContext context,
+    CheckoutController checkout,
+    String method,
+    IconData icon,
     String subtitle, {
     bool isAvailable = true,
   }) {
@@ -975,12 +1218,13 @@ class _OrderPageState extends State<OrderPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      method, 
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      )
+                      method,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
                   ],
                 ),
               ),
@@ -995,7 +1239,12 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  Widget _buildSummaryItem(BuildContext context, ProductModel product, int quantity, ThemeData theme) {
+  Widget _buildSummaryItem(
+    BuildContext context,
+    ProductModel product,
+    int quantity,
+    ThemeData theme,
+  ) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -1018,8 +1267,14 @@ class _OrderPageState extends State<OrderPage> {
                 height: 60,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  width: 60, height: 60, color: Colors.grey[100],
-                  child: const Icon(Icons.image_outlined, size: 20, color: Colors.grey),
+                  width: 60,
+                  height: 60,
+                  color: Colors.grey[100],
+                  child: const Icon(
+                    Icons.image_outlined,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ),
@@ -1030,8 +1285,12 @@ class _OrderPageState extends State<OrderPage> {
                 children: [
                   Text(
                     trText(context, product.name),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     '$quantity x AED ${product.finalPrice.toStringAsFixed(1)}',
@@ -1051,9 +1310,9 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Widget _buildBottomAction(
-    BuildContext context, 
-    CheckoutController checkout, 
-    ProductModel? product, 
+    BuildContext context,
+    CheckoutController checkout,
+    ProductModel? product,
     int? quantity,
     ThemeData theme,
   ) {
@@ -1061,14 +1320,17 @@ class _OrderPageState extends State<OrderPage> {
     final auth = context.watch<AuthController>();
     final cart = context.watch<CartController>();
     final isVerified = auth.currentUser?.isPhoneVerified ?? false;
-    
-    final totalPrice = checkout.hasSummary 
-        ? checkout.summaryTotal 
+
+    final totalPrice = checkout.hasSummary
+        ? checkout.summaryTotal
         : (product != null && quantity != null
-            ? product.finalPrice * quantity
-            : cart.totalPrice) + checkout.tipAmount;
-    
-    final bool canContinue = !checkout.isLoading && (checkout.currentStep != CheckoutStep.summary || isVerified);
+                  ? product.finalPrice * quantity
+                  : cart.totalPrice) +
+              checkout.tipAmount;
+
+    final bool canContinue =
+        !checkout.isLoading &&
+        (checkout.currentStep != CheckoutStep.summary || isVerified);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -1093,7 +1355,11 @@ class _OrderPageState extends State<OrderPage> {
               children: [
                 Text(
                   'AED ${totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.primary),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: AppColors.primary,
+                  ),
                 ),
                 Text(
                   tr(context, 'checkout_price_inclusive'),
@@ -1105,21 +1371,35 @@ class _OrderPageState extends State<OrderPage> {
               width: 160,
               height: 50,
               child: ElevatedButton(
-                onPressed: canContinue ? () => _handleAction(context, checkout, product, quantity) : null,
+                onPressed: canContinue
+                    ? () => _handleAction(context, checkout, product, quantity)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: checkout.isLoading 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(
-                      checkout.currentStep == CheckoutStep.payment 
-                        ? tr(context, 'place_order') 
-                        : tr(context, 'continue'),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
+                child: checkout.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        checkout.currentStep == CheckoutStep.payment
+                            ? tr(context, 'place_order')
+                            : tr(context, 'continue'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -1128,17 +1408,28 @@ class _OrderPageState extends State<OrderPage> {
     );
   }
 
-  void _handleAction(BuildContext context, CheckoutController checkout, ProductModel? product, int? quantity) async {
+  void _handleAction(
+    BuildContext context,
+    CheckoutController checkout,
+    ProductModel? product,
+    int? quantity,
+  ) async {
     if (checkout.currentStep == CheckoutStep.address) {
       if (checkout.selectedAddressId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select an address'), backgroundColor: AppColors.error),
+          const SnackBar(
+            content: Text('Please select an address'),
+            backgroundColor: AppColors.error,
+          ),
         );
         return;
       }
       if (checkout.deliveryDate == null || checkout.deliverySlotId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select preferred date and delivery slot'), backgroundColor: AppColors.error),
+          const SnackBar(
+            content: Text('Please select preferred date and delivery slot'),
+            backgroundColor: AppColors.error,
+          ),
         );
         return;
       }
@@ -1146,11 +1437,15 @@ class _OrderPageState extends State<OrderPage> {
     } else if (checkout.currentStep == CheckoutStep.summary) {
       checkout.nextStep();
     } else {
-      final orderData = await checkout.placeOrder(product: product, quantity: quantity);
+      final orderData = await checkout.placeOrder(
+        product: product,
+        quantity: quantity,
+      );
       if (orderData != null) {
         if (mounted) {
           // If payment was triggered, show integrated WebView
-          if (orderData.containsKey('payment_url') && orderData['payment_url'] != null) {
+          if (orderData.containsKey('payment_url') &&
+              orderData['payment_url'] != null) {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
@@ -1161,7 +1456,7 @@ class _OrderPageState extends State<OrderPage> {
                 ),
               ),
             );
-            
+
             // PaymentWebViewScreen uses pop(result) which resolves the await above
             if (!mounted) return;
 
@@ -1171,40 +1466,63 @@ class _OrderPageState extends State<OrderPage> {
               checkout.reset();
               context.read<CartController>().clearCart();
               context.read<OrderController>().fetchMyOrders();
-              Navigator.of(context).pushNamedAndRemoveUntil('/payment-success', (route) => route.isFirst, arguments: orderIdStr);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/payment-success',
+                (route) => route.isFirst,
+                arguments: orderIdStr,
+              );
               return;
             } else if (result == 'failed') {
-              Navigator.of(context).pushNamedAndRemoveUntil('/payment-failed', (route) => route.isFirst, arguments: orderIdStr);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/payment-failed',
+                (route) => route.isFirst,
+                arguments: orderIdStr,
+              );
               return;
             } else if (result == 'pending') {
-              Navigator.of(context).pushNamedAndRemoveUntil('/order-pending', (route) => route.isFirst, arguments: orderIdStr);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/order-pending',
+                (route) => route.isFirst,
+                arguments: orderIdStr,
+              );
               return;
             }
           }
 
           // After payment is complete (COD/Direct cases ONLY)
           checkout.startPaymentStatusPolling();
-          
+
           // Refresh orders list
           context.read<OrderController>().fetchMyOrders();
-          
+
           // Clear local state
           checkout.reset();
           context.read<CartController>().clearCart();
-          
-          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/home', (route) => false);
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(checkout.error ?? 'Failed to place order'), backgroundColor: AppColors.error),
+            SnackBar(
+              content: Text(checkout.error ?? 'Failed to place order'),
+              backgroundColor: AppColors.error,
+            ),
           );
         }
       }
     }
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value, {bool isTotal = false, Color? valueColor}) {
+  Widget _buildDetailRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isTotal = false,
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -1232,13 +1550,13 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Widget _buildCouponSection(
-    BuildContext context, 
-    CheckoutController checkout, 
+    BuildContext context,
+    CheckoutController checkout,
     CartController cart,
-    ProductModel product, 
-    int quantity, 
-    bool isCartMode, 
-    ThemeData theme
+    ProductModel product,
+    int quantity,
+    bool isCartMode,
+    ThemeData theme,
   ) {
     if (checkout.couponCode != null && couponController.text.isEmpty) {
       couponController.text = checkout.couponCode!;
@@ -1263,11 +1581,18 @@ class _OrderPageState extends State<OrderPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.local_offer_outlined, size: 18, color: AppColors.primary),
+              Icon(
+                Icons.local_offer_outlined,
+                size: 18,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Text(
                 tr(context, 'have_coupon'),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -1279,8 +1604,14 @@ class _OrderPageState extends State<OrderPage> {
                   controller: couponController,
                   decoration: InputDecoration(
                     hintText: tr(context, 'enter_coupon_code'),
-                    hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    hintStyle: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade200),
@@ -1300,30 +1631,41 @@ class _OrderPageState extends State<OrderPage> {
               SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: checkout.isLoading 
-                    ? null 
-                    : () async {
-                        final cartTotal = isCartMode ? cart.totalPrice : (product.finalPrice * quantity);
-                        final success = await checkout.validateCoupon(
-                          couponController.text.trim(),
-                          cartTotal,
-                        );
-                        if (success) {
-                           checkout.fetchCheckoutSummary(
-                            product: isCartMode ? null : product,
-                            quantity: isCartMode ? null : quantity,
+                  onPressed: checkout.isLoading
+                      ? null
+                      : () async {
+                          final cartTotal = isCartMode
+                              ? cart.totalPrice
+                              : (product.finalPrice * quantity);
+                          final success = await checkout.validateCoupon(
+                            couponController.text.trim(),
+                            cartTotal,
                           );
-                        }
-                      },
+                          if (success) {
+                            checkout.fetchCheckoutSummary(
+                              product: isCartMode ? null : product,
+                              quantity: isCartMode ? null : quantity,
+                            );
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
-                  child: checkout.isLoading 
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(tr(context, 'apply')),
+                  child: checkout.isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(tr(context, 'apply')),
                 ),
               ),
             ],
@@ -1337,22 +1679,32 @@ class _OrderPageState extends State<OrderPage> {
                   const SizedBox(width: 4),
                   Text(
                     tr(context, 'coupon_applied'),
-                    style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
-                    final cartTotal = isCartMode ? cart.totalPrice : (product.finalPrice * quantity);
-                    checkout.validateCoupon(
-                      '',
-                      cartTotal,
-                    );
+                      final cartTotal = isCartMode
+                          ? cart.totalPrice
+                          : (product.finalPrice * quantity);
+                      checkout.validateCoupon('', cartTotal);
                       checkout.fetchCheckoutSummary(
                         product: isCartMode ? null : product,
                         quantity: isCartMode ? null : quantity,
                       );
                     },
-                    child: const Text('Remove', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Remove',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -1365,18 +1717,25 @@ class _OrderPageState extends State<OrderPage> {
                 style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
             ),
-          
+
           const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 12),
-          _buildAvailableCoupons(context, checkout, cart, product, quantity, isCartMode),
+          _buildAvailableCoupons(
+            context,
+            checkout,
+            cart,
+            product,
+            quantity,
+            isCartMode,
+          ),
         ],
       ),
     );
   }
 
   Widget _buildAvailableCoupons(
-    BuildContext context, 
+    BuildContext context,
     CheckoutController checkout,
     CartController cart,
     ProductModel product,
@@ -1392,8 +1751,8 @@ class _OrderPageState extends State<OrderPage> {
             Text(
               tr(context, 'available_coupons').toUpperCase(),
               style: TextStyle(
-                fontSize: 11, 
-                fontWeight: FontWeight.bold, 
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
                 color: Colors.grey.shade500,
                 letterSpacing: 0.5,
               ),
@@ -1406,7 +1765,11 @@ class _OrderPageState extends State<OrderPage> {
               ),
               child: Text(
                 checkout.availableCoupons.length.toString(),
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ],
@@ -1435,7 +1798,10 @@ class _OrderPageState extends State<OrderPage> {
                   ),
                   TextButton(
                     onPressed: () => checkout.fetchAvailableCoupons(),
-                    child: const Text('Tap to refresh', style: TextStyle(fontSize: 12)),
+                    child: const Text(
+                      'Tap to refresh',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
                 ],
               ),
@@ -1443,87 +1809,103 @@ class _OrderPageState extends State<OrderPage> {
           )
         else
           ...checkout.availableCoupons.map((coupon) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              coupon.code,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                coupon.code,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.cyan.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.cyan.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                coupon.discountAmount,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.cyan,
+                                ),
+                              ),
                             ),
-                            child: Text(
-                              coupon.discountAmount,
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.cyan),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (coupon.description != null && coupon.description!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            coupon.description!,
-                            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                          ),
+                          ],
                         ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    couponController.text = coupon.code;
-                    final cartTotal = isCartMode ? cart.totalPrice : (product.finalPrice * quantity);
-                    final success = await checkout.validateCoupon(
-                      coupon.code,
-                      cartTotal,
-                    );
-                    if (success) {
-                      checkout.fetchCheckoutSummary(
-                        product: isCartMode ? null : product,
-                        quantity: isCartMode ? null : quantity,
-                      );
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text(
-                    tr(context, 'tap_to_apply'),
-                    style: const TextStyle(
-                      fontSize: 11, 
-                      fontWeight: FontWeight.bold, 
-                      color: AppColors.primary,
+                        if (coupon.description != null &&
+                            coupon.description!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              coupon.description!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
-        }),
+                  TextButton(
+                    onPressed: () async {
+                      couponController.text = coupon.code;
+                      final cartTotal = isCartMode
+                          ? cart.totalPrice
+                          : (product.finalPrice * quantity);
+                      final success = await checkout.validateCoupon(
+                        coupon.code,
+                        cartTotal,
+                      );
+                      if (success) {
+                        checkout.fetchCheckoutSummary(
+                          product: isCartMode ? null : product,
+                          quantity: isCartMode ? null : quantity,
+                        );
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      tr(context, 'tap_to_apply'),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
       ],
     );
   }
@@ -1542,7 +1924,10 @@ class _OrderPageState extends State<OrderPage> {
           Expanded(
             child: Text(
               tr(context, 'tip_info'),
-              style: TextStyle(fontSize: 12, color: AppColors.primary.withOpacity(0.8)),
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primary.withOpacity(0.8),
+              ),
             ),
           ),
         ],
@@ -1551,11 +1936,11 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Widget _buildVerificationWarning(
-    BuildContext context, 
-    ProductModel displayProduct, 
-    int displayQuantity, 
-    bool isCartMode, 
-    ThemeData theme
+    BuildContext context,
+    ProductModel displayProduct,
+    int displayQuantity,
+    bool isCartMode,
+    ThemeData theme,
   ) {
     final auth = context.watch<AuthController>();
     final user = auth.currentUser;
@@ -1612,7 +1997,7 @@ class _OrderPageState extends State<OrderPage> {
                         // Re-fetch cart to ensure it persists after token changes
                         if (context.mounted) {
                           context.read<CartController>().fetchCart();
-                          
+
                           // Re-fetch summary now that the phone is verified!
                           final checkout = context.read<CheckoutController>();
                           checkout.fetchCheckoutSummary(
@@ -1628,10 +2013,15 @@ class _OrderPageState extends State<OrderPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.actionBlue,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 elevation: 0,
               ),
-              child: const Text('Verify Now', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Verify Now',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],

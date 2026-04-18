@@ -43,7 +43,6 @@ class AppColors {
 
   // ─── Themes ─────────────────────────────────────────────────
 
-
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,

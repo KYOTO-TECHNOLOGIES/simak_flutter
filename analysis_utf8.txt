@@ -1,0 +1,206 @@
+﻿Analyzing uae_ecom_project-1...                                 
+
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:608:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:609:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:630:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:631:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:640:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:695:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:750:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:751:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:754:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:756:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:761:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:762:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:800:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1355:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1387:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1402:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1403:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1404:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1411:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1412:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1413:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1414:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1415:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1432:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1433:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1436:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1443:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1444:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1467:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1482:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1723:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:1724:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2029:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2030:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2046:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2050:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2051:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2060:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2090:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2155:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2156:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2159:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2166:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2167:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2189:5 - equal_keys_in_map
+warning - Two keys in a map literal shouldn't be equal - lib\core\localization\app_translations.dart:2204:5 - equal_keys_in_map
+  error - Target of URI doesn't exist: 'package:uae_ecom_project/core/utils/feedback_utils.dart' - lib\core\widgets\quick_add_to_cart_button.dart:10:8 - uri_does_not_exist
+  error - Undefined name 'SimakFeedback' - lib\core\widgets\quick_add_to_cart_button.dart:54:21 - undefined_identifier
+  error - Undefined name 'SimakFeedback' - lib\core\widgets\quick_add_to_cart_button.dart:59:21 - undefined_identifier
+  error - Undefined name 'SimakFeedback' - lib\core\widgets\quick_add_to_cart_button.dart:85:21 - undefined_identifier
+  error - Undefined name 'SimakFeedback' - lib\core\widgets\quick_add_to_cart_button.dart:90:21 - undefined_identifier
+   info - Statements in an if should be enclosed in a block - lib\features\auth\screens\otp_screen.dart:324:33 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\auth\widgets\add_address_dialog.dart:286:31 - curly_braces_in_flow_control_structures
+warning - The '!' will have no effect because the receiver can't be null - lib\features\auth\widgets\google_map_picker.dart:203:38 - unnecessary_non_null_assertion
+   info - Empty catch block - lib\features\auth\widgets\google_map_picker.dart:231:17 - empty_catches
+   info - Don't use 'BuildContext's across async gaps - lib\features\auth\widgets\google_map_picker.dart:381:28 - use_build_context_synchronously
+   info - Statements in an if should be enclosed in a block - lib\features\auth\widgets\otp_verification_dialog.dart:433:33 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\auth\widgets\unified_auth_form.dart:90:27 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\auth\widgets\unified_auth_form.dart:91:14 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\auth\widgets\unified_auth_form.dart:244:34 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\cart\screens\cart_screen.dart:169:37 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\cart\screens\cart_screen.dart:169:41 - unnecessary_underscores
+   info - Statements in an if should be enclosed in a block - lib\features\cart\screens\cart_screen.dart:514:25 - curly_braces_in_flow_control_structures
+warning - Unused import: 'package:flutter_svg/flutter_svg.dart' - lib\features\home\home_page.dart:4:8 - unused_import
+warning - Unused import: 'package:uae_ecom_project/features/cart/controller/cart_controller.dart' - lib\features\home\home_page.dart:19:8 - unused_import
+warning - Duplicate import - lib\features\home\home_page.dart:29:8 - duplicate_import
+warning - The value of the field '_promoScheduledThisSession' isn't used - lib\features\home\home_page.dart:41:8 - unused_field
+   info - Unnecessary use of multiple underscores - lib\features\home\home_page.dart:1143:36 - unnecessary_underscores
+warning - The value of the local variable 'theme' isn't used - lib\features\home\home_page.dart:1423:11 - unused_local_variable
+warning - The value of the local variable 'isSmall' isn't used - lib\features\home\home_page.dart:1790:17 - unused_local_variable
+warning - The value of the local variable 'languageProvider' isn't used - lib\features\home\widgets\language_selection_icon.dart:82:11 - unused_local_variable
+   info - Unnecessary use of multiple underscores - lib\features\home\widgets\promo_popup_dialog.dart:123:47 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\home\widgets\promo_popup_dialog.dart:123:51 - unnecessary_underscores
+warning - Unused import: 'package:uae_ecom_project/features/payment/model/payment_model.dart' - lib\features\orders\controller\checkout_controller.dart:6:8 - unused_import
+   info - Missing type annotation - lib\features\orders\controller\checkout_controller.dart:144:7 - strict_top_level_inference
+   info - Missing type annotation - lib\features\orders\model\delivery_slot_model.dart:37:7 - strict_top_level_inference
+   info - The variable name 'end_time_display' isn't a lowerCamelCase identifier - lib\features\orders\model\delivery_slot_model.dart:37:7 - non_constant_identifier_names
+   info - Statements in an if should be enclosed in a block - lib\features\orders\screens\order_detail_screen.dart:109:17 - curly_braces_in_flow_control_structures
+   info - Unnecessary use of 'toList' in a spread - lib\features\orders\screens\order_detail_screen.dart:431:16 - unnecessary_to_list_in_spreads
+   info - Unnecessary use of multiple underscores - lib\features\orders\screens\order_detail_screen.dart:488:47 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\orders\screens\order_detail_screen.dart:488:51 - unnecessary_underscores
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:716:49 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:717:56 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\orders\screens\order_detail_screen.dart:815:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\orders\screens\order_detail_screen.dart:815:37 - unnecessary_underscores
+   info - Unnecessary 'const' keyword - lib\features\orders\screens\order_detail_screen.dart:956:15 - unnecessary_const
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:1485:48 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:1489:44 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:1500:21 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:1512:36 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:1518:36 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_detail_screen.dart:1524:36 - use_build_context_synchronously
+   info - Unnecessary use of string interpolation - lib\features\orders\screens\order_page.dart:323:29 - unnecessary_string_interpolations
+   info - Statements in an if should be enclosed in a block - lib\features\orders\screens\order_page.dart:681:27 - curly_braces_in_flow_control_structures
+   info - Unnecessary use of multiple underscores - lib\features\orders\screens\order_page.dart:1269:35 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\orders\screens\order_page.dart:1269:39 - unnecessary_underscores
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1450:15 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1467:15 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1468:15 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1469:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1476:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1483:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1496:11 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1500:11 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1503:13 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\orders\screens\order_page.dart:1508:32 - use_build_context_synchronously
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:32:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:33:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:34:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:35:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:36:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:37:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:67:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:68:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:69:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:154:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:155:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\orders\service\order_service.dart:156:9 - use_null_aware_elements
+warning - Unused import: 'package:uae_ecom_project/features/payment/model/payment_model.dart' - lib\features\payment\screens\payment_webview_screen.dart:5:8 - unused_import
+warning - The operand can't be 'null', so the condition is always 'true' - lib\features\payment\screens\payment_webview_screen.dart:101:28 - unnecessary_null_comparison
+warning - Unused import: 'package:uae_ecom_project/features/payment/model/payment_model.dart' - lib\features\payment\service\payment_service.dart:3:8 - unused_import
+  error - Target of URI doesn't exist: 'package:uae_ecom_project/core/utils/feedback_utils.dart' - lib\features\products\products_page.dart:4:8 - uri_does_not_exist
+   info - Statements in an if should be enclosed in a block - lib\features\products\products_page.dart:334:33 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\products\products_page.dart:365:43 - curly_braces_in_flow_control_structures
+  error - Undefined name 'SimakFeedback' - lib\features\products\products_page.dart:750:11 - undefined_identifier
+  error - Undefined name 'SimakFeedback' - lib\features\products\products_page.dart:752:11 - undefined_identifier
+  error - Undefined name 'SimakFeedback' - lib\features\products\products_page.dart:774:9 - undefined_identifier
+  error - Undefined name 'SimakFeedback' - lib\features\products\products_page.dart:786:5 - undefined_identifier
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:865:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:865:53 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1020:25 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1020:29 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1093:47 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1093:51 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1098:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1098:53 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1113:47 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1113:51 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1312:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1312:53 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1479:25 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\products_page.dart:1479:29 - unnecessary_underscores
+  error - Target of URI doesn't exist: 'package:uae_ecom_project/core/utils/feedback_utils.dart' - lib\features\products\screens\product_detail_screen.dart:1192:8 - uri_does_not_exist
+  error - Undefined name 'SimakFeedback' - lib\features\products\screens\product_detail_screen.dart:2189:33 - undefined_identifier
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2190:35 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2191:38 - use_build_context_synchronously
+  error - Undefined name 'SimakFeedback' - lib\features\products\screens\product_detail_screen.dart:2194:33 - undefined_identifier
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2195:35 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2196:38 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\products\screens\product_detail_screen.dart:2246:57 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\features\products\screens\product_detail_screen.dart:2250:45 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2334:47 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2343:59 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\products\screens\product_detail_screen.dart:2347:47 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2410:29 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2410:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2690:39 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2703:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2703:53 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2717:43 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\screens\product_detail_screen.dart:2717:47 - unnecessary_underscores
+warning - The declaration '_ServiceChip' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2791:7 - unused_element
+warning - The declaration '_Divider' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2823:7 - unused_element
+warning - The declaration '_BuildTip' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2832:7 - unused_element
+warning - The declaration '_HighlightRow' isn't referenced - lib\features\products\screens\product_detail_screen.dart:2981:7 - unused_element
+warning - A value for optional parameter 'color' isn't ever given - lib\features\products\screens\product_detail_screen.dart:3062:10 - unused_element_parameter
+   info - Unnecessary use of multiple underscores - lib\features\products\widgets\video_player_widget.dart:114:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\products\widgets\video_player_widget.dart:114:37 - unnecessary_underscores
+warning - The value of the field '_genders' isn't used - lib\features\profile\edit_profile_screen.dart:35:22 - unused_field
+   info - Use the null-aware operator '?.' rather than an explicit 'null' comparison - lib\features\profile\edit_profile_screen.dart:99:28 - prefer_null_aware_operators
+warning - The value of the field '_genderOptions' isn't used - lib\features\profile\profile_screen.dart:55:29 - unused_field
+   info - Statements in an if should be enclosed in a block - lib\features\profile\profile_screen.dart:128:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\profile\profile_screen.dart:130:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\profile\profile_screen.dart:132:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\profile\profile_screen.dart:134:9 - curly_braces_in_flow_control_structures
+warning - Dead code - lib\features\profile\profile_screen.dart:343:25 - dead_code
+   info - Statements in an if should be enclosed in a block - lib\features\profile\profile_screen.dart:465:7 - curly_braces_in_flow_control_structures
+warning - The value of the local variable 'hasEmail' isn't used - lib\features\profile\profile_screen.dart:635:11 - unused_local_variable
+warning - The value of the local variable 'hasPhone' isn't used - lib\features\profile\profile_screen.dart:636:11 - unused_local_variable
+warning - Dead code - lib\features\profile\profile_screen.dart:646:25 - dead_code
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:2161:39 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:2170:41 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:2170:45 - unnecessary_underscores
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\profile\profile_screen.dart:2288:49 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\profile\profile_screen.dart:2290:50 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\profile\profile_screen.dart:2298:56 - use_build_context_synchronously
+warning - The value of the local variable 'isDelivered' isn't used - lib\features\profile\profile_screen.dart:2350:16 - unused_local_variable
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:2374:39 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:2374:43 - unnecessary_underscores
+warning - The declaration '_showReviewDialog' isn't referenced - lib\features\profile\profile_screen.dart:2490:8 - unused_element
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\profile\profile_screen.dart:2670:51 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\profile\profile_screen.dart:2671:58 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\profile\profile_screen.dart:2682:58 - use_build_context_synchronously
+warning - Dead code - lib\features\profile\profile_screen.dart:2808:39 - dead_code
+warning - Dead code - lib\features\profile\profile_screen.dart:3030:15 - dead_code
+warning - Dead code - lib\features\profile\profile_screen.dart:3048:37 - dead_code
+   info - Unnecessary use of multiple underscores - lib\features\profile\screens\notification_screen.dart:213:29 - unnecessary_underscores
+warning - The value of the local variable 'theme' isn't used - lib\features\profile\screens\support_screen.dart:93:11 - unused_local_variable
+warning - Unused import: 'package:uae_ecom_project/features/auth/controller/system_controller.dart' - lib\features\splash\splash_screen.dart:6:8 - unused_import
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\main.dart:253:23 - use_null_aware_elements
+   info - Angle brackets will be interpreted as HTML - lib\service\cache_service.dart:116:30 - unintended_html_in_doc_comment
+   info - Angle brackets will be interpreted as HTML - lib\service\cache_service.dart:117:39 - unintended_html_in_doc_comment
+   info - Don't invoke 'print' in production code - lib\service\cache_service.dart:145:7 - avoid_print
+

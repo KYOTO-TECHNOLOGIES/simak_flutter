@@ -6,6 +6,8 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
+import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
 
 // ═════════════════════════════════════════════════════════════════════
 //  QUICK ADD TO CART BUTTON  —  Shared floating button
@@ -25,61 +27,73 @@ class QuickAddToCartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool inStock = product.isAvailable && product.stock > 0;
-    
+
     return GestureDetector(
       onTap: inStock
-          ? () async {
-              final auth = context.read<AuthController>();
-              final cart = context.read<CartController>();
+            ? () async {
+                final auth = context.read<AuthController>();
+                final cart = context.read<CartController>();
 
-              if (!auth.isLoggedIn) {
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
+                if (!auth.isLoggedIn) {
+                  if (context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  }
+                  return;
                 }
-                return;
-              }
 
-              // Always try to add to cart (increments quantity if already exists)
-              final success = await cart.addToCart(product.id, 1);
-              
-              if (context.mounted) {
-                // Clear existing snackbars to show the new one immediately
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                
-                final String message = success 
-                    ? trStatic(context, 'added_to_cart') 
-                    : (cart.error ?? trStatic(context, 'failed_add_cart'));
+                // Always try to add to cart (increments quantity if already exists)
+                final success = await cart.addToCart(product.id, 1);
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: success ? AppColors.success : AppColors.error,
-                    duration: const Duration(seconds: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    content: Row(
-                      children: [
-                        Icon(
-                          success ? Icons.check_circle_outline : Icons.error_outline,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            message,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                if (context.mounted) {
+                  if (success) {
+                    SimakFeedback.showSuccess(
+                      context,
+                      trStatic(context, 'added_to_cart'),
+                    );
+                  } else {
+                    SimakFeedback.showError(
+                      context,
+                      cart.error ?? trStatic(context, 'failed_add_cart'),
+                    );
+                  }
+                }
               }
-            }
-          : null,
+            : () async {
+                final auth = context.read<AuthController>();
+                if (!auth.isLoggedIn) {
+                  if (context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  }
+                  return;
+                }
+
+                final controller = context.read<ProductController>();
+                final success = await controller.notifyMe(product.id);
+
+                if (context.mounted) {
+                  if (success) {
+                    SimakFeedback.showSuccess(
+                      context,
+                      trStatic(context, 'notify_all_set'),
+                    );
+                  } else {
+                    SimakFeedback.showError(
+                      context,
+                      trStatic(context, 'notify_failed'),
+                    );
+                  }
+                }
+              },
       child: Container(
         width: size,
         height: size,
@@ -95,9 +109,11 @@ class QuickAddToCartButton extends StatelessWidget {
           ],
         ),
         child: Icon(
-          Icons.shopping_cart_rounded,
+          inStock
+              ? Icons.shopping_cart_rounded
+              : Icons.notifications_active_outlined,
           size: iconSize,
-          color: inStock ? AppColors.primary : Colors.grey,
+          color: inStock ? AppColors.primary : AppColors.actionBlue,
         ),
       ),
     );

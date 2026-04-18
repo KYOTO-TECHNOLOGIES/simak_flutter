@@ -14,11 +14,12 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> _otpControllers =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _otpFocusNodes =
-      List.generate(6, (_) => FocusNode());
-      
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
+
   Timer? _timer;
   int _secondsRemaining = 120; // 2 minutes = 120 seconds
   String? _identifier;
@@ -68,16 +69,16 @@ class _OtpScreenState extends State<OtpScreen> {
 
   String _formatIdentifier(String identifier) {
     if (identifier.isEmpty) return identifier;
-    
+
     // Check if it's an email
     if (identifier.contains('@')) {
       // Format email: show first 3 chars, some stars, and domain
       final parts = identifier.split('@');
       if (parts.length != 2) return identifier;
-      
+
       final localPart = parts[0];
       final domain = parts[1];
-      
+
       if (localPart.length <= 3) {
         return '$localPart***@$domain';
       } else {
@@ -88,21 +89,22 @@ class _OtpScreenState extends State<OtpScreen> {
       if (identifier.length <= 6) {
         return identifier;
       }
-      
+
       // Extract country code (assuming it starts with +)
       String countryCode = '';
       String number = identifier;
-      
+
       if (identifier.startsWith('+')) {
         // Find where the country code ends (first space or after 3-4 digits)
         int countryCodeEnd = 1;
-        while (countryCodeEnd < identifier.length && 
-               countryCodeEnd < 5 && 
-               identifier[countryCodeEnd] != ' ') {
+        while (countryCodeEnd < identifier.length &&
+            countryCodeEnd < 5 &&
+            identifier[countryCodeEnd] != ' ') {
           countryCodeEnd++;
         }
-        
-        if (countryCodeEnd < identifier.length && identifier[countryCodeEnd] == ' ') {
+
+        if (countryCodeEnd < identifier.length &&
+            identifier[countryCodeEnd] == ' ') {
           countryCode = identifier.substring(0, countryCodeEnd + 1);
           number = identifier.substring(countryCodeEnd + 1);
         } else {
@@ -110,14 +112,14 @@ class _OtpScreenState extends State<OtpScreen> {
           number = identifier.substring(countryCodeEnd);
         }
       }
-      
+
       if (number.length <= 4) {
         return identifier;
       }
-      
+
       final lastFour = number.substring(number.length - 4);
       final maskedNumber = '*' * (number.length - 4);
-      
+
       return '$countryCode$maskedNumber$lastFour';
     }
   }
@@ -129,7 +131,10 @@ class _OtpScreenState extends State<OtpScreen> {
     if (success && mounted) {
       _startTimer(isResend: true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'otp_sent_msg')), backgroundColor: Colors.green),
+        SnackBar(
+          content: Text(tr(context, 'otp_sent_msg')),
+          backgroundColor: Colors.green,
+        ),
       );
     }
   }
@@ -139,10 +144,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
     final otp = _otpControllers.map((c) => c.text).join();
     final auth = context.read<AuthController>();
-    final success = await auth.verifyOtp(
-      identifier: _identifier!,
-      otp: otp,
-    );
+    final success = await auth.verifyOtp(identifier: _identifier!, otp: otp);
 
     if (success && mounted) {
       Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
@@ -174,7 +176,10 @@ class _OtpScreenState extends State<OtpScreen> {
             children: [
               // Back Button Row
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
@@ -188,12 +193,17 @@ class _OtpScreenState extends State<OtpScreen> {
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 24,
+                    ),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E1E) : AppColors.white,
+                        color: isDark
+                            ? const Color(0xFF1E1E1E)
+                            : AppColors.white,
                         borderRadius: BorderRadius.circular(32),
                         boxShadow: [
                           BoxShadow(
@@ -237,7 +247,9 @@ class _OtpScreenState extends State<OtpScreen> {
                             'We have sent a verification code to\n${_formatIdentifier(_identifier ?? "")}',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
                               fontSize: 13,
                               height: 1.5,
                             ),
@@ -263,13 +275,15 @@ class _OtpScreenState extends State<OtpScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
+                                    FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   decoration: InputDecoration(
                                     counterText: '',
                                     filled: true,
                                     fillColor: theme.scaffoldBackgroundColor,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide.none,
@@ -277,7 +291,9 @@ class _OtpScreenState extends State<OtpScreen> {
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                          color: theme.dividerColor, width: 1),
+                                        color: theme.dividerColor,
+                                        width: 1,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -304,12 +320,16 @@ class _OtpScreenState extends State<OtpScreen> {
                           // Error message if any
                           Consumer<AuthController>(
                             builder: (context, auth, _) {
-                              if (auth.errorMessage == null) return const SizedBox.shrink();
+                              if (auth.errorMessage == null)
+                                return const SizedBox.shrink();
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16),
                                 child: Text(
                                   auth.errorMessage!,
-                                  style: const TextStyle(color: AppColors.error, fontSize: 12),
+                                  style: const TextStyle(
+                                    color: AppColors.error,
+                                    fontSize: 12,
+                                  ),
                                   textAlign: TextAlign.center,
                                 ),
                               );
@@ -323,19 +343,35 @@ class _OtpScreenState extends State<OtpScreen> {
                                 height: 54,
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: (_isOtpComplete && !auth.isLoading) ? _verifyOtp : null,
+                                  onPressed: (_isOtpComplete && !auth.isLoading)
+                                      ? _verifyOtp
+                                      : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.actionBlue,
-                                    disabledBackgroundColor: AppColors.actionBlue.withOpacity(0.3),
+                                    disabledBackgroundColor: AppColors
+                                        .actionBlue
+                                        .withOpacity(0.3),
                                     foregroundColor: AppColors.white,
                                     elevation: 0,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                   child: auth.isLoading
-                                      ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
                                       : Text(
                                           tr(context, 'verify_login'),
-                                          style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
+                                          ),
                                         ),
                                 ),
                               );
@@ -352,18 +388,22 @@ class _OtpScreenState extends State<OtpScreen> {
                                   Text(
                                     "Didn't receive the code? ",
                                     style: TextStyle(
-                                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                      color: theme.colorScheme.onSurface
+                                          .withOpacity(0.5),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: _secondsRemaining > 0 ? null : _resendOtp,
+                                    onTap: _secondsRemaining > 0
+                                        ? null
+                                        : _resendOtp,
                                     child: Text(
                                       "Resend OTP",
                                       style: TextStyle(
-                                        color: _secondsRemaining > 0 
-                                            ? theme.colorScheme.onSurface.withOpacity(0.3)
+                                        color: _secondsRemaining > 0
+                                            ? theme.colorScheme.onSurface
+                                                  .withOpacity(0.3)
                                             : AppColors.actionBlue,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
@@ -376,11 +416,16 @@ class _OtpScreenState extends State<OtpScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 16),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: _secondsRemaining <= 30
                                           ? Colors.red.withOpacity(0.1)
-                                          : AppColors.actionBlue.withOpacity(0.1),
+                                          : AppColors.actionBlue.withOpacity(
+                                              0.1,
+                                            ),
                                       borderRadius: BorderRadius.circular(30),
                                     ),
                                     child: Row(

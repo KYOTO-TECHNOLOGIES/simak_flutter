@@ -36,7 +36,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
           onNavigationRequest: (NavigationRequest request) {
             final String url = request.url;
             debugPrint('WebView Navigating to: $url');
-            
+
             if (url.toLowerCase().startsWith('myapp://')) {
               debugPrint('Intercepted Deep Link in WebView: $url');
               _handleDeepLink(Uri.parse(url));
@@ -61,18 +61,20 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       )
       ..loadRequest(Uri.parse(widget.url));
   }
-  
+
   Future<void> _handleDeepLink(Uri uri) async {
     // Only handle myapp://payment/... or myapp://...
     if (uri.scheme == 'myapp') {
-      String orderIdStr = uri.queryParameters['order_id'] ?? 
-                                uri.queryParameters['id'] ?? 
-                                uri.queryParameters['orderId'] ?? '';
-      
+      String orderIdStr =
+          uri.queryParameters['order_id'] ??
+          uri.queryParameters['id'] ??
+          uri.queryParameters['orderId'] ??
+          '';
+
       if (orderIdStr.isEmpty && widget.orderId != null) {
         orderIdStr = widget.orderId.toString();
       }
-      
+
       if (orderIdStr.isEmpty) {
         debugPrint('WebView: No order_id found in deep link');
         return;
@@ -97,19 +99,26 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
           try {
             verifyData = await _paymentService.verifyPayment(orderId);
             if (verifyData != null) {
-              status = verifyData['status']?.toString().toUpperCase() ?? 'PENDING';
-              
+              status =
+                  verifyData['status']?.toString().toUpperCase() ?? 'PENDING';
+
               // If terminal state reached, stop polling
-              if (['SUCCESS', 'PAID', 'COMPLETED', 'FAILED', 'CANCELLED'].contains(status)) {
+              if ([
+                'SUCCESS',
+                'PAID',
+                'COMPLETED',
+                'FAILED',
+                'CANCELLED',
+              ].contains(status)) {
                 break;
               }
             }
           } catch (e) {
             debugPrint('Verification API failed on attempt ${4 - retries}: $e');
           }
-          
+
           if (!mounted) return;
-          
+
           if (retries > 1) {
             await Future.delayed(const Duration(seconds: 2));
           }
@@ -131,7 +140,9 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         debugPrint('Error verifying payment: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${e.toString().split(':').last.trim()}')),
+            SnackBar(
+              content: Text('Error: ${e.toString().split(':').last.trim()}'),
+            ),
           );
         }
       } finally {
@@ -156,11 +167,12 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       } catch (e) {
         debugPrint('Verification API failed on back button: $e');
       }
-      
+
       if (!mounted) return;
 
       if (verifyData != null) {
-        final String status = verifyData['status']?.toString().toUpperCase() ?? 'PENDING';
+        final String status =
+            verifyData['status']?.toString().toUpperCase() ?? 'PENDING';
         if (status == 'SUCCESS' || status == 'PAID' || status == 'COMPLETED') {
           Navigator.pop(context, 'success');
           return;
@@ -180,7 +192,6 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   }
 
   @override
-
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
@@ -198,31 +209,31 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
             onPressed: () => _handleBackButton(),
           ),
         ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading || _isVerifying)
-             Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(color: AppColors.primary),
-                  if (_isVerifying) ...[
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Verifying payment status...',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
+        body: Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            if (_isLoading || _isVerifying)
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(color: AppColors.primary),
+                    if (_isVerifying) ...[
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Verifying payment status...',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 }
-

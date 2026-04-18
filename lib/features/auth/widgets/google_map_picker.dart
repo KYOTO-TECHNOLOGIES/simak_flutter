@@ -59,20 +59,19 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
 
   Future<void> _reverseGeocode(LatLng position) async {
     setState(() => _isReverseGeocoding = true);
-    
-    widget.onSelect(MapPickerResult(
-      lat: position.latitude,
-      lng: position.longitude,
-    ));
+
+    widget.onSelect(
+      MapPickerResult(lat: position.latitude, lng: position.longitude),
+    );
 
     try {
       final apiKey = context.read<SystemController>().config?.googleMapsApiKey;
       bool success = false;
-      
+
       if (apiKey != null && apiKey.isNotEmpty) {
         success = await _googleReverseGeocode(position, apiKey);
       }
-      
+
       if (!success) {
         await _nativeReverseGeocode(position);
       }
@@ -87,11 +86,12 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
 
   Future<bool> _googleReverseGeocode(LatLng position, String apiKey) async {
     try {
-      final url = 'https://maps.googleapis.com/maps/api/geocode/json'
+      final url =
+          'https://maps.googleapis.com/maps/api/geocode/json'
           '?latlng=${position.latitude},${position.longitude}&key=$apiKey';
-      
+
       final response = await context.read<SystemController>().dio.get(url);
-      
+
       if (response.statusCode == 200 && response.data['status'] == 'OK') {
         final results = response.data['results'] as List<dynamic>;
         if (results.isEmpty) return false;
@@ -109,7 +109,8 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           final types = comp['types'] as List<dynamic>;
           if (types.contains('route')) {
             street = comp['long_name'];
-          } else if (types.contains('sublocality') || types.contains('neighborhood')) {
+          } else if (types.contains('sublocality') ||
+              types.contains('neighborhood')) {
             area = comp['long_name'];
           } else if (types.contains('locality')) {
             city = comp['long_name'];
@@ -123,11 +124,11 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
         if (area.isEmpty) {
           // Check for sublocality_level_1 etc.
           for (var comp in components) {
-              final types = comp['types'] as List<dynamic>;
-              if (types.any((t) => t.toString().startsWith('sublocality'))) {
-                area = comp['long_name'];
-                break;
-              }
+            final types = comp['types'] as List<dynamic>;
+            if (types.any((t) => t.toString().startsWith('sublocality'))) {
+              area = comp['long_name'];
+              break;
+            }
           }
         }
 
@@ -135,15 +136,17 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           _address = fullAddress;
         });
 
-        widget.onSelect(MapPickerResult(
-          lat: position.latitude,
-          lng: position.longitude,
-          street: street,
-          area: area,
-          city: city,
-          emirate: emirate,
-          fullAddress: fullAddress,
-        ));
+        widget.onSelect(
+          MapPickerResult(
+            lat: position.latitude,
+            lng: position.longitude,
+            street: street,
+            area: area,
+            city: city,
+            emirate: emirate,
+            fullAddress: fullAddress,
+          ),
+        );
         return true;
       }
     } catch (e) {
@@ -161,13 +164,15 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
 
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
-        
+
         // 1. Refine Street Name: Handle cases where thoroughfare is missing or just numbers
         String streetName = place.thoroughfare ?? '';
         if (streetName.isEmpty || RegExp(r'^\d+$').hasMatch(streetName)) {
           streetName = place.street ?? place.name ?? '';
           // Remove leading house/plot numbers like "123 ", "#123 ", or "12-3 "
-          streetName = streetName.replaceFirst(RegExp(r'^[\#\d\-\s]+'), '').trim();
+          streetName = streetName
+              .replaceFirst(RegExp(r'^[\#\d\-\s]+'), '')
+              .trim();
           // If after cleaning it's empty, fallback to the original street or name
           if (streetName.isEmpty) streetName = place.street ?? place.name ?? '';
         }
@@ -186,10 +191,11 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
 
         // 4. Construct a better readable full address without redundancy
         final parts = [
-          if (place.name != null && 
-              place.name != place.street && 
-              place.name != place.thoroughfare && 
-              !RegExp(r'^\d+$').hasMatch(place.name!)) place.name,
+          if (place.name != null &&
+              place.name != place.street &&
+              place.name != place.thoroughfare &&
+              !RegExp(r'^\d+$').hasMatch(place.name!))
+            place.name,
           place.street ?? place.thoroughfare,
           if (area.isNotEmpty && !(place.street ?? '').contains(area)) area,
           if (city.isNotEmpty && city != area) city,
@@ -210,18 +216,19 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           _address = fullAddress;
         });
 
-        widget.onSelect(MapPickerResult(
-          lat: position.latitude,
-          lng: position.longitude,
-          street: streetName,
-          area: area.isNotEmpty ? area : (place.subAdministrativeArea ?? ''),
-          city: city,
-          emirate: place.administrativeArea,
-          fullAddress: fullAddress,
-        ));
+        widget.onSelect(
+          MapPickerResult(
+            lat: position.latitude,
+            lng: position.longitude,
+            street: streetName,
+            area: area.isNotEmpty ? area : (place.subAdministrativeArea ?? ''),
+            city: city,
+            emirate: place.administrativeArea,
+            fullAddress: fullAddress,
+          ),
+        );
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   Future<void> _handleUseLocation() async {
@@ -242,14 +249,14 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           throw 'Location permissions are denied';
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         throw 'Location permissions are permanently denied.';
       }
 
       Position position = await Geolocator.getCurrentPosition();
       LatLng newPos = LatLng(position.latitude, position.longitude);
-      
+
       setState(() {
         _currentPosition = newPos;
       });
@@ -258,9 +265,9 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
       await _reverseGeocode(newPos);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       setState(() => _isLocating = false);
     }
@@ -287,13 +294,17 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
       }
 
       try {
-        final apiKey = context.read<SystemController>().config?.googleMapsApiKey;
+        final apiKey = context
+            .read<SystemController>()
+            .config
+            ?.googleMapsApiKey;
         if (apiKey == null) {
           debugPrint('Places Autocomplete: No API Key available');
           return;
         }
 
-        final url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+        final url =
+            'https://maps.googleapis.com/maps/api/place/autocomplete/json'
             '?input=$query&key=$apiKey&components=country:ae'; // Limit to UAE
         final response = await context.read<SystemController>().dio.get(url);
         if (!mounted) return;
@@ -320,13 +331,14 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
     });
 
     try {
-      final url = 'https://maps.googleapis.com/maps/api/place/details/json'
+      final url =
+          'https://maps.googleapis.com/maps/api/place/details/json'
           '?place_id=$placeId&key=$apiKey';
       final response = await context.read<SystemController>().dio.get(url);
       if (response.statusCode == 200) {
         final location = response.data['result']['geometry']['location'];
         final newPos = LatLng(location['lat'], location['lng']);
-        
+
         setState(() {
           _currentPosition = newPos;
         });
@@ -343,7 +355,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
 
   Future<void> _performManualSearch(String query) async {
     if (query.isEmpty) return;
-    
+
     // If we have suggestions, use the first one as it's likely what the user wants
     if (_suggestions.isNotEmpty) {
       _selectSuggestion(_suggestions.first as Map<String, dynamic>);
@@ -356,7 +368,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
       if (locations.isNotEmpty) {
         final loc = locations.first;
         final newPos = LatLng(loc.latitude, loc.longitude);
-        
+
         setState(() {
           _currentPosition = newPos;
         });
@@ -367,7 +379,11 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
     } catch (e) {
       debugPrint('Manual Search Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not find location. Please try a more specific address.')),
+        const SnackBar(
+          content: Text(
+            'Could not find location. Please try a more specific address.',
+          ),
+        ),
       );
     } finally {
       setState(() => _isSearching = false);
@@ -417,7 +433,11 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
                   onSubmitted: (value) => _performManualSearch(value),
                   textInputAction: TextInputAction.search,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search, color: Colors.grey, size: 20),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
                     hintText: 'Search for your location...',
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                     border: InputBorder.none,
@@ -427,22 +447,41 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
               ),
             ),
             const SizedBox(width: 8),
-            
+
             // Styled My Location Button
             SizedBox(
               height: 45,
               child: ElevatedButton.icon(
                 onPressed: _isLocating ? null : _handleUseLocation,
-                icon: _isLocating 
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.navigation, size: 16, color: Colors.white),
+                icon: _isLocating
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.navigation,
+                        size: 16,
+                        color: Colors.white,
+                      ),
                 label: const Text(
                   'My Location',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0089BD), // Blue color from screenshot
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  backgroundColor: const Color(
+                    0xFF0089BD,
+                  ), // Blue color from screenshot
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   elevation: 0,
                 ),
@@ -450,7 +489,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
             ),
           ],
         ),
-        
+
         // Search Suggestions Overlay (simplified as a list below)
         if (_suggestions.isNotEmpty)
           Container(
@@ -458,7 +497,13 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(4),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             constraints: const BoxConstraints(maxHeight: 200),
             child: ListView.builder(
@@ -468,20 +513,25 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
                 final s = _suggestions[index];
                 return ListTile(
                   dense: true,
-                  title: Text(s['description'], style: const TextStyle(fontSize: 12)),
+                  title: Text(
+                    s['description'],
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   onTap: () => _selectSuggestion(s),
                 );
               },
             ),
           ),
-          
+
         const SizedBox(height: 12),
 
         // Map Container
         Container(
           height: 250,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4), // Flat corners matching screenshot
+            borderRadius: BorderRadius.circular(
+              4,
+            ), // Flat corners matching screenshot
             border: Border.all(color: Colors.grey.shade200),
           ),
           clipBehavior: Clip.antiAlias,
@@ -527,34 +577,44 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 35),
-                    child: Icon(Icons.location_pin, size: 40, color: Colors.red.shade700),
+                    child: Icon(
+                      Icons.location_pin,
+                      size: 40,
+                      color: Colors.red.shade700,
+                    ),
                   ),
                 ),
               ),
-              
+
               // Loading overlay
               if (_isReverseGeocoding || _isSearching)
                 Positioned.fill(
                   child: Container(
                     color: Colors.white.withOpacity(0.3),
                     child: const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         // Address text
         if (_address.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
-                const Icon(Icons.location_pin, size: 14, color: AppColors.primary),
+                const Icon(
+                  Icons.location_pin,
+                  size: 14,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(

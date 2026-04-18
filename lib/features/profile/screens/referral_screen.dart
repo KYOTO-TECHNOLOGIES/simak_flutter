@@ -94,7 +94,10 @@ class ReferralScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
@@ -142,10 +145,17 @@ class ReferralScreen extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.share_outlined, size: 18, color: AppColors.actionBlue),
+                                Icon(
+                                  Icons.share_outlined,
+                                  size: 18,
+                                  color: AppColors.actionBlue,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  tr(context, 'start_referring').split(',').first,
+                                  tr(
+                                    context,
+                                    'start_referring',
+                                  ).split(',').first,
                                   style: TextStyle(
                                     color: AppColors.actionBlue,
                                     fontWeight: FontWeight.bold,
@@ -272,7 +282,8 @@ class ReferralScreen extends StatelessWidget {
 
   void _shareReferral(BuildContext context, String code) {
     if (code == '---') return;
-    final message = "Join Simak Fresh! Use my referral code $code to get 20% OFF on your first order. Download the app now!";
+    final message =
+        "Join Simak Fresh! Use my referral code $code to get 20% OFF on your first order. Download the app now!";
     Share.share(message, subject: "Simak Fresh Referral");
   }
 
@@ -309,9 +320,7 @@ class ReferralScreen extends StatelessWidget {
               color: bgColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: Icon(icon, color: accentColor, size: 24),
-            ),
+            child: Center(child: Icon(icon, color: accentColor, size: 24)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -393,10 +402,7 @@ class ReferralScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 4),
           Text(

@@ -6,6 +6,7 @@ import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/cart/model/cart_item_model.dart';
+import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -15,12 +16,12 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CartController>().fetchCart();
+      context.read<OrderController>().fetchDeliverySettings();
     });
   }
 
@@ -39,7 +40,11 @@ class _CartScreenState extends State<CartScreen> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            const Icon(Icons.shopping_bag_outlined, color: AppColors.accent, size: 24),
+            const Icon(
+              Icons.shopping_bag_outlined,
+              color: AppColors.accent,
+              size: 24,
+            ),
             const SizedBox(width: 12),
             Text(
               '${tr(context, 'my_cart')} (${cartController.uniqueItemCount})',
@@ -69,16 +74,20 @@ class _CartScreenState extends State<CartScreen> {
       body: !isLoggedIn
           ? _buildGuestState(context, theme)
           : cartController.error != null && cartController.cart == null
-              ? _buildErrorState(context, theme, cartController.error!)
-              : cartController.isLoading && cartController.cart == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : cartController.uniqueItemCount == 0
-                      ? _buildEmptyState(context, theme)
-                      : _buildCartBody(context, theme, cartController),
+          ? _buildErrorState(context, theme, cartController.error!)
+          : cartController.isLoading && cartController.cart == null
+          ? const Center(child: CircularProgressIndicator())
+          : cartController.uniqueItemCount == 0
+          ? _buildEmptyState(context, theme)
+          : _buildCartBody(context, theme, cartController),
     );
   }
 
-  Widget _buildCartBody(BuildContext context, ThemeData theme, CartController controller) {
+  Widget _buildCartBody(
+    BuildContext context,
+    ThemeData theme,
+    CartController controller,
+  ) {
     return RefreshIndicator(
       onRefresh: controller.fetchCart,
       color: AppColors.primary,
@@ -88,16 +97,13 @@ class _CartScreenState extends State<CartScreen> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = controller.cart!.items[index];
-                  return _buildCartItem(context, theme, item, controller);
-                },
-                childCount: controller.cart!.items.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final item = controller.cart!.items[index];
+                return _buildCartItem(context, theme, item, controller);
+              }, childCount: controller.cart!.items.length),
             ),
           ),
-          
+
           // Order Summary Section
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -105,18 +111,20 @@ class _CartScreenState extends State<CartScreen> {
               child: _buildOrderSummary(context, theme, controller),
             ),
           ),
-          
+
           // Bottom Safe Area Spacer
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 40),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
     );
   }
 
-  Widget _buildCartItem(BuildContext context, ThemeData theme,
-      CartItemModel item, CartController controller) {
+  Widget _buildCartItem(
+    BuildContext context,
+    ThemeData theme,
+    CartItemModel item,
+    CartController controller,
+  ) {
     return Dismissible(
       key: Key('cart_item_${item.product.id}'),
       direction: DismissDirection.endToStart,
@@ -131,7 +139,11 @@ class _CartScreenState extends State<CartScreen> {
           color: AppColors.error.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Icon(Icons.delete_outline, color: AppColors.error, size: 28),
+        child: const Icon(
+          Icons.delete_outline,
+          color: AppColors.error,
+          size: 28,
+        ),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -146,7 +158,9 @@ class _CartScreenState extends State<CartScreen> {
           children: [
             // Product Image
             Opacity(
-              opacity: (item.product.stock == 0 || !item.product.isAvailable) ? 0.5 : 1.0,
+              opacity: (item.product.stock == 0 || !item.product.isAvailable)
+                  ? 0.5
+                  : 1.0,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
@@ -158,13 +172,17 @@ class _CartScreenState extends State<CartScreen> {
                     width: 80,
                     height: 80,
                     color: Colors.grey.shade100,
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 30),
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey,
+                      size: 30,
+                    ),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Info Column
             Expanded(
               child: Column(
@@ -185,7 +203,11 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       IconButton(
                         onPressed: () => controller.removeItem(item.product.id),
-                        icon: const Icon(Icons.delete_outline_rounded, size: 24, color: AppColors.error),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 24,
+                          color: AppColors.error,
+                        ),
                         padding: const EdgeInsets.all(8),
                         constraints: const BoxConstraints(),
                       ),
@@ -195,31 +217,77 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       Text(
                         '${item.quantity} ${item.quantity == 1 ? 'unit' : 'units'}',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       if (item.product.stock == 0 || !item.product.isAvailable)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                          child: Text(trStatic(context, 'out_of_stock'), style: const TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.bold)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            trStatic(context, 'out_of_stock'),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.error,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         )
                       else if (item.quantity > item.product.stock)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                          child: Text(trStatic(context, 'insufficient_stock', args: {'count': item.product.stock.toString()}), style: const TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.bold)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            trStatic(
+                              context,
+                              'insufficient_stock',
+                              args: {'count': item.product.stock.toString()},
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.error,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         )
                       else if (item.product.stock <= 5)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                          child: Text(trStatic(context, 'only_few_left'), style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            trStatic(context, 'only_few_left'),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Quantity and Price Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -237,25 +305,66 @@ class _CartScreenState extends State<CartScreen> {
                           children: [
                             _buildMiniBtn(
                               icon: Icons.remove,
-                              onTap: () => controller.updateQuantity(item.product.id, item.quantity - 1),
-                              isDisabled: item.quantity <= 1,
+                              onTap: () => controller.updateQuantity(
+                                item.product.id,
+                                item.quantity - 1,
+                              ),
+                              isDisabled:
+                                  item.quantity <= 1 ||
+                                  controller.isItemUpdating(item.product.id),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 14),
-                              child: Text(
-                                '${item.quantity}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
                               ),
+                              child: controller.isItemUpdating(item.product.id)
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      '${item.quantity}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
                             ),
                             _buildMiniBtn(
                               icon: Icons.add,
-                              onTap: () => controller.updateQuantity(item.product.id, item.quantity + 1),
-                              isDisabled: item.product.stock == 0 || !item.product.isAvailable || item.quantity >= item.product.stock,
+                              onTap: () => controller.updateQuantity(
+                                item.product.id,
+                                item.quantity + 1,
+                              ),
+                              isDisabled:
+                                  item.product.stock == 0 ||
+                                  !item.product.isAvailable ||
+                                  item.quantity >= item.product.stock ||
+                                  controller.isItemUpdating(item.product.id),
+                              onDisabledTap: () {
+                                if (item.quantity >= item.product.stock &&
+                                    !controller.isItemUpdating(
+                                      item.product.id,
+                                    )) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "That's our full catch! Only ${item.product.stock} fresh from Simak.",
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
                             ),
                           ],
                         ),
                       ),
-                      
+
                       // Price
                       Text(
                         'AED ${item.subtotal.toStringAsFixed(2)}',
@@ -276,23 +385,38 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildMiniBtn({required IconData icon, required VoidCallback onTap, bool isDisabled = false}) {
+  Widget _buildMiniBtn({
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isDisabled = false,
+    VoidCallback? onDisabledTap,
+  }) {
     return GestureDetector(
-      onTap: isDisabled ? null : onTap,
+      onTap: isDisabled ? onDisabledTap : onTap,
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6),
           color: isDisabled ? Colors.grey.shade100 : Colors.transparent,
         ),
-        child: Icon(icon, size: 16, color: isDisabled ? Colors.grey.shade300 : Colors.grey.shade700),
+        child: Icon(
+          icon,
+          size: 16,
+          color: isDisabled ? Colors.grey.shade300 : Colors.grey.shade700,
+        ),
       ),
     );
   }
 
-  Widget _buildOrderSummary(BuildContext context, ThemeData theme, CartController controller) {
+  Widget _buildOrderSummary(
+    BuildContext context,
+    ThemeData theme,
+    CartController controller,
+  ) {
     // Show the subtotal for in-stock items only if OOS items exist, to be clear to the user
-    final subtotal = controller.hasOutOfStock ? controller.inStockTotalPrice : controller.cart!.totalPrice;
+    final subtotal = controller.hasOutOfStock
+        ? controller.inStockTotalPrice
+        : controller.cart!.totalPrice;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -313,62 +437,92 @@ class _CartScreenState extends State<CartScreen> {
         children: [
           Text(
             tr(context, 'order_summary'),
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 20),
-          _buildSummaryRow(tr(context, 'subtotal'), 'AED ${subtotal.toStringAsFixed(2)}'),
+          _buildSummaryRow(
+            tr(context, 'subtotal'),
+            'AED ${subtotal.toStringAsFixed(2)}',
+          ),
           const SizedBox(height: 12),
-          _buildSummaryRow(tr(context, 'shipping'), 'Calculated at checkout', valueColor: Colors.grey),
+          _buildSummaryRow(
+            tr(context, 'shipping'),
+            'Calculated at checkout',
+            valueColor: Colors.grey,
+          ),
           const SizedBox(height: 8),
           Text(
-            'Delivery is free for orders AED 40 or more after discount.',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+            'Delivery is free for orders AED ${context.watch<OrderController>().freeDeliveryThreshold.toInt()} or more after discount.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+              fontStyle: FontStyle.italic,
+            ),
           ),
-          
+
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Divider(height: 1),
           ),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Items total',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 'AED ${subtotal.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.primary),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
 
-          
           const SizedBox(height: 32),
-          
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: controller.isCartValid 
+              onPressed: controller.isCartValid
                   ? () async {
                       if (controller.hasOutOfStock) {
                         // Automatically exclude out-of-stock items without interruption
                         await controller.removeOutOfStockItems();
                       }
-                      
+
                       if (context.mounted) {
-                        Navigator.pushNamed(context, '/order', arguments: {'isCartMode': true});
+                        Navigator.pushNamed(
+                          context,
+                          '/order',
+                          arguments: {'isCartMode': true},
+                        );
                       }
                     }
                   : () {
-                      if (controller.cart == null || controller.cart!.items.isEmpty) return;
-                      
+                      if (controller.cart == null ||
+                          controller.cart!.items.isEmpty)
+                        return;
+
                       String msg = trStatic(context, 'adjust_to_checkout');
                       if (!controller.hasInStockItems) {
-                        msg = trStatic(context, 'no_items_available'); // Custom message for all OOS
+                        msg = trStatic(
+                          context,
+                          'no_items_available',
+                        ); // Custom message for all OOS
                       }
-                      
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(msg),
@@ -378,10 +532,14 @@ class _CartScreenState extends State<CartScreen> {
                       );
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: controller.isCartValid ? AppColors.primary : Colors.grey.shade400,
+                backgroundColor: controller.isCartValid
+                    ? AppColors.primary
+                    : Colors.grey.shade400,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
               child: Row(
@@ -389,7 +547,10 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Text(
                     tr(context, 'proceed_to_checkout'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Icon(Icons.arrow_forward, size: 18),
@@ -397,9 +558,9 @@ class _CartScreenState extends State<CartScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -407,7 +568,11 @@ class _CartScreenState extends State<CartScreen> {
               const SizedBox(width: 6),
               Text(
                 tr(context, 'secure_checkout'),
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -416,16 +581,22 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-
   Widget _buildSummaryRow(String label, String value, {Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 16, 
+            fontSize: 16,
             fontWeight: FontWeight.w800,
             color: valueColor ?? Colors.black87,
           ),
@@ -441,10 +612,14 @@ class _CartScreenState extends State<CartScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-             Opacity(
-               opacity: 0.1,
-               child: Icon(Icons.shopping_cart_outlined, size: 120, color: AppColors.primary),
-             ),
+            Opacity(
+              opacity: 0.1,
+              child: Icon(
+                Icons.shopping_cart_outlined,
+                size: 120,
+                color: AppColors.primary,
+              ),
+            ),
             const SizedBox(height: 24),
             Text(
               tr(context, 'cart_empty'),
@@ -456,10 +631,18 @@ class _CartScreenState extends State<CartScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Start Shopping', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Start Shopping',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -483,14 +666,25 @@ class _CartScreenState extends State<CartScreen> {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: Text(tr(context, 'sign_in_link'), style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                tr(context, 'sign_in_link'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -505,7 +699,10 @@ class _CartScreenState extends State<CartScreen> {
         children: [
           const Icon(Icons.error_outline, size: 60, color: AppColors.error),
           const SizedBox(height: 16),
-          Text(tr(context, error), style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            tr(context, error),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 24),
           TextButton(
             onPressed: () => context.read<CartController>().fetchCart(),
@@ -515,5 +712,4 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-
 }
