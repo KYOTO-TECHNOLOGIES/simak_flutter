@@ -8,11 +8,17 @@ class NotificationController extends ChangeNotifier {
 
   List<NotificationModel> _notifications = [];
   bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasNext = true;
+  int _offset = 0;
+  final int _limit = 20;
   String? _error;
 
   // ─── Getters ────────────────────────────────────────────────
   List<NotificationModel> get notifications => _notifications;
   bool get isLoading => _isLoading;
+  bool get isLoadingMore => _isLoadingMore;
+  bool get hasNext => _hasNext;
   String? get error => _error;
 
   List<NotificationModel> get unreadNotifications =>
@@ -28,18 +34,50 @@ class NotificationController extends ChangeNotifier {
   Future<void> fetchNotifications() async {
     _isLoading = true;
     _error = null;
+    _offset = 0;
+    _hasNext = true;
     notifyListeners();
 
     try {
-      final data = await _service.getNotifications();
-      _notifications = data.map((json) => NotificationModel.fromJson(json)).toList();
-      // Sort newest first
+      final data = await _service.getNotifications(limit: _limit, offset: 0);
+      final List<Map<String, dynamic>> results = data['results'];
+      _hasNext = data['hasNext'];
+      
+      _notifications = results.map((json) => NotificationModel.fromJson(json)).toList();
       _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      _offset = results.length;
     } catch (e) {
       _error = e.toString();
       debugPrint('⚠ Failed to fetch notifications: $e');
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMoreNotifications() async {
+    if (_isLoadingMore || !_hasNext) return;
+
+    _isLoadingMore = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final data = await _service.getNotifications(limit: _limit, offset: _offset);
+      final List<Map<String, dynamic>> results = data['results'];
+      _hasNext = data['hasNext'];
+
+      if (results.isNotEmpty) {
+        final newItems = results.map((json) => NotificationModel.fromJson(json)).toList();
+        _notifications.addAll(newItems);
+        // Resort or just append? The backend usually returns sorted, but we ensure consistency.
+        _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        _offset += results.length;
+      }
+    } catch (e) {
+      debugPrint('⚠ Failed to fetch more notifications: $e');
+    } finally {
+      _isLoadingMore = false;
       notifyListeners();
     }
   }

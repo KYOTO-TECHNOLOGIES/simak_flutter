@@ -12,6 +12,7 @@ import 'package:uae_ecom_project/features/marketing/controller/marketing_control
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/home/widgets/promo_popup_dialog.dart';
 import 'package:uae_ecom_project/features/home/screens/all_popular_products_page.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
@@ -842,33 +843,11 @@ class _ProductCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16),
                     ),
-                    child: product.thumbnail.isNotEmpty
-                        ? Image.network(
-                            product.thumbnail,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Image.network(
-                                  fallbackImageUrl,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(
-                                        color: theme.cardColor,
-                                        child: const Icon(Icons.error_outline),
-                                      ),
-                                ),
-                          )
-                        : Image.network(
-                            fallbackImageUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  color: theme.cardColor,
-                                  child: const Icon(Icons.error_outline),
-                                ),
-                          ),
+                    child: CustomImage(
+                      product.thumbnail.isNotEmpty ? product.thumbnail : fallbackImageUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
                   ),
                   // Discount badge
                   if (discountPercent > 0 && _inStock)

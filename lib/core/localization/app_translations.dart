@@ -791,11 +791,26 @@ final Map<String, Map<String, String>> _translations = {
     'otp_verify_phone_success': 'Phone number verified successfully!',
     'otp_verify_failed': 'Verification failed. Please try again.',
 
+    // ── Referrals & Coupons ──────────────────────────────────────────
+    'referrals_coupons_title': 'Referrals & Coupons',
+    'coupons_tab': 'Coupons',
+    'referrals_tab': 'Referrals',
+    'status_active': 'ACTIVE',
+    'status_expired': 'EXPIRED',
+    'status_inactive': 'INACTIVE',
+    'valid_until': 'VALID UNTIL',
+    'usage': 'USAGE',
+    'no_coupons_found': 'No coupons found.',
+    'available_label': 'AVAILABLE',
+    'referral_label': 'REFERRAL',
+    'first_order_label': 'FIRST ORDER',
+    'coupons_subtitle': 'Your active discounts and rewards at a glance.',
+
     // ── Referrals ──────────────────────────────────────────
     'referrals': 'Referrals',
     'referral_header': 'Friends Who Refer\nStay Friends Forever',
     'referral_sub':
-        'When you refer your friend to Simak Fresh, you get 20% OFF on your next order and so does your friend. Then you both eat healthy ever after!',
+        'When you refer your friend to Simak Fresh, you get max 20% OFF on your next order and so does your friend. Then you both eat healthy ever after!',
     'your_referral_code': 'YOUR REFERRAL CODE',
     'how_it_works': 'HERE IS HOW IT WORKS',
     'referral_step_1_title': 'Invite a Friend',
@@ -804,9 +819,9 @@ final Map<String, Map<String, String>> _translations = {
     'referral_step_2_title': 'Friend Makes First Purchase',
     'referral_step_2_sub':
         'Your friend enters your referral code at checkout on their first order.',
-    'referral_step_3_title': 'Both Get 20% Off',
+    'referral_step_3_title': 'Both Get max 20% Off',
     'referral_step_3_sub':
-        'Your friend gets 20% OFF instantly! Once the order is delivered, you also receive a 20% discount coupon.',
+        'Your friend gets max 20% OFF instantly! Once the order is delivered, you also receive a 20% discount coupon.',
     'referral_code_label': 'REFERRAL CODE (OPTIONAL)',
     'referral_code_hint': 'Enter referral code (if any)',
     'stats_invited': 'Friends Invited',
@@ -1473,19 +1488,34 @@ final Map<String, Map<String, String>> _translations = {
     'otp_verify_phone_success': '手机号码验证成功！',
     'otp_verify_failed': '验证失败，请重试。',
 
+    // ── Referrals & Coupons ──────────────────────────────────────────
+    'referrals_coupons_title': '推荐与优惠券',
+    'coupons_tab': '优惠券',
+    'referrals_tab': '推荐',
+    'status_active': '已激活',
+    'status_expired': '已过期',
+    'status_inactive': '未激活',
+    'valid_until': '有效期至',
+    'usage': '使用情况',
+    'no_coupons_found': '未找到优惠券。',
+    'available_label': '可用',
+    'referral_label': '推荐奖励',
+    'first_order_label': '首单奖励',
+    'coupons_subtitle': '您的活跃折扣和奖励一目了然。',
+
     // ── Referrals ──────────────────────────────────────────
     'referrals': '推荐计划',
     'referral_header': '推荐好友\n友谊长存',
     'referral_sub':
-        '当您向朋友推荐 Simak Fresh 时，您的下一份订单可享受 20% 的折扣，您的朋友也是如此。从此你们都可以健康饮食！',
+        '当您向朋友推荐 Simak Fresh 时，您的下一份订单可享受最高 20% 的折扣，您的朋友也是如此。从此你们都可以健康饮食！',
     'your_referral_code': '您的推荐码',
     'how_it_works': '以下是运作方式',
     'referral_step_1_title': '邀请好友',
     'referral_step_1_sub': '与亲朋好友分享您独特的推荐码。邀请他们在 Simak Fresh 上注册。',
     'referral_step_2_title': '好友完成首单',
     'referral_step_2_sub': '您的朋友在首单结账时输入您的推荐码。',
-    'referral_step_3_title': '双向 20% 折扣',
-    'referral_step_3_sub': '您的朋友立即获得 20% 的折扣！订单送达后，您也将收到一张 20% 的折扣券。',
+    'referral_step_3_title': '双向最高 20% 折扣',
+    'referral_step_3_sub': '您的朋友立即获得最高 20% 的折扣！订单送达后，您也将收到一张 20% 的折扣券。',
     'referral_code_label': '推荐码 (可选)',
     'referral_code_hint': '输入推荐码 (如果有)',
     'stats_invited': '已邀请好友',
@@ -2195,11 +2225,26 @@ final Map<String, Map<String, String>> _translations = {
     'otp_verify_phone_success': 'تم التحقق من رقم الهاتف بنجاح!',
     'otp_verify_failed': 'فشل التحقق. يرجى المحاولة مرة أخرى.',
 
+    // ── Referrals & Coupons ──────────────────────────────────────────
+    'referrals_coupons_title': 'الإحالات والكوبونات',
+    'coupons_tab': 'الكوبونات',
+    'referrals_tab': 'الإحالات',
+    'status_active': 'نشط',
+    'status_expired': 'منتهي',
+    'status_inactive': 'غير نشط',
+    'valid_until': 'صالح حتى',
+    'usage': 'الاستخدام',
+    'no_coupons_found': 'لم يتم العثور على كوبونات.',
+    'available_label': 'متاح',
+    'referral_label': 'إحالة',
+    'first_order_label': 'أول طلب',
+    'coupons_subtitle': 'نظرة سريعة على الخصومات والمكافآت النشطة.',
+
     // ── Referrals ──────────────────────────────────────────
     'referrals': 'الإحالات',
     'referral_header': 'الأصدقاء الذين يحيلون\nيبقون أصدقاء للأبد',
     'referral_sub':
-        'عندما تقوم بإحالة صديقك إلى سيماك فريش، تحصل على خصم 20٪ على طلبك التالي وكذلك صديقك. ثم تأكلان معاً بصحة جيدة إلى الأبد!',
+        'عندما تقوم بإحالة صديقك إلى سيماك فريش، تحصل على خصم يصل إلى 20٪ على طلبك التالي وكذلك صديقك. ثم تأكلان معاً بصحة جيدة إلى الأبد!',
     'your_referral_code': 'كود الإحالة الخاص بك',
     'how_it_works': 'إليك كيف يعمل الأمر',
     'referral_step_1_title': 'ادعُ صديقاً',
@@ -2208,9 +2253,9 @@ final Map<String, Map<String, String>> _translations = {
     'referral_step_2_title': 'الصديق يقوم بأول عملية شراء',
     'referral_step_2_sub':
         'يدخل صديقك كود الإحالة الخاص بك عند الدفع في طلبه الأول.',
-    'referral_step_3_title': 'كلاهما يحصل على خصم 20٪',
+    'referral_step_3_title': 'كلاهما يحصل على خصم يصل إلى 20%',
     'referral_step_3_sub':
-        'يحصل صديقك على خصم 20٪ فوراً! بمجرد تسليم الطلب، ستتلقى أنت أيضاً كوبون خصم 20٪.',
+        'يحصل صديقك على خصم يصل إلى 20٪ فوراً! بمجرد تسليم الطلب، ستتلقى أنت أيضاً كوبون خصم 20٪.',
     'referral_code_label': 'كود الإحالة (اختياري)',
     'referral_code_hint': 'أدخل كود الإحالة (إن وجد)',
     'stats_invited': 'الأصدقاء المدعوون',

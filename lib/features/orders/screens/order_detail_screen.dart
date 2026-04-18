@@ -8,6 +8,9 @@ import 'package:uae_ecom_project/features/orders/controller/order_controller.dar
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 import 'package:uae_ecom_project/features/orders/service/order_service.dart';
 import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
+import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 
@@ -480,17 +483,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
+                          child: CustomImage(
                             item.product.thumbnail,
                             width: 48,
                             height: 48,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 48,
-                              height: 48,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.image, size: 20),
-                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -807,21 +804,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
+            child: CustomImage(
               item.product.thumbnail,
               width: 54,
               height: 54,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 54,
-                height: 54,
-                color: Colors.grey[100],
-                child: const Icon(
-                  Icons.image_outlined,
-                  size: 20,
-                  color: Colors.grey,
-                ),
-              ),
             ),
           ),
           const SizedBox(width: 12),

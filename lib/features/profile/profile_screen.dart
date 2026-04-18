@@ -19,6 +19,12 @@ import 'package:uae_ecom_project/features/auth/widgets/add_address_dialog.dart';
 import 'package:uae_ecom_project/features/profile/screens/notification_screen.dart';
 import 'package:uae_ecom_project/features/profile/screens/referral_screen.dart';
 import 'package:uae_ecom_project/features/profile/screens/support_screen.dart';
+// import 'package:uae_ecom_project/features/settings/screens/languages_screen.dart';
+// import 'package:uae_ecom_project/features/profile/screens/saved_addresses_screen.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
 
 import 'package:uae_ecom_project/features/profile/controller/notification_controller.dart';
 import 'package:uae_ecom_project/service/cache_service.dart';
@@ -198,6 +204,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _pickAndUploadProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    
+    final auth = context.read<AuthController>();
+    final success = await auth.uploadProfilePicture(File(pickedFile.path));
+    
+    if (!mounted) return;
+    
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(trTextStatic(context, 'Profile picture updated successfully.')),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.errorMessage ?? trTextStatic(context, 'Failed to update profile picture.')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -367,50 +400,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Transform.translate(
             offset: const Offset(0, -40),
             child: Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0083B0),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
+              child: GestureDetector(
+                onTap: _pickAndUploadProfileImage,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
                         color: Colors.white,
-                        size: 16,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.hardEdge,
+                      child: user.profile?.profilePicture != null
+                          ? CustomImage(
+                              user.profile!.profilePicture!,
+                              fit: BoxFit.cover,
+                              width: 80,
+                              height: 80,
+                            )
+                          : Center(
+                              child: Text(
+                                initials,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0083B0),
+                                ),
+                              ),
+                            ),
+                    ),
+                    if (context.watch<AuthController>().isLoading)
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -2558,7 +2617,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
+                        child: CustomImage(
                           product.thumbnail,
                           width: 40,
                           height: 40,

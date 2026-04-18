@@ -1198,6 +1198,7 @@ import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/widgets/video_player_widget.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final ProductModel product;
@@ -2281,31 +2282,59 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           ),
                                         )) {
                                           // Add to cart first
-                                          final success = await context
-                                              .read<CartController>()
+                                          final cartController =
+                                              context.read<CartController>();
+                                          final success = await cartController
                                               .addToCart(
-                                                widget.product.id,
-                                                _quantity,
-                                              );
+                                            widget.product.id,
+                                            _quantity,
+                                          );
 
                                           if (success && mounted) {
-                                            // Proceed to order summary (Cart Mode)
-                                            Navigator.pushNamed(
-                                              context,
-                                              '/order',
-                                              arguments: {
-                                                'isCartMode': true,
-                                                'product': widget.product,
-                                                'quantity': _quantity,
-                                              },
-                                            );
+                                            // Automatically exclude out-of-stock items for consistency
+                                            if (cartController.hasOutOfStock) {
+                                              await cartController
+                                                  .removeOutOfStockItems();
+                                            }
+
+                                            if (!mounted) return;
+
+                                            // Validate cart state before proceeding
+                                            if (cartController.isCartValid) {
+                                              // Proceed to order summary (Cart Mode)
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/order',
+                                                arguments: {
+                                                  'isCartMode': true,
+                                                  'product': widget.product,
+                                                  'quantity': _quantity,
+                                                },
+                                              );
+                                            } else {
+                                              // Show error if cart is invalid (e.g. has insufficient stock items)
+                                              String msg = trStatic(
+                                                context,
+                                                'adjust_to_checkout',
+                                              );
+                                              if (!cartController
+                                                  .hasInStockItems) {
+                                                msg = trStatic(
+                                                  context,
+                                                  'no_items_available',
+                                                );
+                                              }
+                                              SimakFeedback.showError(
+                                                context,
+                                                msg,
+                                              );
+                                            }
                                           } else if (mounted) {
-                                            final error = context
-                                                .read<CartController>()
-                                                .error;
+                                            final error = cartController.error;
                                             SimakFeedback.showError(
                                               context,
-                                              error ?? 'Failed to prepare order',
+                                              error ??
+                                                  'Failed to prepare order',
                                             );
                                           }
                                         }
@@ -2354,15 +2383,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Container(
       color: theme.cardColor,
       child: Center(
-        child: Image.network(
+        child: CustomImage(
           item.url.isNotEmpty ? item.url : AppConstants.kDefaultProductImage,
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (_, __, ___) => Image.network(
-            AppConstants.kDefaultProductImage,
-            fit: BoxFit.cover,
-          ),
         ),
       ),
     );
@@ -2374,7 +2399,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         alignment: Alignment.center,
         children: [
           if (item.thumbnail != null)
-            Image.network(
+            CustomImage(
               item.thumbnail!,
               fit: BoxFit.cover,
               width: 64,
@@ -2387,7 +2412,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
     return item.url.isNotEmpty
-        ? Image.network(item.url, fit: BoxFit.cover, width: 64, height: 64)
+        ? CustomImage(item.url, fit: BoxFit.cover, width: 64, height: 64)
         : Container(color: theme.cardColor, width: 64, height: 64);
   }
 

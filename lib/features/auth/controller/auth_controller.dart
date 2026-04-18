@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/features/auth/model/auth_response_model.dart';
@@ -552,6 +553,29 @@ class AuthController extends ChangeNotifier {
       return false;
     } catch (e) {
       _setError('An unexpected error occurred');
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  // ─── Upload Profile Picture ──────────────────────────────────
+  Future<bool> uploadProfilePicture(File image) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      if (_currentUser == null) return false;
+      final responseData = await _authService.updateProfileImage(_currentUser!.id!, image);
+      _currentUser = UserModel.merge(_currentUser!, responseData);
+      await _tokenStorage.saveUserData(_currentUser!.toJson());
+      _setLoading(false);
+      return true;
+    } on DioException catch (e) {
+      _setError(_extractError(e));
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      debugPrint('Error uploading profile picture: $e');
+      _setError('An unexpected error occurred during image upload');
       _setLoading(false);
       return false;
     }

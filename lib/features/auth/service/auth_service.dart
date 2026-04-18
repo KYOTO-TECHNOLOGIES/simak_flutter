@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
 import 'package:uae_ecom_project/features/auth/model/auth_response_model.dart';
@@ -78,6 +79,23 @@ class AuthService {
     final response = await _dio.patch(
       'users/$userId/',
       data: data,
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  // ─── Update Profile Image ────────────────────────────────────
+  Future<Map<String, dynamic>> updateProfileImage(int userId, File imageFile) async {
+    final fileName = imageFile.path.split('/').last;
+    final formData = FormData.fromMap({
+      'profile.profile_picture': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+      ),
+    });
+
+    final response = await _dio.patch(
+      'users/$userId/',
+      data: formData,
     );
     return response.data as Map<String, dynamic>;
   }

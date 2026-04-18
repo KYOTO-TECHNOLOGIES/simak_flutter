@@ -1,3 +1,5 @@
+import 'package:uae_ecom_project/core/config/env.dart';
+
 class ProfileModel {
   final int? id;
   final String? profilePicture;
@@ -32,7 +34,7 @@ class ProfileModel {
   static ProfileModel merge(ProfileModel existing, Map<String, dynamic> json) {
     return ProfileModel(
       id: json['id'] as int? ?? existing.id,
-      profilePicture: json['profile_picture'] as String? ?? existing.profilePicture,
+      profilePicture: _getAbsoluteUrl(json['profile_picture'] as String?) ?? existing.profilePicture,
       dateOfBirth: json['date_of_birth'] as String? ?? existing.dateOfBirth,
       gender: json['gender'] as String? ?? existing.gender,
       preferredLanguage: json['preferred_language'] as String? ?? existing.preferredLanguage,
@@ -50,7 +52,7 @@ class ProfileModel {
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     return ProfileModel(
       id: json['id'] as int?,
-      profilePicture: json['profile_picture'] as String?,
+      profilePicture: _getAbsoluteUrl(json['profile_picture'] as String?),
       dateOfBirth: json['date_of_birth'] as String?,
       gender: json['gender'] as String?,
       preferredLanguage: json['preferred_language'] as String? ?? 'en',
@@ -81,5 +83,25 @@ class ProfileModel {
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
+  }
+
+  static String? _getAbsoluteUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+    
+    String baseUrl = Env.baseUrl;
+    if (baseUrl.endsWith('/api/')) {
+      baseUrl = baseUrl.replaceAll('/api/', '');
+    } else if (baseUrl.endsWith('/api')) {
+      baseUrl = baseUrl.replaceAll('/api', '');
+    }
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+    if (!path.startsWith('/')) {
+      path = '/$path';
+    }
+    
+    return Uri.encodeFull('$baseUrl$path');
   }
 }

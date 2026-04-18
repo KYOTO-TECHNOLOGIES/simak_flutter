@@ -12,6 +12,8 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
 import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
+import 'package:uae_ecom_project/service/cache_service.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 
 class OrderPage extends StatefulWidget {
   final ProductModel product;
@@ -598,23 +600,48 @@ class _OrderPageState extends State<OrderPage> {
                     ),
                   )
                 else if (checkout.minDeliveryDate != null) ...[
-                  Text(
-                    '${checkout.maxDeliveryDays ?? 0} days delivery time',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Minimum delivery date is in ${checkout.minDeliveryDate!.difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)).inDays} days',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Builder(builder: (context) {
+                    final days = checkout.maxDeliveryDays ?? 0;
+                    String text = '$days days delivery time';
+                    if (days == 0) text = 'Same day delivery';
+                    if (days == 1) text = '1 day delivery time';
+
+                    final now = DateTime.now();
+                    final today = DateTime(now.year, now.month, now.day);
+                    final diff =
+                        checkout.minDeliveryDate!.difference(today).inDays;
+                    String minDateText =
+                        'Minimum delivery date is in $diff days';
+                    if (diff == 0) {
+                      minDateText = 'Minimum delivery date is Today';
+                    }
+                    if (diff == 1) {
+                      minDateText = 'Minimum delivery date is Tomorrow';
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          minDateText,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ] else
                   Text(
                     tr(context, 'checkout_delivery_min_date_tomorrow'),
@@ -669,12 +696,20 @@ class _OrderPageState extends State<OrderPage> {
                           initialDate = checkout.deliveryDate!;
                         }
 
+                        // Ensure at least a 7-day window for date selection,
+                        // even if backend estimates a shorter delivery time.
+                        final selectableDays = (checkout.maxDeliveryDays !=
+                                    null &&
+                                checkout.maxDeliveryDays! > 7)
+                            ? checkout.maxDeliveryDays!
+                            : 7;
+
                         final date = await showDatePicker(
                           context: context,
                           initialDate: initialDate,
                           firstDate: minDate,
                           lastDate: minDate.add(
-                            Duration(days: checkout.maxDeliveryDays ?? 7),
+                            Duration(days: selectableDays),
                           ),
                         );
                         if (date != null)
@@ -1261,21 +1296,11 @@ class _OrderPageState extends State<OrderPage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
+              child: CustomImage(
                 product.mainImage ?? product.thumbnail,
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.grey[100],
-                  child: const Icon(
-                    Icons.image_outlined,
-                    size: 20,
-                    color: Colors.grey,
-                  ),
-                ),
               ),
             ),
             const SizedBox(width: 16),

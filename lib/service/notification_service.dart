@@ -65,7 +65,7 @@ class NotificationService {
 
   /// Fetches notifications for the authenticated user.
   /// GET /api/notifications/?limit=20&offset=0
-  Future<List<Map<String, dynamic>>> getNotifications({
+  Future<Map<String, dynamic>> getNotifications({
     int limit = 20,
     int offset = 0,
   }) async {
@@ -74,14 +74,25 @@ class NotificationService {
       queryParameters: {'limit': limit, 'offset': offset},
     );
     final data = response.data;
+    
+    List<Map<String, dynamic>> results = [];
+    bool hasNext = false;
+
     // Paginated response: { count, next, previous, results: [...] }
-    if (data is Map<String, dynamic> && data['results'] is List) {
-      return (data['results'] as List).cast<Map<String, dynamic>>();
+    if (data is Map<String, dynamic>) {
+      if (data['results'] is List) {
+        results = (data['results'] as List).cast<Map<String, dynamic>>();
+      }
+      hasNext = data['next'] != null;
+    } else if (data is List) {
+      results = data.cast<Map<String, dynamic>>();
+      hasNext = false;
     }
-    if (data is List) {
-      return data.cast<Map<String, dynamic>>();
-    }
-    return [];
+
+    return {
+      'results': results,
+      'hasNext': hasNext,
+    };
   }
 
   /// Marks a single notification as read.

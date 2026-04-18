@@ -171,11 +171,13 @@ class _CartScreenState extends State<CartScreen> {
                   errorBuilder: (_, __, ___) => Container(
                     width: 80,
                     height: 80,
-                    color: Colors.grey.shade100,
-                    child: const Icon(
-                      Icons.image_not_supported,
-                      color: Colors.grey,
-                      size: 30,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/images/home_logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),

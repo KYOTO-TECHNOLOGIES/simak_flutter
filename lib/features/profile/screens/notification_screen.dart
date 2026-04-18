@@ -16,13 +16,28 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   /// 0 = All, 1 = Unread, 2 = Read
   int _selectedTab = 0;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationController>().fetchNotifications();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<NotificationController>().fetchMoreNotifications();
+    }
   }
 
   @override
@@ -66,7 +81,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 onPressed: () => ctrl.markAllAsRead(),
                 icon: const Icon(Icons.done_all_rounded, size: 18),
                 label: const Text(
-                  'Mark all read',
+                  'Mark all as read',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 style: TextButton.styleFrom(
@@ -207,17 +222,30 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
 
     return ListView.separated(
+      controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
       physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: list.length,
+      itemCount: list.length + (ctrl.isLoadingMore ? 1 : 0),
       separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (context, index) =>
-          _NotificationCard(
-            notification: list[index],
-            onOpen: () => _openNotification(ctrl, list[index]),
-            onMarkRead: () => ctrl.markAsRead(list[index].id),
-            onDelete: () => ctrl.deleteNotification(list[index].id),
-          ),
+      itemBuilder: (context, index) {
+        if (index == list.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.actionBlue,
+              ),
+            ),
+          );
+        }
+        return _NotificationCard(
+          notification: list[index],
+          onOpen: () => _openNotification(ctrl, list[index]),
+          onMarkRead: () => ctrl.markAsRead(list[index].id),
+          onDelete: () => ctrl.deleteNotification(list[index].id),
+        );
+      },
     );
   }
 
@@ -452,7 +480,7 @@ class _NotificationCard extends StatelessWidget {
                       // Mark as read button
                       if (!notification.isRead)
                         _ActionChip(
-                          label: 'Mark read',
+                          label: 'Mark as read',
                           icon: Icons.done_rounded,
                           color: AppColors.success,
                           onTap: onMarkRead,

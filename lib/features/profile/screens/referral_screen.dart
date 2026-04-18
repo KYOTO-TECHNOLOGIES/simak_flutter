@@ -5,18 +5,98 @@ import 'package:share_plus/share_plus.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
+import 'package:uae_ecom_project/features/orders/controller/coupon_controller.dart';
+import 'package:uae_ecom_project/features/profile/widgets/coupon_card_widget.dart';
 
-class ReferralScreen extends StatelessWidget {
+class ReferralScreen extends StatefulWidget {
   const ReferralScreen({super.key});
 
   @override
+  State<ReferralScreen> createState() => _ReferralScreenState();
+}
+
+class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CouponController>().fetchCoupons();
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+          child: Text(
+            tr(context, 'referrals_coupons_title'),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        // Custom Tab Bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: tr(context, 'referrals_tab')),
+                Tab(text: tr(context, 'coupons_tab')),
+              ],
+              indicatorColor: AppColors.actionBlue,
+              labelColor: AppColors.actionBlue,
+              unselectedLabelColor: Colors.grey,
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              indicatorPadding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+          ),
+        ),
+
+        // Tab Content
+        const SizedBox(height: 16),
+        _tabController.index == 0 
+            ? _buildReferralContent(context) 
+            : _buildCouponsContent(context),
+      ],
+    );
+  }
+
+  Widget _buildReferralContent(BuildContext context) {
     final theme = Theme.of(context);
     final user = context.watch<AuthController>().currentUser;
     final referralCode = user?.referralCode ?? '---';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -242,40 +322,135 @@ class ReferralScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 48),
+        ],
+      ),
+    );
+  }
 
-          // Bottom Stats
-          Row(
+  Widget _buildCouponsContent(BuildContext context) {
+    final couponController = context.watch<CouponController>();
+
+    if (couponController.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (couponController.error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  '0',
-                  tr(context, 'stats_invited'),
-                  Icons.group_outlined,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  '0',
-                  tr(context, 'stats_successful'),
-                  Icons.check_circle_outline,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  '0',
-                  tr(context, 'stats_earned'),
-                  Icons.confirmation_number_outlined,
-                ),
+              Text(couponController.error!, style: const TextStyle(color: Colors.red)),
+              TextButton(
+                onPressed: () => couponController.fetchCoupons(),
+                child: const Text('Retry'),
               ),
             ],
           ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr(context, 'available_coupons'),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, height: 1.2),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tr(context, 'coupons_subtitle'),
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+
+          // Summary Stats
+          Row(
+            children: [
+              _buildSummaryBox(context, Icons.confirmation_number_outlined, 
+                couponController.availableCount.toString(), tr(context, 'available_label'), Colors.orange),
+              const SizedBox(width: 12),
+              _buildSummaryBox(context, Icons.group_outlined, 
+                couponController.referralCount.toString(), tr(context, 'referral_label'), Colors.cyan),
+              const SizedBox(width: 12),
+              _buildSummaryBox(context, Icons.percent, 
+                couponController.firstOrderCount.toString(), tr(context, 'first_order_label'), Colors.teal),
+            ],
+          ),
+          const SizedBox(height: 32),
+
+          // Coupons List
+          if (couponController.allCoupons.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 40),
+                child: Text(tr(context, 'no_coupons_found')),
+              ),
+            )
+          else
+            Column(
+              children: couponController.allCoupons.map((c) => CouponCardWidget(coupon: c)).toList(),
+            ),
+          
+          const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryBox(BuildContext context, IconData icon, String count, String label, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              count,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade500,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -283,7 +458,7 @@ class ReferralScreen extends StatelessWidget {
   void _shareReferral(BuildContext context, String code) {
     if (code == '---') return;
     final message =
-        "Join Simak Fresh! Use my referral code $code to get 20% OFF on your first order. Download the app now!";
+        "Join Simak Fresh! Use my referral code $code to get max 20% OFF on your first order. Download the app now!";
     Share.share(message, subject: "Simak Fresh Referral");
   }
 
@@ -379,43 +554,6 @@ class ReferralScreen extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [Colors.grey.shade200, Colors.grey.shade100],
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context,
-    String value,
-    String label,
-    IconData icon,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: AppColors.actionBlue.withOpacity(0.5)),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: Colors.black.withOpacity(0.4),
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
       ),
     );
   }

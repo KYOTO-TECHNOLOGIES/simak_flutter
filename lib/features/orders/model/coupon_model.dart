@@ -8,6 +8,8 @@ class CouponModel {
   final DateTime? expiryDate;
   final bool isActive;
   final bool isUsed;
+  final int usageCount;
+  final int usageLimit;
 
   CouponModel({
     required this.id,
@@ -19,6 +21,8 @@ class CouponModel {
     this.expiryDate,
     this.isActive = true,
     this.isUsed = false,
+    this.usageCount = 0,
+    this.usageLimit = 0,
   });
 
   bool get isAvailable {
@@ -70,9 +74,11 @@ class CouponModel {
       minOrderAmount: json['min_order_amount']?.toString(),
       expiryDate: json['expiry_date'] != null 
           ? DateTime.tryParse(json['expiry_date'].toString()) 
-          : null,
+          : (json['valid_to'] != null ? DateTime.tryParse(json['valid_to'].toString()) : null),
       isActive: active,
       isUsed: isUsed,
+      usageCount: usageCount,
+      usageLimit: usageLimit,
     );
   }
 }

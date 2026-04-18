@@ -9,6 +9,7 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/otp_screen.dart';
 import 'package:uae_ecom_project/features/auth/screens/register_screen.dart';
 import 'package:uae_ecom_project/features/home/home_shell.dart';
+import 'package:uae_ecom_project/features/orders/controller/coupon_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/checkout_controller.dart';
 import 'package:uae_ecom_project/features/orders/screens/order_page.dart';
@@ -192,6 +193,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => EmirateController()..init()),
         ChangeNotifierProvider(create: (_) => SystemController()),
         ChangeNotifierProvider(create: (_) => NotificationController()),
+        ChangeNotifierProvider(create: (_) => CouponController()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, langProvider, child) {

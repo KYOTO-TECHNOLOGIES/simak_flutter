@@ -758,19 +758,37 @@ class _ProductsPageState extends State<ProductsPage>
   void _navigateToOrder(ProductModel product, {int quantity = 1}) async {
     if (_requireLogin(action: trStatic(context, 'action_buy'))) {
       // Add to cart first
-      final success = await context.read<CartController>().addToCart(
+      final cartController = context.read<CartController>();
+      final success = await cartController.addToCart(
         product.id,
         quantity,
       );
 
       if (success && mounted) {
-        Navigator.pushNamed(
-          context,
-          '/order',
-          arguments: {'product': ProductModel.empty(), 'quantity': 0},
-        );
+        // Automatically exclude out-of-stock items for consistency
+        if (cartController.hasOutOfStock) {
+          await cartController.removeOutOfStockItems();
+        }
+
+        if (!mounted) return;
+
+        // Validate cart state before proceeding
+        if (cartController.isCartValid) {
+          Navigator.pushNamed(
+            context,
+            '/order',
+            arguments: {'product': ProductModel.empty(), 'quantity': 0},
+          );
+        } else {
+          // Show error if cart is invalid (e.g. has insufficient stock items)
+          String msg = trStatic(context, 'adjust_to_checkout');
+          if (!cartController.hasInStockItems) {
+            msg = trStatic(context, 'no_items_available');
+          }
+          SimakFeedback.showError(context, msg);
+        }
       } else if (mounted) {
-        final error = context.read<CartController>().error;
+        final error = cartController.error;
         SimakFeedback.showError(
           context,
           error ?? trStatic(context, 'failed_to_prepare_order'),
@@ -1012,19 +1030,30 @@ class _TrendingCard extends StatelessWidget {
   }
 
   Widget _placeholder(ThemeData theme, String fallbackUrl) {
+    if (fallbackUrl.startsWith('assets/')) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Image.asset(
+          fallbackUrl,
+          fit: BoxFit.contain,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      );
+    }
+    
     return Image.network(
       fallbackUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      errorBuilder: (_, __, ___) => Container(
-        color: theme.canvasColor,
-        child: Center(
-          child: Icon(
-            Icons.image_outlined,
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
-            size: 36,
-          ),
+      errorBuilder: (_, __, ___) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Image.asset(
+          'assets/images/home_logo.png',
+          fit: BoxFit.contain,
+          width: double.infinity,
+          height: double.infinity,
         ),
       ),
     );

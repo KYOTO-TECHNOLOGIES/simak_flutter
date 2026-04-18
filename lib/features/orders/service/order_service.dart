@@ -106,6 +106,21 @@ class OrderService {
     return [];
   }
 
+  Future<List<Map<String, dynamic>>> fetchMyCoupons() async {
+    try {
+      final response = await _dio.get('marketing/coupons/');
+      final dynamic data = response.data;
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      } else if (data is Map && data.containsKey('results')) {
+        return List<Map<String, dynamic>>.from(data['results']);
+      }
+    } catch (e) {
+      debugPrint('Error fetching from coupons/: $e');
+    }
+    return [];
+  }
+
   Future<List<Map<String, dynamic>>> getMyOrders() async {
     final response = await _dio.get('orders/');
     final dynamic data = response.data;
