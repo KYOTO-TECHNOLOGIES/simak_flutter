@@ -82,47 +82,64 @@ class HowItWorksSection extends StatelessWidget {
           ),
           const SizedBox(height: 60),
           
-          // Grid-like layout for mobile (2 columns for better horizontal flow)
-          Wrap(
-            spacing: 20,
-            runSpacing: 40,
-            alignment: WrapAlignment.center,
+          Column(
             children: [
-              _buildStepCard(
-                context,
-                number: '01',
-                title: tr(context, 'step_1_title'),
-                desc: tr(context, 'step_1_desc'),
-                tags: tr(context, 'step_1_tags'),
-                icon: Icons.search_rounded,
-                color: const Color(0xFF00ACC1),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildStepCard(
+                      context,
+                      number: '01',
+                      title: tr(context, 'step_1_title'),
+                      desc: tr(context, 'step_1_desc'),
+                      tags: tr(context, 'step_1_tags'),
+                      icon: Icons.search_rounded,
+                      color: const Color(0xFF00ACC1),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: _buildStepCard(
+                      context,
+                      number: '02',
+                      title: tr(context, 'step_2_title'),
+                      desc: tr(context, 'step_2_desc'),
+                      tags: tr(context, 'step_2_tags'),
+                      icon: Icons.shopping_bag_rounded,
+                      color: const Color(0xFFFBC02D),
+                    ),
+                  ),
+                ],
               ),
-              _buildStepCard(
-                context,
-                number: '02',
-                title: tr(context, 'step_2_title'),
-                desc: tr(context, 'step_2_desc'),
-                tags: tr(context, 'step_2_tags'),
-                icon: Icons.shopping_bag_rounded,
-                color: const Color(0xFFFBC02D),
-              ),
-              _buildStepCard(
-                context,
-                number: '03',
-                title: tr(context, 'step_3_title'),
-                desc: tr(context, 'step_3_desc'),
-                tags: tr(context, 'step_3_tags'),
-                icon: Icons.local_shipping_rounded,
-                color: const Color(0xFF0288D1),
-              ),
-              _buildStepCard(
-                context,
-                number: '04',
-                title: tr(context, 'step_4_title'),
-                desc: tr(context, 'step_4_desc'),
-                tags: tr(context, 'step_4_tags'),
-                icon: Icons.restaurant_rounded,
-                color: const Color(0xFFF9A825),
+              const SizedBox(height: 40),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildStepCard(
+                      context,
+                      number: '03',
+                      title: tr(context, 'step_3_title'),
+                      desc: tr(context, 'step_3_desc'),
+                      tags: tr(context, 'step_3_tags'),
+                      icon: Icons.local_shipping_rounded,
+                      color: const Color(0xFF0288D1),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: _buildStepCard(
+                      context,
+                      number: '04',
+                      title: tr(context, 'step_4_title'),
+                      desc: tr(context, 'step_4_desc'),
+                      tags: tr(context, 'step_4_tags'),
+                      icon: Icons.restaurant_rounded,
+                      color: const Color(0xFFF9A825),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -185,15 +202,9 @@ class HowItWorksSection extends StatelessWidget {
     required Color color,
   }) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
-    // We target a grid on mobile to look less like a vertical list
-    final cardWidth = (size.width - 60) / 2;
-    
-    return SizedBox(
-      width: cardWidth.clamp(140.0, 180.0),
-      child: Column(
-        children: [
-          // Icon Box with Number Badge
+    return Column(
+      children: [
+        // Icon Box with Number Badge
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -288,8 +299,7 @@ class HowItWorksSection extends StatelessWidget {
               letterSpacing: 0.2,
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

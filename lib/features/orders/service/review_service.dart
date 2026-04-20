@@ -1,12 +1,49 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
 
 class ReviewService {
   final Dio _dio = ApiClient().dio;
 
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /// Resolves a MIME type from a file path, falling back to image/jpeg.
+  MediaType _mediaType(String path) {
+    final mime = lookupMimeType(path) ?? 'image/jpeg';
+    final parts = mime.split('/');
+    return MediaType(parts[0], parts.length > 1 ? parts[1] : 'jpeg');
+  }
+
+  /// Converts a [File] list into MultipartFile entries keyed as `uploaded_images`.
+  /// This matches the React `create` / `update` API which uses:
+  ///   form.append("uploaded_images", file)
+  Future<List<MapEntry<String, MultipartFile>>> _toUploadedImages(
+    List<File> files,
+  ) async {
+    final entries = <MapEntry<String, MultipartFile>>[];
+    for (final file in files) {
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      entries.add(
+        MapEntry(
+          'uploaded_images',
+          await MultipartFile.fromFile(
+            file.path,
+            filename: fileName,
+            contentType: _mediaType(file.path),
+          ),
+        ),
+      );
+    }
+    return entries;
+  }
+
+  // ── Create ───────────────────────────────────────────────────────────────
+
   /// POST /api/reviews/
-  /// Submits a new review with optional image files.
+  /// Mirrors the React `reviewsApi.create` method.
+  /// Field: `uploaded_images` (multipart, repeated per file).
   Future<Map<String, dynamic>> submitReview({
     required int productId,
     required int rating,
@@ -16,18 +53,10 @@ class ReviewService {
     final formData = FormData.fromMap({
       'product': productId,
       'rating': rating,
-      'comment': comment,
-      'is_visible': true,
+      'comment': comment.trim(),
     });
 
-    for (int i = 0; i < images.length; i++) {
-      final file = images[i];
-      final fileName = file.path.split(Platform.pathSeparator).last;
-      formData.files.add(MapEntry(
-        'images',
-        await MultipartFile.fromFile(file.path, filename: fileName),
-      ));
-    }
+    formData.files.addAll(await _toUploadedImages(images));
 
     final response = await _dio.post(
       'reviews/',
@@ -35,25 +64,29 @@ class ReviewService {
       options: Options(contentType: 'multipart/form-data'),
     );
     return response.data is Map<String, dynamic>
-        ? response.data
+        ? response.data as Map<String, dynamic>
+        : <String, dynamic>{};
+  }
+
+  // ── Read ────────────────────────────────────────────────────────────────
+
+  /// GET /api/reviews/{id}/
+  /// Mirrors the React `reviewsApi.details` method.
+  Future<Map<String, dynamic>> getReviewDetails(int reviewId) async {
+    final response = await _dio.get('reviews/$reviewId/');
+    return response.data is Map<String, dynamic>
+        ? response.data as Map<String, dynamic>
         : <String, dynamic>{};
   }
 
   /// GET /api/reviews/?product={productId}
-  /// Returns all visible reviews for a given product.
+  /// Returns all reviews for a given product.
   Future<List<Map<String, dynamic>>> getProductReviews(int productId) async {
     final response = await _dio.get(
       'reviews/',
       queryParameters: {'product': productId},
     );
-
-    final dynamic data = response.data;
-    if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
-    } else if (data is Map && data.containsKey('results')) {
-      return List<Map<String, dynamic>>.from(data['results']);
-    }
-    return [];
+    return _parseList(response.data);
   }
 
   /// GET /api/reviews/?user={userId}
@@ -63,68 +96,56 @@ class ReviewService {
       'reviews/',
       queryParameters: {'user': userId},
     );
-
-    final dynamic data = response.data;
-    if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
-    } else if (data is Map && data.containsKey('results')) {
-      return List<Map<String, dynamic>>.from(data['results']);
-    }
-    return [];
+    return _parseList(response.data);
   }
 
+  /// GET /api/reviews/
+  /// Returns a list of reviews, optionally filtered.
+  Future<List<Map<String, dynamic>>> getReviews({
+    int? productId,
+    int? userId,
+  }) async {
+    final Map<String, dynamic> query = {};
+    if (productId != null) query['product'] = productId;
+    if (userId != null) query['user'] = userId;
+    final response = await _dio.get('reviews/', queryParameters: query);
+    return _parseList(response.data);
+  }
+
+  // ── Update ───────────────────────────────────────────────────────────────
+
   /// PATCH /api/reviews/{id}/
-  /// Updates an existing review.
+  /// Mirrors the React `reviewsApi.update` method.
+  /// Only sends fields that are provided; images go as `uploaded_images`.
   Future<Map<String, dynamic>> editReview({
     required int reviewId,
     int? rating,
     String? comment,
     List<File> images = const [],
   }) async {
-    final Map<String, dynamic> data = {};
-    if (rating != null) data['rating'] = rating;
-    if (comment != null) data['comment'] = comment;
+    final Map<String, dynamic> fields = {};
+    if (rating != null) fields['rating'] = rating;
+    if (comment != null) fields['comment'] = comment;
 
-    FormData? formData;
-    if (images.isNotEmpty) {
-      formData = FormData.fromMap(data);
-      for (int i = 0; i < images.length; i++) {
-        final file = images[i];
-        final fileName = file.path.split(Platform.pathSeparator).last;
-        formData.files.add(MapEntry(
-          'images',
-          await MultipartFile.fromFile(file.path, filename: fileName),
-        ));
-      }
-    }
+    final formData = FormData.fromMap(fields);
+    formData.files.addAll(await _toUploadedImages(images));
 
     final response = await _dio.patch(
       'reviews/$reviewId/',
-      data: formData ?? data,
-      options: formData != null ? Options(contentType: 'multipart/form-data') : null,
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
     );
-
     return response.data is Map<String, dynamic>
-        ? response.data
+        ? response.data as Map<String, dynamic>
         : <String, dynamic>{};
   }
-  /// GET /api/reviews/
-  /// Returns a list of reviews, optionally filtered.
-  Future<List<Map<String, dynamic>>> getReviews({int? productId, int? userId}) async {
-    final Map<String, dynamic> query = {};
-    if (productId != null) query['product'] = productId;
-    if (userId != null) query['user'] = userId;
 
-    final response = await _dio.get(
-      'reviews/',
-      queryParameters: query,
-    );
+  // ── Helpers ──────────────────────────────────────────────────────────────
 
-    final dynamic data = response.data;
-    if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
-    } else if (data is Map && data.containsKey('results')) {
-      return List<Map<String, dynamic>>.from(data['results']);
+  List<Map<String, dynamic>> _parseList(dynamic data) {
+    if (data is List) return List<Map<String, dynamic>>.from(data);
+    if (data is Map && data.containsKey('results')) {
+      return List<Map<String, dynamic>>.from(data['results'] as List);
     }
     return [];
   }

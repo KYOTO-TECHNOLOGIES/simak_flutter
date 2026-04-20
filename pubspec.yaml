@@ -58,6 +58,8 @@ dependencies:
   app_links: ^6.3.3
   video_player: ^2.8.2
   chewie: ^1.7.0
+  http_parser: ^4.1.2
+  mime: ^2.0.0
 
 dev_dependencies:
   flutter_test:

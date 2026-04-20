@@ -2040,9 +2040,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               children: widget.product.availableEmirates.map((
                                 emirate,
                               ) {
-                                // Format the API string (e.g. 'umm_al_quwain' -> 'Umm Al Quwain Region')
+                                // Format the API string (e.g. 'umm_al_quwain' -> 'Umm Al Quwain')
                                 final rawText = emirate.replaceAll('_', ' ');
-                                final formattedRegion = rawText
+                                final formattedName = rawText
                                     .split(' ')
                                     .map(
                                       (e) => e.isNotEmpty
@@ -2050,6 +2050,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           : '',
                                     )
                                     .join(' ');
+
+                                // Show "Region" only for Abu Dhabi
+                                final isAbuDhabi = emirate.toLowerCase().contains('abu_dhabi') || 
+                                                  emirate.toLowerCase().contains('abu dhabi');
+                                final displayText = isAbuDhabi ? '$formattedName Region' : formattedName;
 
                                 return Container(
                                   padding: const EdgeInsets.symmetric(
@@ -2073,7 +2078,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        '$formattedRegion Region',
+                                        displayText,
                                         style: const TextStyle(
                                           color: AppColors.primary,
                                           fontSize: 12,

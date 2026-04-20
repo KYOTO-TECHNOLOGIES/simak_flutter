@@ -479,7 +479,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                 Icon(Icons.phone, color: Colors.white, size: 18),
                 SizedBox(width: 12),
                 Text(
-                  '+971 800 123 456',
+                  '+971 54 54 46 111',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

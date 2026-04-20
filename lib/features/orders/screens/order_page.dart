@@ -1490,7 +1490,10 @@ class _OrderPageState extends State<OrderPage> {
             if (result == 'success') {
               checkout.reset();
               context.read<CartController>().clearCart();
-              context.read<OrderController>().fetchMyOrders();
+              final auth = context.read<AuthController>();
+              if (auth.currentUser?.id != null) {
+                context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+              }
               Navigator.of(context).pushNamedAndRemoveUntil(
                 '/payment-success',
                 (route) => route.isFirst,
@@ -1518,7 +1521,10 @@ class _OrderPageState extends State<OrderPage> {
           checkout.startPaymentStatusPolling();
 
           // Refresh orders list
-          context.read<OrderController>().fetchMyOrders();
+          final auth = context.read<AuthController>();
+          if (auth.currentUser?.id != null) {
+            context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+          }
 
           // Clear local state
           checkout.reset();

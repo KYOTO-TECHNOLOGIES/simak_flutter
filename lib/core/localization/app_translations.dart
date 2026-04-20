@@ -201,7 +201,8 @@ final Map<String, Map<String, String>> _translations = {
     'clear_cache': 'Clear App Cache',
     'cache_cleared': 'Cache cleared successfully!',
     'clear_cache_confirm_title': 'Clear Cache?',
-    'clear_cache_confirm_message': 'Are you sure you want to clear all temporary data and images?',
+    'clear_cache_confirm_message':
+        'Are you sure you want to clear all temporary data and images?',
     'clearing_cache': 'Clearing cache...',
     'partial_checkout_title': 'Available Items Only?',
     'partial_checkout_message':
@@ -384,7 +385,8 @@ final Map<String, Map<String, String>> _translations = {
     'storage_tip': 'Storage Tip',
     'storage_tip_desc': 'Consume within 24 hours of delivery for best taste.',
     'notify_me': 'Notify Me',
-    'notify_all_set': 'You will be notified when this product comes back in stock',
+    'notify_all_set':
+        'You will be notified when this product comes back in stock',
     'notify_failed': 'Failed to register. Please try again.',
     'add_to_cart': 'Add to Cart',
     'buy_now': 'Buy Now',
@@ -794,7 +796,7 @@ final Map<String, Map<String, String>> _translations = {
     // ── Referrals & Coupons ──────────────────────────────────────────
     'referrals_coupons_title': 'Referrals & Coupons',
     'coupons_tab': 'Coupons',
-    'referrals_tab': 'Referrals',
+    'referrals_tab': 'Referrals & Coupons',
     'status_active': 'ACTIVE',
     'status_expired': 'EXPIRED',
     'status_inactive': 'INACTIVE',
@@ -807,7 +809,7 @@ final Map<String, Map<String, String>> _translations = {
     'coupons_subtitle': 'Your active discounts and rewards at a glance.',
 
     // ── Referrals ──────────────────────────────────────────
-    'referrals': 'Referrals',
+    'referrals': 'Referrals & Coupons',
     'referral_header': 'Friends Who Refer\nStay Friends Forever',
     'referral_sub':
         'When you refer your friend to Simak Fresh, you get max 20% OFF on your next order and so does your friend. Then you both eat healthy ever after!',
@@ -846,7 +848,8 @@ final Map<String, Map<String, String>> _translations = {
     'Frozen Fish': 'Frozen Fish',
     'Live Fish': 'Live Fish',
     'Available in': 'Available in',
-    'This product can be delivered in the following emirates:': 'This product can be delivered in the following emirates:',
+    'This product can be delivered in the following emirates:':
+        'This product can be delivered in the following emirates:',
     'Price per Piece': 'Price per Piece',
     'Fast Delivery': 'Fast Delivery',
     'Fresh Guaranteed': 'Fresh Guaranteed',
@@ -2281,7 +2284,8 @@ final Map<String, Map<String, String>> _translations = {
     'Live Fish': 'أسماك حية',
     'Fresh fish': 'أسماك طازجة',
     'Available in': 'متوفر في',
-    'This product can be delivered in the following emirates:': 'يمكن توصيل هذا المنتج في الإمارات التالية:',
+    'This product can be delivered in the following emirates:':
+        'يمكن توصيل هذا المنتج في الإمارات التالية:',
     'Price per Piece': 'السعر للقطعة',
     'Fast Delivery': 'توصيل سريع',
     'Fresh Guaranteed': 'طازج مضمون',

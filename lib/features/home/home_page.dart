@@ -17,7 +17,6 @@ import 'package:uae_ecom_project/features/home/widgets/promo_popup_dialog.dart';
 import 'package:uae_ecom_project/features/home/screens/all_popular_products_page.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
-import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
 import 'package:uae_ecom_project/core/widgets/floating_cart_icon.dart';
 import 'package:uae_ecom_project/features/home/widgets/how_it_works_section.dart';
@@ -27,7 +26,7 @@ import 'package:uae_ecom_project/features/home/widgets/language_selection_icon.d
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
-import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
+import 'package:uae_ecom_project/features/home/widgets/delivery_offers_marquee.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,7 +38,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _hasShownPromo = false;
   static bool _hasShownNameDialog = false;
-  bool _promoScheduledThisSession = false;
 
   @override
   void initState() {
@@ -50,6 +48,7 @@ class _HomePageState extends State<HomePage> {
       context.read<ProductController>().fetchProducts(emirate: emirate);
       context.read<ProductController>().fetchCategories();
       context.read<MarketingController>().fetchBanners();
+      context.read<MarketingController>().fetchDeliveryOffers();
       context.read<OrderController>().fetchHomeReviews();
       _schedulePromoPopup();
     });
@@ -101,7 +100,6 @@ class _HomePageState extends State<HomePage> {
 
         final activePopup = popups.first;
         _hasShownPromo = true;
-        _promoScheduledThisSession = true;
 
         PromoPopupDialog.showAfterDelay(
           context: context,
@@ -205,6 +203,7 @@ class _HomePageState extends State<HomePage> {
                 context.read<ProductController>().fetchProducts(emirate: emirate),
                 context.read<ProductController>().fetchCategories(),
                 context.read<MarketingController>().fetchBanners(),
+                context.read<MarketingController>().fetchDeliveryOffers(),
                 context.read<OrderController>().fetchHomeReviews(),
               ]);
             },
@@ -385,6 +384,23 @@ class _HomePageState extends State<HomePage> {
               const SliverPadding(
                 padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
                 sliver: SliverToBoxAdapter(child: _BannerSlider()),
+              ),
+
+              // ─── Delivery Offers Marquee ──────────────────────────
+              SliverToBoxAdapter(
+                child: Consumer<MarketingController>(
+                  builder: (context, controller, child) {
+                    if (controller.deliveryOffers.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: DeliveryOffersMarquee(
+                        offers: controller.deliveryOffers,
+                      ),
+                    );
+                  },
+                ),
               ),
 
               // ─── Categories ──────────────────────────────────────
