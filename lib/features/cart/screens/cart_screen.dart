@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -163,23 +164,12 @@ class _CartScreenState extends State<CartScreen> {
                   : 1.0,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
+                child: CustomImage(
                   item.product.thumbnail,
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Image.asset(
-                        'assets/images/home_logo.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
+                  padding: const EdgeInsets.all(8.0),
                 ),
               ),
             ),
@@ -368,12 +358,16 @@ class _CartScreenState extends State<CartScreen> {
                       ),
 
                       // Price
-                      Text(
-                        'AED ${item.subtotal.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
+                      Flexible(
+                        child: Text(
+                          'AED ${item.subtotal.toStringAsFixed(2)}',
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],

@@ -220,13 +220,11 @@ class _HomePageState extends State<HomePage> {
                 automaticallyImplyLeading: false,
                 toolbarHeight: 80,
                 title: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 7,
+                  padding: const EdgeInsetsDirectional.only(
+                    start: 7,
                     top: 4,
                   ), // Breathing room
-                  child: Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: Row(
+                  child: Row(
                       children: [
                         Expanded(
                           child: Row(
@@ -240,10 +238,10 @@ class _HomePageState extends State<HomePage> {
                               Expanded(
                                 child: Container(
                                   height: 50,
-                                  alignment: Alignment.centerLeft,
+                                  alignment: AlignmentDirectional.centerStart,
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
+                                    alignment: AlignmentDirectional.centerStart,
                                     child: IntrinsicWidth(
                                       child: Column(
                                         crossAxisAlignment:
@@ -258,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                                                 tr(
                                                   context,
                                                   'app_name_simak',
-                                                ).toUpperCase(),
+                                                ).trim().toUpperCase(),
                                                 style: TextStyle(
                                                   fontSize: 45,
                                                   fontWeight: FontWeight.w900,
@@ -273,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                                                 tr(
                                                   context,
                                                   'app_name_fresh',
-                                                ).toUpperCase(),
+                                                ).trim().toUpperCase(),
                                                 style: TextStyle(
                                                   fontSize: 45,
                                                   fontWeight: FontWeight.w900,
@@ -314,7 +312,7 @@ class _HomePageState extends State<HomePage> {
                         const Spacer(),
                         // Language Selection Icon (Always visible)
                         const Padding(
-                          padding: EdgeInsets.only(right: 9),
+                          padding: EdgeInsetsDirectional.only(end: 9),
                           child: LanguageSelectionIcon(),
                         ),
                         // Floating Animated Cart Icon
@@ -323,7 +321,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-              ),
 
               // ─── Search Bar ──────────────────────────────────────
               SliverPadding(

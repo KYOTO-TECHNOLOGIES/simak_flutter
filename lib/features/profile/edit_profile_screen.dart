@@ -293,12 +293,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> with SingleTicker
     return InkWell(
       onTap: () async {
         final now = DateTime.now();
-        final initialDate = _selectedDob ?? DateTime(now.year - 18, now.month, now.day);
+        final lastDate = DateTime(now.year - 10, now.month, now.day);
+        
+        DateTime initialDate = _selectedDob ?? DateTime(now.year - 18, now.month, now.day);
+        
+        // Ensure initialDate respects the 10-year restriction
+        if (initialDate.isAfter(lastDate)) {
+          initialDate = lastDate;
+        }
+
         final picked = await showDatePicker(
           context: context,
           initialDate: initialDate,
           firstDate: DateTime(1900),
-          lastDate: now,
+          lastDate: lastDate,
         );
         if (picked != null) {
           setState(() {

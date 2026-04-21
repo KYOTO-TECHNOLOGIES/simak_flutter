@@ -1311,6 +1311,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  /// Returns the quantity of this product already in the cart.
+  int _cartQtyForProduct() {
+    final cartItems = context.read<CartController>().cart?.items ?? [];
+    final existing = cartItems.where((i) => i.product.id == widget.product.id);
+    return existing.isEmpty ? 0 : existing.first.quantity;
+  }
+
+  /// Shows an error snackbar and returns false if adding [qty] more would
+  /// exceed available stock. Returns true when it is safe to proceed.
+  bool _canAddMoreToCart(int qty) {
+    final existingQty = _cartQtyForProduct();
+    final stock = widget.product.stock;
+    if (existingQty + qty > stock) {
+      SimakFeedback.showError(
+        context,
+        'Cannot add more. Only $stock ${stock == 1 ? 'item' : 'items'} in stock.',
+      );
+      return false;
+    }
+    return true;
+  }
+
   /// Returns true if the user is logged in. Otherwise pops open LoginScreen
   /// and shows a gentle prompt, then returns false.
   bool _requireLogin({required String action}) {
@@ -2144,6 +2166,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         child: ElevatedButton.icon(
                           onPressed: () async {
+                            // If not logged in, navigate to login screen
+                            final auth = context.read<AuthController>();
+                            if (auth.currentUser == null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                              return;
+                            }
+
                             final controller = context
                                 .read<ProductController>();
                             final success = await controller.notifyMe(
@@ -2200,28 +2234,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           'action_add_to_cart',
                                         ),
                                       )) {
-                                        final success = await context
-                                            .read<CartController>()
-                                            .addToCart(
-                                              widget.product.id,
-                                              _quantity,
-                                            );
+                                        // Block if adding would exceed stock
+                                        if (!_canAddMoreToCart(_quantity)) return;
+
+                                        final cartController =
+                                            context.read<CartController>();
+                                        final success =
+                                            await cartController.addToCart(
+                                          widget.product.id,
+                                          _quantity,
+                                        );
+                                        if (!mounted) return;
                                         if (success) {
                                           _showAddedToCartSnackbar();
                                         } else {
-                                          final error = context
-                                              .read<CartController>()
-                                              .error;
-                                          ScaffoldMessenger.of(
+                                          SimakFeedback.showError(
                                             context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                error ??
-                                                    'Failed to add to cart',
-                                              ),
-                                              backgroundColor: AppColors.error,
-                                            ),
+                                            cartController.error ??
+                                                'Failed to add to cart',
                                           );
                                         }
                                       }
@@ -2286,60 +2316,53 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             'action_buy',
                                           ),
                                         )) {
-                                          // Add to cart first
+                                          final existingQty =
+                                              _cartQtyForProduct();
+                                          final stock =
+                                              widget.product.stock;
+
+                                          // Already at max — go straight to cart
+                                          if (existingQty >= stock) {
+                                            SimakFeedback.showError(
+                                              context,
+                                              'Cannot add more. Only $stock '
+                                              '${stock == 1 ? 'item' : 'items'} in stock.',
+                                            );
+                                            if (mounted) {
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/cart',
+                                              );
+                                            }
+                                            return;
+                                          }
+
+                                          // Clamp to remaining available stock
+                                          final qtyToAdd =
+                                              (existingQty + _quantity > stock)
+                                                  ? stock - existingQty
+                                                  : _quantity;
+
                                           final cartController =
                                               context.read<CartController>();
                                           final success = await cartController
                                               .addToCart(
                                             widget.product.id,
-                                            _quantity,
+                                            qtyToAdd,
                                           );
 
-                                          if (success && mounted) {
-                                            // Automatically exclude out-of-stock items for consistency
-                                            if (cartController.hasOutOfStock) {
-                                              await cartController
-                                                  .removeOutOfStockItems();
-                                            }
+                                          if (!mounted) return;
 
-                                            if (!mounted) return;
-
-                                            // Validate cart state before proceeding
-                                            if (cartController.isCartValid) {
-                                              // Proceed to order summary (Cart Mode)
-                                              Navigator.pushNamed(
-                                                context,
-                                                '/order',
-                                                arguments: {
-                                                  'isCartMode': true,
-                                                  'product': widget.product,
-                                                  'quantity': _quantity,
-                                                },
-                                              );
-                                            } else {
-                                              // Show error if cart is invalid (e.g. has insufficient stock items)
-                                              String msg = trStatic(
-                                                context,
-                                                'adjust_to_checkout',
-                                              );
-                                              if (!cartController
-                                                  .hasInStockItems) {
-                                                msg = trStatic(
-                                                  context,
-                                                  'no_items_available',
-                                                );
-                                              }
-                                              SimakFeedback.showError(
-                                                context,
-                                                msg,
-                                              );
-                                            }
-                                          } else if (mounted) {
-                                            final error = cartController.error;
+                                          if (success) {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/cart',
+                                            );
+                                          } else {
                                             SimakFeedback.showError(
                                               context,
-                                              error ??
-                                                  'Failed to prepare order',
+                                              cartController.error ??
+                                                  'Failed to add to cart',
                                             );
                                           }
                                         }
@@ -2393,6 +2416,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
+          padding: const EdgeInsets.all(48.0),
         ),
       ),
     );
@@ -2416,9 +2440,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ],
       );
     }
-    return item.url.isNotEmpty
-        ? CustomImage(item.url, fit: BoxFit.cover, width: 64, height: 64)
-        : Container(color: theme.cardColor, width: 64, height: 64);
+    return CustomImage(
+      item.url,
+      fit: BoxFit.cover,
+      width: 64,
+      height: 64,
+      padding: const EdgeInsets.all(8.0),
+    );
   }
 
   // ── Customer Reviews Section ────────────────────────────────────────

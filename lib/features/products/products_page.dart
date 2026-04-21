@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/core/widgets/fish_loader.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
@@ -873,17 +874,13 @@ class _TrendingCard extends StatelessWidget {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
-                      child: product.thumbnail.isNotEmpty
-                          ? Image.network(
-                              product.thumbnail,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              width: double.infinity,
-                              height: double.infinity,
-                              errorBuilder: (_, __, ___) =>
-                                  _placeholder(theme, fallbackImageUrl),
-                            )
-                          : _placeholder(theme, fallbackImageUrl),
+                      child: CustomImage(
+                        product.thumbnail,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        padding: const EdgeInsets.all(24.0),
+                      ),
                     ),
                   ),
                   // Floating Tag: "HOT"
@@ -1030,32 +1027,12 @@ class _TrendingCard extends StatelessWidget {
   }
 
   Widget _placeholder(ThemeData theme, String fallbackUrl) {
-    if (fallbackUrl.startsWith('assets/')) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Image.asset(
-          fallbackUrl,
-          fit: BoxFit.contain,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      );
-    }
-    
-    return Image.network(
+    return CustomImage(
       fallbackUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      errorBuilder: (_, __, ___) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Image.asset(
-          'assets/images/home_logo.png',
-          fit: BoxFit.contain,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      ),
+      padding: const EdgeInsets.all(24.0),
     );
   }
 }
@@ -1113,42 +1090,15 @@ class _OnSaleCard extends StatelessWidget {
                 height: double.infinity,
                 child: Stack(
                   children: [
-                    product.thumbnail.isNotEmpty
-                        ? Image.network(
-                            product.thumbnail,
-                            fit: BoxFit.cover,
-                            width: 90,
-                            height: double.infinity,
-                            errorBuilder: (_, __, ___) => Image.network(
-                              fallbackImageUrl,
-                              fit: BoxFit.cover,
-                              width: 90,
-                              height: double.infinity,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: theme.canvasColor,
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.2),
-                                ),
-                              ),
-                            ),
-                          )
-                        : Image.network(
-                            fallbackImageUrl,
-                            fit: BoxFit.cover,
-                            width: 90,
-                            height: double.infinity,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: theme.canvasColor,
-                              child: Icon(
-                                Icons.image_outlined,
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.2,
-                                ),
-                              ),
-                            ),
-                          ),
+                    CustomImage(
+                      product.thumbnail.isNotEmpty
+                          ? product.thumbnail
+                          : fallbackImageUrl,
+                      fit: BoxFit.cover,
+                      width: 90,
+                      height: double.infinity,
+                      padding: const EdgeInsets.all(12.0),
+                    ),
                     // Discount badge
                     if (discountPercent > 0)
                       Positioned(
@@ -1331,17 +1281,13 @@ class _EnhancedProductCard extends StatelessWidget {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(22),
                       ),
-                      child: product.thumbnail.isNotEmpty
-                          ? Image.network(
-                              product.thumbnail,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              width: double.infinity,
-                              height: double.infinity,
-                              errorBuilder: (_, __, ___) =>
-                                  _placeholder(theme, fallbackImageUrl),
-                            )
-                          : _placeholder(theme, fallbackImageUrl),
+                      child: CustomImage(
+                        product.thumbnail,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        padding: const EdgeInsets.all(32.0),
+                      ),
                     ),
                   ),
                   // Floating Category Tag
@@ -1500,21 +1446,12 @@ class _EnhancedProductCard extends StatelessWidget {
   }
 
   Widget _placeholder(ThemeData theme, String fallbackUrl) {
-    return Image.network(
+    return CustomImage(
       fallbackUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      errorBuilder: (_, __, ___) => Container(
-        color: theme.canvasColor,
-        child: Center(
-          child: Icon(
-            Icons.image_outlined,
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
-            size: 36,
-          ),
-        ),
-      ),
+      padding: const EdgeInsets.all(32.0),
     );
   }
 }
