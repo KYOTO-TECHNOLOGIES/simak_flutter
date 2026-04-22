@@ -7,6 +7,7 @@ import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/coupon_controller.dart';
 import 'package:uae_ecom_project/features/profile/widgets/coupon_card_widget.dart';
+import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
 
 class ReferralScreen extends StatefulWidget {
   const ReferralScreen({super.key});
@@ -251,7 +252,12 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
                     const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => _shareReferral(context, referralCode),
+                        onTap: () {
+                          if (referralCode == '---') return;
+                          final message = "Join Simak Fresh! Use my referral code $referralCode to get max 20% OFF on your first order. Download the app now!";
+                          Clipboard.setData(ClipboardData(text: message));
+                          SimakFeedback.showSuccess(context, tr(context, 'link_copied'));
+                        },
                         child: Container(
                           height: 48,
                           decoration: BoxDecoration(

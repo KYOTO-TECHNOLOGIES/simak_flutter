@@ -31,12 +31,13 @@ class AddressListWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_off_outlined, size: 64, color: theme.dividerColor),
-            const SizedBox(height: 16),
-            Text(
-              'No addresses found',
-              style: theme.textTheme.titleMedium,
+            Icon(
+              Icons.location_off_outlined,
+              size: 64,
+              color: theme.dividerColor,
             ),
+            const SizedBox(height: 16),
+            Text('No addresses found', style: theme.textTheme.titleMedium),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => _showAddAddressDialog(context),
@@ -86,7 +87,9 @@ class AddressListWidget extends StatelessWidget {
                   color: theme.cardColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade200,
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.grey.shade200,
                     width: isSelected ? 2 : 1,
                   ),
                   boxShadow: [
@@ -107,7 +110,9 @@ class AddressListWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.grey.shade300,
                           width: isSelected ? 6 : 2,
                         ),
                       ),
@@ -124,17 +129,25 @@ class AddressListWidget extends StatelessWidget {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
-                                  color: isSelected ? AppColors.primary : Colors.grey.shade600,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.grey.shade600,
                                 ),
                               ),
                               if (address.isDefault) ...[
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.green.shade50,
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: Colors.green.shade100, width: 0.5),
+                                    border: Border.all(
+                                      color: Colors.green.shade100,
+                                      width: 0.5,
+                                    ),
                                   ),
                                   child: const Text(
                                     'DEFAULT',
@@ -152,42 +165,73 @@ class AddressListWidget extends StatelessWidget {
                           if (address.name != null && address.name!.isNotEmpty)
                             Text(
                               address.name!,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           const SizedBox(height: 4),
                           Text(
                             address.line1 ?? '',
-                            style: TextStyle(color: Colors.grey.shade800, fontSize: 14),
+                            style: TextStyle(
+                              color: Colors.grey.shade800,
+                              fontSize: 14,
+                            ),
                           ),
-                          if (address.line2 != null && address.line2!.isNotEmpty)
-                            Text(address.line2!, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                          if (address.line2 != null &&
+                              address.line2!.isNotEmpty)
+                            Text(
+                              address.line2!,
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                              ),
+                            ),
                           Text(
                             '${address.city}, ${address.state}',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
                           ),
-                          if (address.phoneNumber != null && address.phoneNumber!.isNotEmpty)
+                          if (address.phoneNumber != null &&
+                              address.phoneNumber!.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 'Phone: ${address.phoneNumber}',
-                                style: TextStyle(color: Colors.grey.shade700, fontSize: 12, fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                          if (address.landmark != null && address.landmark!.isNotEmpty)
+                          if (address.landmark != null &&
+                              address.landmark!.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 'Landmark: ${address.landmark}',
-                                style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontStyle: FontStyle.italic),
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             ),
                         ],
                       ),
                     ),
-                    if (!isSelected && address.id != null)
+                    if (!isSelected)
                       IconButton(
-                        onPressed: () => addressController.deleteAddress(address.id!),
-                        icon: Icon(Icons.delete_outline, color: Colors.grey.shade400, size: 20),
+                        onPressed: () =>
+                            addressController.deleteAddress(address.id!),
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.grey.shade400,
+                          size: 20,
+                        ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),

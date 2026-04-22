@@ -239,9 +239,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F8),
-      body: Consumer<AuthController>(
+    return Material(
+      color: const Color(0xFFF5F7F8),
+      child: Consumer<AuthController>(
         builder: (context, auth, _) {
           if (!auth.isLoggedIn) {
             return _NotLoggedInView(theme: theme);

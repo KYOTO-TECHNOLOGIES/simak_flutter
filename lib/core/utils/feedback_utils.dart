@@ -42,8 +42,8 @@ class SimakFeedback {
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: backgroundColor,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),

@@ -1376,13 +1376,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ],
           ),
         ),
-        child: Column(
-          children: [
-            // ─── Scrollable Content ──────────────────────────────
-            Expanded(
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
                   // ── Gallery header (full-bleed) ──────────────
                   SliverToBoxAdapter(
                     child: Padding(
@@ -2124,281 +2120,276 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                ],
-              ),
+        ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+        decoration: BoxDecoration(
+          color: theme.cardColor.withOpacity(0.9),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(28),
+          ),
+          border: Border(top: BorderSide(color: theme.dividerColor)),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withOpacity(0.12),
+              blurRadius: 24,
+              offset: const Offset(0, -8),
             ),
-
-            // ─── Bottom Action Bar ─────────────────────────────────
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-              decoration: BoxDecoration(
-                color: theme.cardColor.withOpacity(0.9),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
-                ),
-                border: Border(top: BorderSide(color: theme.dividerColor)),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.shadowColor.withOpacity(0.12),
-                    blurRadius: 24,
-                    offset: const Offset(0, -8),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: !_inStock
+              ? Container(
+                  width: double.infinity,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: !_inStock
-                    ? Container(
-                        width: double.infinity,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.primary, AppColors.primaryDark],
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      // If not logged in, navigate to login screen
+                      final auth = context.read<AuthController>();
+                      if (auth.currentUser == null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
                           ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.35),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            // If not logged in, navigate to login screen
-                            final auth = context.read<AuthController>();
-                            if (auth.currentUser == null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
-                                ),
-                              );
-                              return;
-                            }
+                        );
+                        return;
+                      }
 
-                            final controller = context
-                                .read<ProductController>();
-                            final success = await controller.notifyMe(
-                              widget.product.id,
+                      final controller = context
+                          .read<ProductController>();
+                      final success = await controller.notifyMe(
+                        widget.product.id,
+                      );
+
+                        if (mounted) {
+                          if (success) {
+                            SimakFeedback.showSuccess(
+                              context,
+                              trStatic(context, 'notify_all_set'),
                             );
+                          } else {
+                            SimakFeedback.showError(
+                              context,
+                              trStatic(context, 'notify_failed'),
+                            );
+                          }
+                        }
+                    },
+                    icon: const Icon(
+                      Icons.notifications_active_outlined,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      tr(context, 'notify_me'),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                )
+              : Row(
+                  children: [
+                    // ── Add to Cart ─────────────────────────
+                    Expanded(
+                      flex: 2,
+                      child: OutlinedButton(
+                        onPressed: _inStock
+                            ? () async {
+                                if (_requireLogin(
+                                  action: trStatic(
+                                    context,
+                                    'action_add_to_cart',
+                                  ),
+                                )) {
+                                  // Block if adding would exceed stock
+                                  if (!_canAddMoreToCart(_quantity)) return;
 
-                              if (mounted) {
-                                if (success) {
-                                  SimakFeedback.showSuccess(
-                                    context,
-                                    trStatic(context, 'notify_all_set'),
+                                  final cartController =
+                                      context.read<CartController>();
+                                  final success =
+                                      await cartController.addToCart(
+                                    widget.product.id,
+                                    _quantity,
                                   );
-                                } else {
-                                  SimakFeedback.showError(
-                                    context,
-                                    trStatic(context, 'notify_failed'),
-                                  );
+                                  if (!mounted) return;
+                                  if (success) {
+                                    _showAddedToCartSnackbar();
+                                  } else {
+                                    SimakFeedback.showError(
+                                      context,
+                                      cartController.error ??
+                                          'Failed to add to cart',
+                                    );
+                                  }
                                 }
                               }
-                          },
-                          icon: const Icon(
-                            Icons.notifications_active_outlined,
-                            color: Colors.white,
+                            : null,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
                           ),
-                          label: Text(
-                            tr(context, 'notify_me'),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          tr(context, 'add_to_cart'),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // ── Buy Now ─────────────────────────────
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: _inStock
+                                ? [
+                                    AppColors.primary,
+                                    AppColors.primaryDark,
+                                  ]
+                                : [Colors.grey, Colors.grey.shade700],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: _inStock
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(
+                                      0.35,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _inStock
+                              ? () async {
+                                  if (_requireLogin(
+                                    action: trStatic(
+                                      context,
+                                      'action_buy',
+                                    ),
+                                  )) {
+                                    final existingQty =
+                                        _cartQtyForProduct();
+                                    final stock =
+                                        widget.product.stock;
+
+                                    // Already at max — go straight to cart
+                                    if (existingQty >= stock) {
+                                      SimakFeedback.showError(
+                                        context,
+                                        'Cannot add more. Only $stock '
+                                        '${stock == 1 ? 'item' : 'items'} in stock.',
+                                      );
+                                      if (mounted) {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/cart',
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    // Clamp to remaining available stock
+                                    final qtyToAdd =
+                                        (existingQty + _quantity > stock)
+                                            ? stock - existingQty
+                                            : _quantity;
+
+                                    final cartController =
+                                        context.read<CartController>();
+                                    final success = await cartController
+                                        .addToCart(
+                                      widget.product.id,
+                                      qtyToAdd,
+                                    );
+
+                                    if (!mounted) return;
+
+                                    if (success) {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/cart',
+                                      );
+                                    } else {
+                                      SimakFeedback.showError(
+                                        context,
+                                        cartController.error ??
+                                            'Failed to add to cart',
+                                      );
+                                    }
+                                  }
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: AppColors.white,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            tr(
+                              context,
+                              _inStock ? 'buy_now' : 'out_of_stock',
+                            ),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.5,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
-                      )
-                    : Row(
-                        children: [
-                          // ── Add to Cart ─────────────────────────
-                          Expanded(
-                            flex: 2,
-                            child: OutlinedButton(
-                              onPressed: _inStock
-                                  ? () async {
-                                      if (_requireLogin(
-                                        action: trStatic(
-                                          context,
-                                          'action_add_to_cart',
-                                        ),
-                                      )) {
-                                        // Block if adding would exceed stock
-                                        if (!_canAddMoreToCart(_quantity)) return;
-
-                                        final cartController =
-                                            context.read<CartController>();
-                                        final success =
-                                            await cartController.addToCart(
-                                          widget.product.id,
-                                          _quantity,
-                                        );
-                                        if (!mounted) return;
-                                        if (success) {
-                                          _showAddedToCartSnackbar();
-                                        } else {
-                                          SimakFeedback.showError(
-                                            context,
-                                            cartController.error ??
-                                                'Failed to add to cart',
-                                          );
-                                        }
-                                      }
-                                    }
-                                  : null,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                side: const BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: Text(
-                                tr(context, 'add_to_cart'),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // ── Buy Now ─────────────────────────────
-                          Expanded(
-                            flex: 3,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: _inStock
-                                      ? [
-                                          AppColors.primary,
-                                          AppColors.primaryDark,
-                                        ]
-                                      : [Colors.grey, Colors.grey.shade700],
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: _inStock
-                                    ? [
-                                        BoxShadow(
-                                          color: AppColors.primary.withOpacity(
-                                            0.35,
-                                          ),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ]
-                                    : null,
-                              ),
-                              child: ElevatedButton(
-                                onPressed: _inStock
-                                    ? () async {
-                                        if (_requireLogin(
-                                          action: trStatic(
-                                            context,
-                                            'action_buy',
-                                          ),
-                                        )) {
-                                          final existingQty =
-                                              _cartQtyForProduct();
-                                          final stock =
-                                              widget.product.stock;
-
-                                          // Already at max — go straight to cart
-                                          if (existingQty >= stock) {
-                                            SimakFeedback.showError(
-                                              context,
-                                              'Cannot add more. Only $stock '
-                                              '${stock == 1 ? 'item' : 'items'} in stock.',
-                                            );
-                                            if (mounted) {
-                                              Navigator.pushNamed(
-                                                context,
-                                                '/cart',
-                                              );
-                                            }
-                                            return;
-                                          }
-
-                                          // Clamp to remaining available stock
-                                          final qtyToAdd =
-                                              (existingQty + _quantity > stock)
-                                                  ? stock - existingQty
-                                                  : _quantity;
-
-                                          final cartController =
-                                              context.read<CartController>();
-                                          final success = await cartController
-                                              .addToCart(
-                                            widget.product.id,
-                                            qtyToAdd,
-                                          );
-
-                                          if (!mounted) return;
-
-                                          if (success) {
-                                            Navigator.pushNamed(
-                                              context,
-                                              '/cart',
-                                            );
-                                          } else {
-                                            SimakFeedback.showError(
-                                              context,
-                                              cartController.error ??
-                                                  'Failed to add to cart',
-                                            );
-                                          }
-                                        }
-                                      }
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  foregroundColor: AppColors.white,
-                                  shadowColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: Text(
-                                  tr(
-                                    context,
-                                    _inStock ? 'buy_now' : 'out_of_stock',
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
-              ),
-            ),
-          ],
+                    ),
+                  ],
+                ),
         ),
       ),
     );

@@ -68,9 +68,9 @@ class _ProductsPageState extends State<ProductsPage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: Consumer<ProductController>(
+    return Material(
+      color: theme.scaffoldBackgroundColor,
+      child: Consumer<ProductController>(
         builder: (context, controller, _) {
           return RefreshIndicator(
             onRefresh: () async {
@@ -589,7 +589,7 @@ class _ProductsPageState extends State<ProductsPage>
                   product: product,
                   fallbackImageUrl: controller.fallbackImageUrl,
                   onTap: () => _navigateToDetail(product),
-                  onBuyNow: () => _navigateToOrder(product),
+                  onBuyNow: () => _handleBuyNow(product),
                   onNotifyMe: () => _handleNotifyMe(product),
                 );
               },
@@ -674,7 +674,7 @@ class _ProductsPageState extends State<ProductsPage>
                   product: product,
                   fallbackImageUrl: controller.fallbackImageUrl,
                   onTap: () => _navigateToDetail(product),
-                  onBuyNow: () => _navigateToOrder(product),
+                  onBuyNow: () => _handleBuyNow(product),
                 );
               },
             ),
@@ -727,7 +727,7 @@ class _ProductsPageState extends State<ProductsPage>
               product: product,
               fallbackImageUrl: controller.fallbackImageUrl,
               onTap: () => _navigateToDetail(product),
-              onBuyNow: () => _navigateToOrder(product),
+              onBuyNow: () => _handleBuyNow(product),
               onNotifyMe: () => _handleNotifyMe(product),
             );
         }, childCount: controller.filteredProducts.length),
@@ -756,7 +756,7 @@ class _ProductsPageState extends State<ProductsPage>
     }
   }
 
-  void _navigateToOrder(ProductModel product, {int quantity = 1}) async {
+  void _handleBuyNow(ProductModel product, {int quantity = 1}) async {
     if (_requireLogin(action: trStatic(context, 'action_buy'))) {
       // Add to cart first
       final cartController = context.read<CartController>();
@@ -773,21 +773,8 @@ class _ProductsPageState extends State<ProductsPage>
 
         if (!mounted) return;
 
-        // Validate cart state before proceeding
-        if (cartController.isCartValid) {
-          Navigator.pushNamed(
-            context,
-            '/order',
-            arguments: {'product': ProductModel.empty(), 'quantity': 0},
-          );
-        } else {
-          // Show error if cart is invalid (e.g. has insufficient stock items)
-          String msg = trStatic(context, 'adjust_to_checkout');
-          if (!cartController.hasInStockItems) {
-            msg = trStatic(context, 'no_items_available');
-          }
-          SimakFeedback.showError(context, msg);
-        }
+        // Navigate to Cart Page directly as requested
+        Navigator.pushNamed(context, '/cart');
       } else if (mounted) {
         final error = cartController.error;
         SimakFeedback.showError(

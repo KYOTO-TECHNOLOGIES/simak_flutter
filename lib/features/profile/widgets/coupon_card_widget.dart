@@ -102,22 +102,23 @@ class CouponCardWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: coupon.code));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Code copied!')),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.actionBlue,
-                        borderRadius: BorderRadius.circular(8),
+                  if (status == 'active')
+                    InkWell(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: coupon.code));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Code copied!')),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.actionBlue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.copy, color: Colors.white, size: 18),
                       ),
-                      child: const Icon(Icons.copy, color: Colors.white, size: 18),
                     ),
-                  ),
                 ],
               ),
             ),

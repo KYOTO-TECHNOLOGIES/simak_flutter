@@ -28,6 +28,50 @@ import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 import 'package:uae_ecom_project/features/home/widgets/delivery_offers_marquee.dart';
 
+Widget _buildStyledText(
+  BuildContext context,
+  String text,
+  TextStyle baseStyle, {
+  int maxLines = 1,
+}) {
+  if (!text.toUpperCase().contains(' OF ')) {
+    return Text(
+      text,
+      style: baseStyle,
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  final parts = text.split(RegExp(r' (of|OF) '));
+  List<InlineSpan> spans = [];
+
+  for (int i = 0; i < parts.length; i++) {
+    spans.add(TextSpan(text: parts[i]));
+    if (i < parts.length - 1) {
+      spans.add(
+        TextSpan(
+          text: ' of ',
+          style: GoogleFonts.dancingScript(
+            color: AppColors.actionBlue,
+            fontSize:
+                (baseStyle.fontSize ?? 14) *
+                1.1, // Cursive fonts often look smaller
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+  }
+
+  return Text.rich(
+    TextSpan(children: spans),
+    style: baseStyle,
+    maxLines: maxLines,
+    overflow: TextOverflow.ellipsis,
+  );
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -74,7 +118,6 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
-
 
   void _schedulePromoPopup() {
     Future.delayed(const Duration(seconds: 5), () {
@@ -141,11 +184,11 @@ class _HomePageState extends State<HomePage> {
         }
 
         marketingController.addListener(listener);
-        
+
         // Safety timeout for the name dialog if backend fetch hangs too long
         Future.delayed(const Duration(seconds: 10), () {
           if (mounted && marketingController.isLoading && !_hasShownPromo) {
-             _showNameDialogIfNeeded();
+            _showNameDialogIfNeeded();
           }
         });
       }
@@ -191,16 +234,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
-        child: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
+    return Material(
+      color: theme.scaffoldBackgroundColor,
+      child: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
             onRefresh: () async {
               final emirate = context.read<EmirateController>().selectedEmirate;
               await Future.wait([
-                context.read<ProductController>().fetchProducts(emirate: emirate),
+                context.read<ProductController>().fetchProducts(
+                  emirate: emirate,
+                ),
                 context.read<ProductController>().fetchCategories(),
                 context.read<MarketingController>().fetchBanners(),
                 context.read<MarketingController>().fetchDeliveryOffers(),
@@ -209,22 +253,22 @@ class _HomePageState extends State<HomePage> {
             },
             color: AppColors.primary,
             child: CustomScrollView(
-            slivers: [
-              // ─── App Bar ─────────────────────────────────────────
-              SliverAppBar(
-                floating: true,
-                snap: true,
-                elevation: 0,
-                scrolledUnderElevation: 0,
-                backgroundColor: theme.scaffoldBackgroundColor,
-                automaticallyImplyLeading: false,
-                toolbarHeight: 80,
-                title: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: 7,
-                    top: 4,
-                  ), // Breathing room
-                  child: Row(
+              slivers: [
+                // ─── App Bar ─────────────────────────────────────────
+                SliverAppBar(
+                  floating: true,
+                  snap: true,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  backgroundColor: theme.scaffoldBackgroundColor,
+                  automaticallyImplyLeading: false,
+                  toolbarHeight: 80,
+                  title: Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 7,
+                      top: 4,
+                    ), // Breathing room
+                    child: Row(
                       children: [
                         Expanded(
                           child: Row(
@@ -258,7 +302,7 @@ class _HomePageState extends State<HomePage> {
                                                   'app_name_simak',
                                                 ).trim().toUpperCase(),
                                                 style: TextStyle(
-                                                  fontSize: 45,
+                                                  fontSize: 55,
                                                   fontWeight: FontWeight.w900,
                                                   color: theme
                                                       .colorScheme
@@ -266,14 +310,14 @@ class _HomePageState extends State<HomePage> {
                                                   height: 1.0,
                                                 ),
                                               ),
-                                              const SizedBox(width: 4),
+                                              const SizedBox(width: 10),
                                               Text(
                                                 tr(
                                                   context,
                                                   'app_name_fresh',
                                                 ).trim().toUpperCase(),
                                                 style: TextStyle(
-                                                  fontSize: 45,
+                                                  fontSize: 55,
                                                   fontWeight: FontWeight.w900,
                                                   color: AppColors.actionBlue,
                                                   height: 1.0,
@@ -284,20 +328,19 @@ class _HomePageState extends State<HomePage> {
                                           const SizedBox(height: 1),
                                           FittedBox(
                                             fit: BoxFit.fitWidth,
-                                            child: Text(
+                                            child: _buildStyledText(
+                                              context,
                                               tr(
                                                 context,
                                                 'tagline',
                                               ).toUpperCase(),
-                                              style: TextStyle(
-                                                fontSize: 20,
+                                              TextStyle(
+                                                fontSize: 30,
                                                 fontWeight: FontWeight.w800,
-                                                color: AppColors.actionBlue,
+                                                color: AppColors.primary,
                                                 letterSpacing: 1.0,
                                                 height: 1.0,
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],
@@ -322,333 +365,335 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-              // ─── Search Bar ──────────────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverToBoxAdapter(
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to Products tab in HomeShell with auto-focus flag
-                      Navigator.pushReplacementNamed(
-                        context,
-                        '/home',
-                        arguments: {'index': 1, 'focusSearch': true},
-                      );
-                    },
-                    child: Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: theme.cardColor,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.dividerColor.withOpacity(0.8),
+                // ─── Search Bar ──────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: GestureDetector(
+                      onTap: () {
+                        // Navigate to Products tab in HomeShell with auto-focus flag
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/home',
+                          arguments: {'index': 1, 'focusSearch': true},
+                        );
+                      },
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: theme.cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: theme.dividerColor.withOpacity(0.8),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.search_rounded,
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
-                            size: 22,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            tr(context, 'search_hint'),
-                            style: TextStyle(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.search_rounded,
                               color: theme.colorScheme.onSurface.withOpacity(
                                 0.4,
                               ),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                              size: 22,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ─── Banner Slider ────────────────────────────────────
-              const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                sliver: SliverToBoxAdapter(child: _BannerSlider()),
-              ),
-
-              // ─── Delivery Offers Marquee ──────────────────────────
-              SliverToBoxAdapter(
-                child: Consumer<MarketingController>(
-                  builder: (context, controller, child) {
-                    if (controller.deliveryOffers.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: DeliveryOffersMarquee(
-                        offers: controller.deliveryOffers,
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // ─── Categories ──────────────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tr(context, 'shop_by_category'),
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 110,
-                        child: Consumer<ProductController>(
-                          builder: (context, controller, child) {
-                            if (controller.isCategoriesLoading &&
-                                controller.backendCategories.isEmpty) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            final categories = controller.backendCategories;
-                            if (categories.isEmpty) {
-                              return Center(
-                                child: Text(
-                                  tr(context, 'no_categories'),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface
-                                        .withOpacity(0.5),
-                                  ),
-                                ),
-                              );
-                            }
-
-                            return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: categories.length,
-                              itemBuilder: (context, index) {
-                                final category = categories[index];
-                                return _CategoryCard(
-                                  index: index,
-                                  imageUrl:
-                                      category.image ??
-                                      AppConstants.kDefaultProductImage,
-                                  label: category.name,
-                                  onTap: () {
-                                    // Set selected category and navigate
-                                    controller.selectCategory(category.name);
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      '/home',
-                                      arguments: {'index': 1},
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ─── Product Grid Title ──────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
-                sliver: SliverToBoxAdapter(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        tr(context, 'popular_now'),
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AllPopularProductsPage(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                            const SizedBox(width: 12),
                             Text(
-                              tr(context, 'see_all'),
-                              style: const TextStyle(
-                                color: AppColors.accent,
+                              tr(context, 'search_hint'),
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.4,
+                                ),
                                 fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 12,
-                              color: AppColors.accent,
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
 
-              // ─── Product Grid (limited to 4) ──────────────────────
-              Consumer<ProductController>(
-                builder: (context, controller, child) {
-                  if (controller.isLoading && controller.products.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: FishLoader(
-                          message: tr(context, 'loading_products'),
+                // ─── Banner Slider ────────────────────────────────────
+                const SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                  sliver: SliverToBoxAdapter(child: _BannerSlider()),
+                ),
+
+                // ─── Delivery Offers Marquee ──────────────────────────
+                SliverToBoxAdapter(
+                  child: Consumer<MarketingController>(
+                    builder: (context, controller, child) {
+                      if (controller.deliveryOffers.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: DeliveryOffersMarquee(
+                          offers: controller.deliveryOffers,
                         ),
-                      ),
-                    );
-                  }
+                      );
+                    },
+                  ),
+                ),
 
-                  if (controller.error != null && controller.products.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Text(
-                            controller.error!,
-                            style: const TextStyle(color: AppColors.error),
+                // ─── Categories ──────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tr(context, 'shop_by_category'),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-                      ),
-                    );
-                  }
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 110,
+                          child: Consumer<ProductController>(
+                            builder: (context, controller, child) {
+                              if (controller.isCategoriesLoading &&
+                                  controller.backendCategories.isEmpty) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
 
-                  if (controller.products.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Text(
-                            tr(context, 'no_products'),
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.6,
-                              ),
-                            ),
+                              final categories = controller.backendCategories;
+                              if (categories.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    tr(context, 'no_categories'),
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurface
+                                          .withOpacity(0.5),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  return _CategoryCard(
+                                    index: index,
+                                    imageUrl:
+                                        category.image ??
+                                        AppConstants.kDefaultProductImage,
+                                    label: category.name,
+                                    onTap: () {
+                                      // Set selected category and navigate
+                                      controller.selectCategory(category.name);
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        '/home',
+                                        arguments: {'index': 1},
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
                           ),
                         ),
-                      ),
-                    );
-                  }
+                      ],
+                    ),
+                  ),
+                ),
 
-                  // Show only up to 4 products on the home page
-                  final displayCount = controller.products.length < 4
-                      ? controller.products.length
-                      : 4;
-
-                  return SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                    sliver: SliverGrid(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 14,
-                            crossAxisSpacing: 14,
-                            childAspectRatio: 0.7,
+                // ─── Product Grid Title ──────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
+                  sliver: SliverToBoxAdapter(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          tr(context, 'popular_now'),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
                           ),
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final product = controller.products[index];
-                        return _ProductCard(
-                          product: product,
-                          fallbackImageUrl: controller.fallbackImageUrl,
+                        ),
+                        GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailScreen(product: product),
+                                builder: (_) => const AllPopularProductsPage(),
                               ),
                             );
                           },
-                        );
-                      }, childCount: displayCount),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                tr(context, 'see_all'),
+                                style: const TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 12,
+                                color: AppColors.accent,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
 
-              // ─── How It Works ──────────────────────────────────
-              const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(child: HowItWorksSection()),
-              ),
+                // ─── Product Grid (limited to 4) ──────────────────────
+                Consumer<ProductController>(
+                  builder: (context, controller, child) {
+                    if (controller.isLoading && controller.products.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: FishLoader(
+                            message: tr(context, 'loading_products'),
+                          ),
+                        ),
+                      );
+                    }
 
-              // ─── Why Choose Us ──────────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(child: _WhyChooseUs()),
-              ),
+                    if (controller.error != null &&
+                        controller.products.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Text(
+                              controller.error!,
+                              style: const TextStyle(color: AppColors.error),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
 
-              // ─── Stats Bar (New) ────────────────────────────────
-              const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(child: _HomeStatsBar()),
-              ),
+                    if (controller.products.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Text(
+                              tr(context, 'no_products'),
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.6,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
 
-              // ─── Highlighted Testimonial (New) ──────────────────
-              const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(child: _HighlightedTestimonial()),
-              ),
+                    // Show only up to 4 products on the home page
+                    final displayCount = controller.products.length < 4
+                        ? controller.products.length
+                        : 4;
 
-              // ─── User Reviews ───────────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                sliver: SliverToBoxAdapter(child: _UserReviews()),
-              ),
+                    return SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 14,
+                              crossAxisSpacing: 14,
+                              childAspectRatio: 0.7,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final product = controller.products[index];
+                          return _ProductCard(
+                            product: product,
+                            fallbackImageUrl: controller.fallbackImageUrl,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ProductDetailScreen(product: product),
+                                ),
+                              );
+                            },
+                          );
+                        }, childCount: displayCount),
+                      ),
+                    );
+                  },
+                ),
 
-              // ─── Featured Recipe ────────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  20,
-                  32,
-                  20,
-                  100,
-                ), // Keep 100 padding at the very bottom
-                sliver: SliverToBoxAdapter(child: _FeaturedRecipe()),
-              ),
-            ],
+                // ─── How It Works ──────────────────────────────────
+                const SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  sliver: SliverToBoxAdapter(child: HowItWorksSection()),
+                ),
+
+                // ─── Why Choose Us ──────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  sliver: SliverToBoxAdapter(child: _WhyChooseUs()),
+                ),
+
+                // ─── Stats Bar (New) ────────────────────────────────
+                const SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  sliver: SliverToBoxAdapter(child: _HomeStatsBar()),
+                ),
+
+                // ─── Highlighted Testimonial (New) ──────────────────
+                const SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  sliver: SliverToBoxAdapter(child: _HighlightedTestimonial()),
+                ),
+
+                // ─── User Reviews ───────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  sliver: SliverToBoxAdapter(child: _UserReviews()),
+                ),
+
+                // ─── Featured Recipe ────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    20,
+                    32,
+                    20,
+                    100,
+                  ), // Keep 100 padding at the very bottom
+                  sliver: SliverToBoxAdapter(child: _FeaturedRecipe()),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    ),
-  );
-}
+      );
+  }
 }
 
 class _CategoryCard extends StatefulWidget {
@@ -857,7 +902,9 @@ class _ProductCard extends StatelessWidget {
                       top: Radius.circular(16),
                     ),
                     child: CustomImage(
-                      product.thumbnail.isNotEmpty ? product.thumbnail : fallbackImageUrl,
+                      product.thumbnail.isNotEmpty
+                          ? product.thumbnail
+                          : fallbackImageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
                     ),
@@ -1195,17 +1242,17 @@ class _BannerSlide extends StatelessWidget {
                     // ── Headline ─────────────────────────────
                     if (slide.title != null)
                       Flexible(
-                        child: Text(
+                        child: _buildStyledText(
+                          context,
                           slide.title!,
-                          style: GoogleFonts.outfit(
+                          GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 22, // Slightly smaller for better fit
+                            fontSize: 22,
                             fontWeight: FontWeight.w900,
                             height: 1.1,
                             letterSpacing: -0.2,
                           ),
                           maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     const SizedBox(height: 4),

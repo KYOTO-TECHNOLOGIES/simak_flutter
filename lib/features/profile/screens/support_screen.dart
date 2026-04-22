@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
@@ -85,6 +86,22 @@ class _SupportWidgetState extends State<SupportWidget> {
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _launchCaller(String phoneNumber) async {
+    final Uri url = Uri.parse('tel:${phoneNumber.replaceAll(' ', '')}');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(trStatic(context, 'support_failed')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -465,28 +482,32 @@ class _SupportWidgetState extends State<SupportWidget> {
             ],
           ),
           const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(
-                0xFF009688,
-              ), // Teal/Green button color as in screenshot
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.phone, color: Colors.white, size: 18),
-                SizedBox(width: 12),
-                Text(
-                  '+971 54 54 46 111',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+          InkWell(
+            onTap: () => _launchCaller('+971 54 54 46 111'),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(
+                  0xFF009688,
+                ), // Teal/Green button color as in screenshot
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.phone, color: Colors.white, size: 18),
+                  SizedBox(width: 12),
+                  Text(
+                    '+971 54 54 46 111',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),

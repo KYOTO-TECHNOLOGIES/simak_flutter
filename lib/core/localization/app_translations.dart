@@ -107,6 +107,7 @@ final Map<String, Map<String, String>> _translations = {
     // ── Home Page ───────────────────────────────────────────
     'tagline': 'Signature of quality',
     'search_hint': 'Search for seafood, recipes...',
+    'link_copied': 'Link copied successfully!',
     'shop_by_category': 'Shop by Category',
     'cat_lobster': 'Lobster',
     'cat_king_crab': 'King Crab',
@@ -868,6 +869,7 @@ final Map<String, Map<String, String>> _translations = {
     'select_language': '选择语言',
     'tagline': '品质的标志',
     'search_hint': '搜索海鲜、食谱...',
+    'link_copied': '链接已成功复制！',
     'shop_by_category': '按类别选购',
     'cat_lobster': '龙虾',
     'cat_king_crab': '帝王蟹',
@@ -1566,6 +1568,7 @@ final Map<String, Map<String, String>> _translations = {
     // ── Home Page ───────────────────────────────────────────
     'tagline': 'بصمة الجودة',
     'search_hint': 'ابحث عن المأكولات البحرية، الوصفات...',
+    'link_copied': 'تم نسخ الرابط بنجاح!',
     'shop_by_category': 'تسوق حسب الفئة',
     'cat_lobster': 'كركند',
     'cat_king_crab': 'سلطعون ملكي',
