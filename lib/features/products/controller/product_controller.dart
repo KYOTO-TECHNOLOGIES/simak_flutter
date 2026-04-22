@@ -62,8 +62,13 @@ class ProductController extends ChangeNotifier {
   }
 
   void selectCategory(String category) {
+    if (_selectedCategory == category) return;
     _selectedCategory = category;
     notifyListeners();
+    
+    // Trigger fresh fetch for the newly selected category.
+    // This will show cache first, then refresh from API.
+    fetchProducts(categoryName: category);
   }
 
   // ─── Search ─────────────────────────────────────────────────────
@@ -130,27 +135,40 @@ class ProductController extends ChangeNotifier {
   // ─── Fetching (Offline-First) ────────────────────────────────
   /// Loads products from cache instantly, then silently refreshes
   /// from API in the background if the cache is stale.
-  Future<void> fetchProducts({String? emirate}) async {
+  /// Loads products (offline-first). Shows cache instantly, then updates via API.
+  Future<void> fetchProducts({String? emirate, String? categoryName}) async {
+    final cat = categoryName ?? _selectedCategory;
+    
     // TEMPORARY: ignore emirate parameter
     _activeEmirate = null;
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    
+    // If we have no items at all, show the main loading spinner.
+    // If we already have items (cached or from previous fetch), we load silently.
+    if (_products.isEmpty) {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+    }
 
     try {
-      _products = await _service.fetchProducts(
+      final freshProducts = await _service.fetchProducts(
         emirate: null, // Force fetch all
+        categoryName: cat,
         // This callback fires when background API refresh completes.
-        // It updates the product list and the UI seamlessly.
-        onRefresh: (freshProducts) {
-          _products = freshProducts;
+        onRefresh: (refreshedData) {
+          _products = refreshedData;
           notifyListeners();
         },
       );
+      
+      // Set the initial (cached or first-fetch) data
+      _products = freshProducts;
     } catch (e) {
-      // Only reaches here if there is NO cache AND the API failed.
-      _error = 'failed_load_products';
-      debugPrint(e.toString());
+      // Only error out if we have absolutely no data to show.
+      if (_products.isEmpty) {
+        _error = 'failed_load_products';
+      }
+      debugPrint('Error in fetchProducts: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

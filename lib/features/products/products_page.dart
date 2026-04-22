@@ -37,15 +37,13 @@ class _ProductsPageState extends State<ProductsPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller = context.read<ProductController>();
-      if (controller.products.isEmpty) {
-        final emirate = context.read<EmirateController>().selectedEmirate;
-        controller.fetchProducts(emirate: emirate);
-        controller.fetchCategories();
-        if (mounted) _fadeController.forward();
-      } else {
-        controller.fetchCategories();
-        _fadeController.forward();
-      }
+      final emirate = context.read<EmirateController>().selectedEmirate;
+      
+      // Always call fetchProducts; the controller now handles 
+      // showing cache instantly vs showing a loader.
+      controller.fetchProducts(emirate: emirate);
+      controller.fetchCategories();
+      _fadeController.forward();
 
       // Check for focusSearch flag in HomeShell arguments
       final args = ModalRoute.of(context)?.settings.arguments;

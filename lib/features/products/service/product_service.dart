@@ -35,9 +35,13 @@ class ProductService {
   /// controller can update the UI without blocking.
   Future<List<ProductModel>> fetchProducts({
     String? emirate,
+    String? categoryName,
     void Function(List<ProductModel>)? onRefresh,
   }) async {
-    final cacheKey = emirate != null ? '${_productsCacheKey}_$emirate' : _productsCacheKey;
+    // ── Step 0: Construct accurate cache key ────────────────────
+    String cacheKey = _productsCacheKey;
+    if (emirate != null) cacheKey += '_$emirate';
+    if (categoryName != null && categoryName != 'All') cacheKey += '_cat_$categoryName';
 
     // ── Step 1: Try to return cached data instantly ─────────────
     final cachedData = _cache.getFromCache(
@@ -46,33 +50,38 @@ class ProductService {
     );
 
     if (cachedData != null) {
-      debugPrint('✅ Loaded products from Cache (offline-first)');
+      debugPrint('✅ Loaded products from Cache: $cacheKey');
       final cachedProducts = _parseProductList(cachedData);
 
-      // Check if cache is still fresh → no need to call API.
+      // Check if cache is still fresh → if fresh, we still trigger refresh
+      // if explicitly asked (e.g. on click), but otherwise save bandwidth.
       final freshData = _cache.getFromCache(cacheKey);
       if (freshData != null) {
-        debugPrint('   ↳ Cache is fresh, skipping API call');
-        return cachedProducts;
+        debugPrint('   ↳ Cache is fresh, but updating silently in background');
       }
 
-      // Cache is stale → try refreshing from API in background.
-      debugPrint('   ↳ Cache is stale, refreshing in background...');
-      _refreshProductsInBackground(emirate, onRefresh);
+      // Triger refresh in background to ensure data is always eventually consistent.
+      _refreshProductsInBackground(
+        emirate: emirate,
+        categoryName: categoryName,
+        onRefresh: onRefresh,
+      );
 
-      // Return stale cached data immediately so UI is never blank.
+      // Return stale/cached data immediately so UI is never blank.
       return cachedProducts;
     }
 
     // ── Step 2: No cache at all → must call API ────────────────
-    debugPrint('📡 No cache found, fetching products from API...');
+    debugPrint('📡 No cache for $cacheKey, fetching from API...');
     try {
-      final products = await _fetchProductsFromApi(emirate: emirate);
+      final products = await _fetchProductsFromApi(
+        emirate: emirate,
+        categoryName: categoryName,
+      );
       debugPrint('🌐 Fetched products from API (first load)');
       return products;
     } catch (e) {
-      // No cache AND API failed → nothing to show.
-      debugPrint('❌ No cache and API failed — showing error');
+      debugPrint('❌ No cache and FETCH failed: $e');
       rethrow;
     }
   }
@@ -160,12 +169,20 @@ class ProductService {
   // ═══════════════════════════════════════════════════════════════
 
   /// Fetches the product list from the API and saves it to cache.
-  Future<List<ProductModel>> _fetchProductsFromApi({String? emirate}) async {
-    final String url = emirate != null 
-        ? 'products/products/?available_emirates=$emirate' 
-        : 'products/products/';
-        
-    final response = await _dio.get(url);
+  Future<List<ProductModel>> _fetchProductsFromApi({
+    String? emirate,
+    String? categoryName,
+  }) async {
+    final Map<String, dynamic> queryParameters = {};
+    if (emirate != null) queryParameters['available_emirates'] = emirate;
+    if (categoryName != null && categoryName != 'All') {
+      queryParameters['category_name'] = categoryName;
+    }
+
+    final response = await _dio.get(
+      'products/products/',
+      queryParameters: queryParameters,
+    );
     final data = response.data;
 
     final List<dynamic> rawList;
@@ -178,24 +195,28 @@ class ProductService {
     }
 
     // Save to cache.
-    final cacheKey = emirate != null ? '${_productsCacheKey}_$emirate' : _productsCacheKey;
+    String cacheKey = _productsCacheKey;
+    if (emirate != null) cacheKey += '_$emirate';
+    if (categoryName != null && categoryName != 'All') cacheKey += '_cat_$categoryName';
+
     await _cache.saveToCache(cacheKey, rawList);
     return rawList.map((e) => ProductModel.fromJson(e)).toList();
   }
 
   /// Silently refreshes products from API in the background.
-  /// If successful, saves to cache and calls [onRefresh].
-  /// If it fails, does nothing — old cached data stays in use.
-  void _refreshProductsInBackground(
+  void _refreshProductsInBackground({
     String? emirate,
+    String? categoryName,
     void Function(List<ProductModel>)? onRefresh,
-  ) {
-    _fetchProductsFromApi(emirate: emirate).then((freshProducts) {
+  }) {
+    _fetchProductsFromApi(
+      emirate: emirate,
+      categoryName: categoryName,
+    ).then((freshProducts) {
       debugPrint('🔄 Background refresh complete — products updated');
       onRefresh?.call(freshProducts);
     }).catchError((e) {
-      // API failed silently — keep using stale cache.
-      debugPrint('⚠️ Background refresh failed, keeping stale cache');
+      debugPrint('⚠️ Background refresh failed, keeping stale cache: $e');
     });
   }
 
