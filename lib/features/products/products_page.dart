@@ -719,7 +719,7 @@ class _ProductsPageState extends State<ProductsPage>
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.60,
+          childAspectRatio: 0.64,
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
           final product = controller.filteredProducts[index];
@@ -966,15 +966,32 @@ class _TrendingCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    'AED ${product.finalPrice}',
-                    style: const TextStyle(
-                      color: AppColors.accent,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AED ${product.finalPrice}',
+                        style: const TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        maxLines: 1,
+                      ),
+                      if (product.discountPrice != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'AED ${product.price}',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            fontSize: 10,
+                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -1167,23 +1184,21 @@ class _OnSaleCard extends StatelessWidget {
                     ),
                   ),
                   // Price & Notify Section
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          'AED ${product.finalPrice}',
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        'AED ${product.finalPrice}',
+                        style: const TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
                       ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
+                      if (product.discountPrice != null) ...[
+                        const SizedBox(height: 1),
+                        Text(
                           'AED ${product.price}',
                           style: TextStyle(
                             color: theme.colorScheme.onSurface.withOpacity(0.4),
@@ -1191,9 +1206,8 @@ class _OnSaleCard extends StatelessWidget {
                             decoration: TextDecoration.lineThrough,
                           ),
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],
@@ -1354,37 +1368,29 @@ class _EnhancedProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          'AED ${product.finalPrice}',
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        'AED ${product.finalPrice}',
+                        style: const TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
                         ),
+                        maxLines: 1,
                       ),
                       if (product.discountPrice != null) ...[
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            'AED ${product.price}',
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.3,
-                              ),
-                              fontSize: 10,
-                              decoration: TextDecoration.lineThrough,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        const SizedBox(height: 2),
+                        Text(
+                          'AED ${product.price}',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            fontSize: 11,
+                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
                         ),
                       ],
                     ],
