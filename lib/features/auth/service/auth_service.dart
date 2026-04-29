@@ -99,4 +99,18 @@ class AuthService {
     );
     return response.data as Map<String, dynamic>;
   }
+
+  // ─── Account Deletion ────────────────────────────────────────
+  Future<Map<String, dynamic>> getAccountDeletionInfo() async {
+    final response = await _dio.get('users/account_deletion_info/');
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> requestAccountDeletion(Map<String, dynamic> data) async {
+    final response = await _dio.post(
+      'users/request_account_deletion/',
+      data: data,
+    );
+    return response.data as Map<String, dynamic>;
+  }
 }

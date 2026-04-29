@@ -913,6 +913,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
+          const SizedBox(height: 32),
+          // Danger Zone / Delete Account
+          if (!_isEditing) ...[
+            const Divider(),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _showAccountDeletionWorkflow(context),
+                icon: const Icon(Icons.delete_forever_outlined, color: Colors.red, size: 18),
+                label: const Text(
+                  'Delete Account',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.red.withOpacity(0.3)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -2958,6 +2980,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return code;
     }
   }
+
+  void _showAccountDeletionWorkflow(BuildContext context) async {
+    final auth = context.read<AuthController>();
+    final theme = Theme.of(context);
+
+    // Step 1: Fetch Deletion Info
+    final deletionInfo = await auth.fetchDeletionInfo();
+    if (!mounted) return;
+
+    if (deletionInfo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to load deletion information. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Step 2: Show Info Modal
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _DeletionInfoSheet(
+          info: deletionInfo,
+          onConfirm: () async {
+            final auth = context.read<AuthController>();
+            final success = await auth.deleteAccount();
+            if (success && mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/language_selection',
+                (route) => false,
+              );
+            } else if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(auth.errorMessage ?? 'Deletion failed. Please try again later.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
 }
 
 // ─── Guest View ─────────────────────────────────────────────────
@@ -3064,6 +3135,125 @@ class _NotLoggedInView extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DeletionInfoSheet extends StatefulWidget {
+  final String info;
+  final Future<void> Function() onConfirm;
+
+  const _DeletionInfoSheet({required this.info, required this.onConfirm});
+
+  @override
+  State<_DeletionInfoSheet> createState() => _DeletionInfoSheetState();
+}
+
+class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
+  bool _isConfirmed = false;
+  bool _isDeleting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                'Important Deletion Info',
+                style: TextStyle(
+                  fontSize: 20, 
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            widget.info,
+            style: TextStyle(
+              height: 1.5, 
+              color: theme.colorScheme.onSurface.withOpacity(0.8),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Checkbox(
+                value: _isConfirmed,
+                activeColor: Colors.red,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                onChanged: _isDeleting ? null : (v) => setState(() => _isConfirmed = v ?? false),
+              ),
+              Expanded(
+                child: Text(
+                  'I understand that this action is permanent and cannot be undone',
+                  style: TextStyle(
+                    fontSize: 12, 
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: (_isConfirmed && !_isDeleting) ? () async {
+                setState(() => _isDeleting = true);
+                await widget.onConfirm();
+                if (mounted) setState(() => _isDeleting = false);
+              } : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              child: _isDeleting 
+                ? const SizedBox(
+                    height: 20, 
+                    width: 20, 
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : const Text(
+                    'Delete My Account Permanently',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: _isDeleting ? null : () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

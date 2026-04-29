@@ -24,6 +24,9 @@ class OrderController extends ChangeNotifier {
   double _freeDeliveryThreshold = 40.0;
   double get freeDeliveryThreshold => _freeDeliveryThreshold;
 
+  double _deliveryCharge = 10.0;
+  double get deliveryCharge => _deliveryCharge;
+
   Future<void> fetchDeliverySettings() async {
     try {
       final rawData = await _orderService.getDeliveryChargeSettings();
@@ -35,7 +38,7 @@ class OrderController extends ChangeNotifier {
         return;
       }
 
-      // Look for keys based on admin headers: "MINIMUM AMOUNT FOR FREE SHIPPING"
+      // Look for keys based on admin headers
       final threshold =
           data['minimum_amount_for_free_shipping'] ??
           data['min_free_shipping_amount'] ??
@@ -43,7 +46,14 @@ class OrderController extends ChangeNotifier {
           data['free_delivery_threshold'] ??
           40.0;
 
+      final charge =
+          data['delivery_charge'] ??
+          data['shipping_charge'] ??
+          data['charge'] ??
+          10.0;
+
       _freeDeliveryThreshold = double.tryParse(threshold.toString()) ?? 40.0;
+      _deliveryCharge = double.tryParse(charge.toString()) ?? 10.0;
       notifyListeners();
     } catch (e) {
       debugPrint('Error fetching delivery settings: $e');

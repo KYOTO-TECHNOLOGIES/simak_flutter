@@ -13,6 +13,7 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
+import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -756,6 +757,12 @@ class _ProductsPageState extends State<ProductsPage>
 
   void _handleBuyNow(ProductModel product, {int quantity = 1}) async {
     if (_requireLogin(action: trStatic(context, 'action_buy'))) {
+      if (product.preparationSpecifications.isNotEmpty) {
+        // Show selection modal if preparation is required
+        _showPrepSelectionModal(context, product, quantity: quantity);
+        return;
+      }
+
       // Add to cart first
       final cartController = context.read<CartController>();
       final success = await cartController.addToCart(
@@ -764,14 +771,10 @@ class _ProductsPageState extends State<ProductsPage>
       );
 
       if (success && mounted) {
-        // Automatically exclude out-of-stock items for consistency
         if (cartController.hasOutOfStock) {
           await cartController.removeOutOfStockItems();
         }
-
         if (!mounted) return;
-
-        // Navigate to Cart Page directly as requested
         Navigator.pushNamed(context, '/cart');
       } else if (mounted) {
         final error = cartController.error;
@@ -781,6 +784,36 @@ class _ProductsPageState extends State<ProductsPage>
         );
       }
     }
+  }
+
+  void _showPrepSelectionModal(BuildContext context, ProductModel product, {int quantity = 1}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PrepSelectionSheet(
+        product: product,
+        onSelected: (specId, instructions) async {
+          final cartController = context.read<CartController>();
+          final success = await cartController.addToCart(
+            product.id,
+            quantity,
+            preparationSpecificationId: specId,
+            preparationInstructions: instructions,
+          );
+
+          if (success) {
+            if (Navigator.canPop(context)) Navigator.pop(context);
+            if (context.mounted) Navigator.pushNamed(context, '/cart');
+          } else {
+            if (context.mounted) {
+              SimakFeedback.showError(
+                  context, cartController.error ?? 'Failed to add to cart');
+            }
+          }
+        },
+      ),
+    );
   }
 
   bool _requireLogin({required String action}) {

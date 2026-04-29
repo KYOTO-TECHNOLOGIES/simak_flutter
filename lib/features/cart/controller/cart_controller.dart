@@ -9,7 +9,6 @@ class CartController extends ChangeNotifier {
   final Map<int, Timer> _debounceTimers = {};
   final Set<int> _updatingItemIds = {};
 
-  bool isItemUpdating(int productId) => _updatingItemIds.contains(productId);
 
   CartModel? _cart;
   CartModel? get cart => _cart;
@@ -53,12 +52,15 @@ class CartController extends ChangeNotifier {
     }
   }
 
-  Future<bool> addToCart(int productId, int quantity) async {
+  Future<bool> addToCart(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _service.addItem(productId, quantity);
+      await _service.addItem(productId, quantity, 
+        preparationSpecificationId: preparationSpecificationId,
+        preparationInstructions: preparationInstructions,
+      );
       await fetchCart(); // Refresh cart after adding
       return true;
     } catch (e) {
@@ -72,32 +74,64 @@ class CartController extends ChangeNotifier {
     }
   }
 
-  void updateQuantity(int productId, int quantity) {
+  bool isItemUpdating(int productId, {int? preparationId, int? cartItemId}) {
+    if (cartItemId != null) return _updatingItemIds.contains(cartItemId);
+    final key = preparationId != null ? '$productId\_$preparationId' : '$productId';
+    return _updatingItemIds.contains(key.hashCode);
+  }
+
+  // ... (previous methods)
+
+  void updateQuantity(int productId, int quantity, {int? preparationSpecificationId, int? cartItemId}) {
     if (quantity < 1) return;
     
-    _updatingItemIds.add(productId);
+    final itemKey = cartItemId ?? (preparationSpecificationId != null 
+        ? '$productId\_$preparationSpecificationId'.hashCode 
+        : productId);
+    
+    _updatingItemIds.add(itemKey);
     notifyListeners();
 
-    _debounceTimers[productId]?.cancel();
-    _debounceTimers[productId] = Timer(const Duration(milliseconds: 400), () async {
+    _debounceTimers[itemKey]?.cancel();
+    _debounceTimers[itemKey] = Timer(const Duration(milliseconds: 400), () async {
       try {
-        await _service.updateQuantity(productId, quantity);
+        await _service.updateQuantity(productId, quantity, 
+          preparationSpecificationId: preparationSpecificationId,
+          cartItemId: cartItemId,
+        );
         await fetchCart();
       } catch (e) {
-        debugPrint(e.toString());
+        _error = e.toString();
+        debugPrint('CartController.updateQuantity Error: $e');
       } finally {
-        _updatingItemIds.remove(productId);
+        _updatingItemIds.remove(itemKey);
         notifyListeners();
       }
     });
   }
 
-  Future<void> removeItem(int productId) async {
+   Future<bool> removeItem(int productId, {int? preparationSpecificationId, int? cartItemId}) async {
+    final itemKey = cartItemId ?? (preparationSpecificationId != null 
+        ? '$productId\_$preparationSpecificationId'.hashCode 
+        : productId);
+        
+    _updatingItemIds.add(itemKey);
+    _error = null;
+    notifyListeners();
     try {
-      await _service.removeItem(productId);
+      await _service.removeItem(productId, 
+        preparationSpecificationId: preparationSpecificationId,
+        cartItemId: cartItemId,
+      );
       await fetchCart();
+      return true;
     } catch (e) {
-      debugPrint(e.toString());
+      _error = e.toString();
+      debugPrint('CartController.removeItem Error: $e');
+      return false;
+    } finally {
+      _updatingItemIds.remove(itemKey);
+      notifyListeners();
     }
   }
 

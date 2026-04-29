@@ -20,6 +20,7 @@ class ProductModel {
   final String? mainImage;
   final List<String> availableEmirates;
   final String unit;
+  final List<PreparationSpecification> preparationSpecifications;
 
   ProductModel({
     required this.id,
@@ -40,6 +41,7 @@ class ProductModel {
     this.mainImage,
     this.availableEmirates = const [],
     this.unit = 'piece',
+    this.preparationSpecifications = const [],
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -73,6 +75,11 @@ class ProductModel {
               .toList() ??
           [],
       unit: json['unit']?.toString() ?? 'piece',
+      preparationSpecifications:
+          (json['preparation_specifications'] as List<dynamic>?)
+                  ?.map((e) => PreparationSpecification.fromJson(Map<String, dynamic>.from(e)))
+                  .toList() ??
+              [],
     );
   }
 
@@ -168,6 +175,31 @@ class ProductVideo {
       thumbnail: json['thumbnail'] != null 
         ? ProductModel.getAbsoluteUrl(json['thumbnail']) 
         : null,
+    );
+  }
+}
+
+class PreparationSpecification {
+  final int id;
+  final String name;
+  final String? description;
+  final String? image;
+
+  PreparationSpecification({
+    required this.id,
+    required this.name,
+    this.description,
+    this.image,
+  });
+
+  factory PreparationSpecification.fromJson(Map<String, dynamic> json) {
+    return PreparationSpecification(
+      id: json['id'] ?? 0,
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString(),
+      image: json['image'] != null
+          ? ProductModel.getAbsoluteUrl(json['image'].toString())
+          : null,
     );
   }
 }

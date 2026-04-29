@@ -6,11 +6,18 @@ class CartItemModel {
   final int quantity;
   final double subtotal;
 
+  final int? preparationSpecificationId;
+  final String? preparationSpecificationName;
+  final String? preparationInstructions;
+
   CartItemModel({
     required this.id,
     required this.product,
     required this.quantity,
     required this.subtotal,
+    this.preparationSpecificationId,
+    this.preparationSpecificationName,
+    this.preparationInstructions,
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
@@ -38,11 +45,19 @@ class CartItemModel {
     final subtotalRaw = double.tryParse(json['subtotal']?.toString() ?? '');
     final subtotal = subtotalRaw ?? (product.finalPrice * quantity);
 
+    final preparationSpecDetails = json['preparation_specification_details'] as Map<String, dynamic>?;
+    final preparationInstructions = json['preparation_instructions']?.toString();
+
     return CartItemModel(
       id: json['id'] ?? 0,
       product: product,
       quantity: quantity,
       subtotal: subtotal,
+      preparationSpecificationId: json['preparation_specification'] != null 
+          ? int.tryParse(json['preparation_specification'].toString()) 
+          : null,
+      preparationSpecificationName: preparationSpecDetails?['name']?.toString(),
+      preparationInstructions: preparationInstructions,
     );
   }
 }

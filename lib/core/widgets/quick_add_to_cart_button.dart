@@ -46,6 +46,17 @@ class QuickAddToCartButton extends StatelessWidget {
                   return;
                 }
 
+                // MANDATORY: Preparation specification check
+                if (product.preparationSpecifications.isNotEmpty) {
+                  if (context.mounted) {
+                    SimakFeedback.showInfo(
+                      context,
+                      trTextStatic(context, 'Preparation specification is required for this product.'),
+                    );
+                  }
+                  return;
+                }
+
                 // Always try to add to cart (increments quantity if already exists)
                 final success = await cart.addToCart(product.id, 1);
 

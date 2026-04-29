@@ -1199,6 +1199,7 @@ import 'package:uae_ecom_project/features/products/controller/product_controller
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/widgets/video_player_widget.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
+import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final ProductModel product;
@@ -1216,11 +1217,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   List<ReviewModel> _reviews = [];
   bool _isLoadingReviews = true;
 
+  // Preparation Specification State
+  PreparationSpecification? _selectedPreparation;
+  final TextEditingController _specialInstructionsController =
+      TextEditingController();
+  bool _showPreparationError = false;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _fetchReviews();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductController>().fetchProductDetail(widget.product.id);
+    });
   }
 
   Future<void> _fetchReviews() async {
@@ -1241,6 +1251,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _specialInstructionsController.dispose();
     super.dispose();
   }
 
@@ -1312,6 +1323,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   /// Returns the quantity of this product already in the cart.
+  void _showPrepSelectionModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PrepSelectionSheet(
+        product: widget.product,
+        onSelected: (specId, instructions) async {
+          final cartController = context.read<CartController>();
+          final success = await cartController.addToCart(
+            widget.product.id,
+            _quantity,
+            preparationSpecificationId: specId,
+            preparationInstructions: instructions,
+          );
+
+          if (success) {
+            if (Navigator.canPop(context)) Navigator.pop(context);
+            if (context.mounted) Navigator.pushNamed(context, '/cart');
+          } else {
+            if (context.mounted) {
+              SimakFeedback.showError(
+                  context, cartController.error ?? 'Failed to add to cart');
+            }
+          }
+        },
+      ),
+    );
+  }
+
   int _cartQtyForProduct() {
     final cartItems = context.read<CartController>().cart?.items ?? [];
     final existing = cartItems.where((i) => i.product.id == widget.product.id);
@@ -1356,10 +1397,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final theme = Theme.of(context);
     final media = _media;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
+    return Consumer<ProductController>(
+      builder: (context, productController, _) {
+        // Use full details from backend if ID matches
+        final fullProduct = (productController.selectedProduct?.id == widget.product.id)
+            ? productController.selectedProduct!
+            : widget.product;
+
+        return Scaffold(
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: const [0.0, 0.4, 1.0],
@@ -1814,7 +1862,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                trStatic(context, 'Price per Piece'),
+                                trStatic(context, 'Price per ${widget.product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')}'),
                                 style: TextStyle(
                                   color: theme.colorScheme.onSurface
                                       .withOpacity(0.5),
@@ -1868,44 +1916,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: theme.cardColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: theme.dividerColor),
-                                ),
-                                child: Row(
-                                  children: [
-                                    _QtyButton(
-                                      icon: Icons.remove,
-                                      onTap: _quantity > 1
-                                          ? () => setState(() => _quantity--)
-                                          : null,
-                                      theme: theme,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: theme.cardColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: theme.dividerColor),
                                     ),
-                                    SizedBox(
-                                      width: 38,
-                                      child: Text(
-                                        '$_quantity',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: theme.colorScheme.onSurface,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                    child: Row(
+                                      children: [
+                                        _QtyButton(
+                                          icon: Icons.remove,
+                                          onTap: _quantity > 1
+                                              ? () => setState(() => _quantity--)
+                                              : null,
+                                          theme: theme,
                                         ),
-                                      ),
+                                        SizedBox(
+                                          width: 38,
+                                          child: Text(
+                                            '$_quantity',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: theme.colorScheme.onSurface,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        _QtyButton(
+                                          icon: Icons.add,
+                                          onTap: () => setState(() => _quantity++),
+                                          theme: theme,
+                                          isPrimary: true,
+                                        ),
+                                      ],
                                     ),
-                                    _QtyButton(
-                                      icon: Icons.add,
-                                      onTap: () => setState(() => _quantity++),
-                                      theme: theme,
-                                      isPrimary: true,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${widget.product.stock} ${widget.product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')} ${trStatic(context, 'in_stock')}',
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+
+                          const SizedBox(height: 22),
+
+                          _buildPreparationSection(theme),
 
                           const SizedBox(height: 22),
 
@@ -2141,8 +2207,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         child: SafeArea(
           top: false,
-          child: !_inStock
-              ? Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_showPreparationError)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    tr(context, 'please_select_preparation'),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              !_inStock
+                  ? Container(
                   width: double.infinity,
                   height: 54,
                   decoration: BoxDecoration(
@@ -2228,15 +2309,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     'action_add_to_cart',
                                   ),
                                 )) {
+                                  // MANDATORY: Check if preparation is selected
+                                  if (widget.product.preparationSpecifications.isNotEmpty && _selectedPreparation == null) {
+                                    setState(() => _showPreparationError = true);
+                                    return;
+                                  }
+
                                   // Block if adding would exceed stock
                                   if (!_canAddMoreToCart(_quantity)) return;
 
                                   final cartController =
                                       context.read<CartController>();
+
+
                                   final success =
                                       await cartController.addToCart(
                                     widget.product.id,
                                     _quantity,
+                                    preparationSpecificationId: _selectedPreparation?.id,
+                                    preparationInstructions: _specialInstructionsController.text,
                                   );
                                   if (!mounted) return;
                                   if (success) {
@@ -2310,12 +2401,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       'action_buy',
                                     ),
                                   )) {
+                                    // MANDATORY: Preparation specification check
+                                    if (widget.product.preparationSpecifications.isNotEmpty && _selectedPreparation == null) {
+                                      _showPrepSelectionModal();
+                                      return;
+                                    }
+
                                     final existingQty =
                                         _cartQtyForProduct();
                                     final stock =
                                         widget.product.stock;
 
-                                    // Already at max — go straight to cart
                                     if (existingQty >= stock) {
                                       SimakFeedback.showError(
                                         context,
@@ -2331,7 +2427,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       return;
                                     }
 
-                                    // Clamp to remaining available stock
                                     final qtyToAdd =
                                         (existingQty + _quantity > stock)
                                             ? stock - existingQty
@@ -2343,6 +2438,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         .addToCart(
                                       widget.product.id,
                                       qtyToAdd,
+                                      preparationSpecificationId: _selectedPreparation?.id,
+                                      preparationInstructions: _specialInstructionsController.text,
                                     );
 
                                     if (!mounted) return;
@@ -2390,8 +2487,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ],
                 ),
-        ),
-      ),
+              ],
+            ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -2437,6 +2538,142 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       width: 64,
       height: 64,
       padding: const EdgeInsets.all(8.0),
+    );
+  }
+
+  Widget _buildPreparationSection(ThemeData theme) {
+    // If no preparation options are provided from backend, we might only show special instructions
+    // or nothing if the product doesn't support specifications at all.
+    // Based on the requirement, we should follow the website UI.
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.product.preparationSpecifications.isNotEmpty) ...[
+          _SectionTitle(
+            title: tr(context, 'preparation_cleaning'),
+            theme: theme,
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: widget.product.preparationSpecifications.map((spec) {
+                final isSelected = _selectedPreparation?.id == spec.id;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedPreparation = spec;
+                      _showPreparationError = false;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 220,
+                    margin: const EdgeInsets.only(right: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withOpacity(0.05)
+                          : theme.cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            isSelected ? AppColors.primary : theme.dividerColor,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        if (spec.image != null) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CustomImage(
+                              spec.image!,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                spec.name,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              if (spec.description != null &&
+                                  spec.description!.isNotEmpty)
+                                Text(
+                                  spec.description!,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.6),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+        if (_selectedPreparation != null) ...[
+          _SectionTitle(
+            title: tr(context, 'special_instructions_optional'),
+            theme: theme,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _specialInstructionsController,
+            decoration: InputDecoration(
+              hintText: tr(context, 'special_instructions_hint'),
+              hintStyle: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withOpacity(0.4),
+              ),
+              filled: true,
+              fillColor: theme.cardColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: theme.dividerColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: theme.dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+            maxLines: 3,
+            style: const TextStyle(fontSize: 13),
+          ),
+        ],
+      ],
     );
   }
 

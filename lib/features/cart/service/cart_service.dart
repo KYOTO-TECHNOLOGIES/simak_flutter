@@ -31,12 +31,18 @@ class CartService {
     }
   }
 
-  Future<void> addItem(int productId, int quantity) async {
+  Future<void> addItem(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions}) async {
     try {
       final url = 'cart/add_item/';
       final data = {
         'product': productId,
+        'product_id': productId,
         'quantity': quantity,
+        if (preparationSpecificationId != null) ...{
+          'preparation_specification': preparationSpecificationId,
+          'preparation_option_id': preparationSpecificationId,
+        },
+        if (preparationInstructions != null) 'preparation_instructions': preparationInstructions,
       };
       debugPrint('POST Request to: $url');
       debugPrint('Payload: $data');
@@ -47,21 +53,33 @@ class CartService {
     }
   }
 
-  Future<void> updateQuantity(int productId, int quantity) async {
+  Future<void> updateQuantity(int productId, int quantity, {int? preparationSpecificationId, int? cartItemId}) async {
     try {
       await _dio.post('cart/update_item_quantity/', data: {
         'product': productId,
+        'product_id': productId,
         'quantity': quantity,
+        if (cartItemId != null) 'cart_item_id': cartItemId,
+        if (preparationSpecificationId != null) ...{
+          'preparation_specification': preparationSpecificationId,
+          'preparation_option_id': preparationSpecificationId,
+        },
       });
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> removeItem(int productId) async {
+  Future<void> removeItem(int productId, {int? preparationSpecificationId, int? cartItemId}) async {
     try {
       await _dio.post('cart/remove_item/', data: {
         'product': productId,
+        'product_id': productId,
+        if (cartItemId != null) 'cart_item_id': cartItemId,
+        if (preparationSpecificationId != null) ...{
+          'preparation_specification': preparationSpecificationId,
+          'preparation_option_id': preparationSpecificationId,
+        },
       });
     } catch (e) {
       rethrow;

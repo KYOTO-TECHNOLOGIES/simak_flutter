@@ -12,9 +12,11 @@ import 'package:uae_ecom_project/features/home/home_shell.dart';
 import 'package:uae_ecom_project/features/orders/controller/coupon_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/checkout_controller.dart';
+import 'package:uae_ecom_project/features/delivery/controller/delivery_controller.dart';
 import 'package:uae_ecom_project/features/orders/screens/order_page.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/splash/splash_screen.dart';
+import 'package:uae_ecom_project/features/delivery/screens/delivery_dashboard_screen.dart';
 import 'package:uae_ecom_project/firebase_options.dart';
 import 'package:uae_ecom_project/service/token_storage.dart';
 import 'package:uae_ecom_project/service/cache_service.dart';
@@ -41,6 +43,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:app_links/app_links.dart';
 import 'package:uae_ecom_project/service/notification_service.dart';
 import 'package:uae_ecom_project/features/profile/controller/notification_controller.dart';
+import 'package:uae_ecom_project/features/delivery/screens/delivery_profile_screen.dart';
+import 'package:uae_ecom_project/core/widgets/delivery_guard.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -194,6 +198,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => SystemController()),
         ChangeNotifierProvider(create: (_) => NotificationController()),
         ChangeNotifierProvider(create: (_) => CouponController()),
+        ChangeNotifierProvider(create: (_) => DeliveryController()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, langProvider, child) {
@@ -222,9 +227,9 @@ class _MyAppState extends State<MyApp> {
               '/emirate_selection': (_) => const EmirateSelectionScreen(),
               '/register': (_) => const RegisterScreen(),
               '/otp': (_) => const OtpScreen(),
-              '/home': (_) => const HomeShell(),
-              '/cart': (_) => const CartScreen(),
-              '/order': (_) => OrderPage(product: ProductModel.empty()),
+              '/home': (_) => const DeliveryUserGuard(child: HomeShell()),
+              '/cart': (_) => const DeliveryUserGuard(child: CartScreen()),
+              '/order': (_) => DeliveryUserGuard(child: OrderPage(product: ProductModel.empty())),
               '/order-success': (context) {
                 final orderData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
                 return OrderSuccessScreen(orderData: orderData);
@@ -241,6 +246,8 @@ class _MyAppState extends State<MyApp> {
                 final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
                 return PaymentSuccessScreen(orderId: orderId);
               },
+              '/delivery_dashboard': (_) => const DeliveryDashboardScreen(),
+              '/delivery_profile': (_) => const DeliveryProfileScreen(),
               '/error': (_) => const ErrorScreen(),
             },
             builder: (context, child) {

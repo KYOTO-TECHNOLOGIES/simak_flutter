@@ -32,6 +32,7 @@ class AuthController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _currentUser != null;
   bool get isOtpSent => _isOtpSent;
+  bool get isDeliveryUser => _currentUser?.email == 'delivery.abudhabi@demo.com';
 
   // ─── State Helpers ──────────────────────────────────────────
   void _setLoading(bool value) {
@@ -649,6 +650,50 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Refresh profile failed: $e');
+    }
+  }
+
+  // ─── Account Deletion ───────────────────────────────────────
+  Future<String?> fetchDeletionInfo() async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      final infoData = await _authService.getAccountDeletionInfo();
+      _setLoading(false);
+      // Try to extract a meaningful message from the response
+      return infoData['info'] ?? infoData['message'] ?? 'Are you sure you want to delete your account? This action cannot be undone.';
+    } catch (e) {
+      debugPrint('Error fetching account deletion info: $e');
+      _setLoading(false);
+      return null;
+    }
+  }
+
+  Future<bool> deleteAccount({String password = ''}) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      final data = {
+        'password': password,
+        'delete_method': 'hard',
+        'confirm_deletion': true,
+      };
+      await _authService.requestAccountDeletion(data);
+      
+      // If we reach here, deletion was successful on backend
+      // Now perform local cleanup
+      await logout();
+      
+      _setLoading(false);
+      return true;
+    } on DioException catch (e) {
+      _setError(_extractError(e));
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      _setError('An unexpected error occurred during account deletion');
+      _setLoading(false);
+      return false;
     }
   }
 

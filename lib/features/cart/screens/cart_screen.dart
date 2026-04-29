@@ -8,6 +8,7 @@ import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/cart/model/cart_item_model.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
+import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -127,10 +128,20 @@ class _CartScreenState extends State<CartScreen> {
     CartController controller,
   ) {
     return Dismissible(
-      key: Key('cart_item_${item.product.id}'),
+      key: Key('cart_item_${item.id}'),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        controller.removeItem(item.product.id);
+      onDismissed: (direction) async {
+        final success = await controller.removeItem(
+          item.product.id,
+          preparationSpecificationId: item.preparationSpecificationId,
+          cartItemId: item.id,
+        );
+        if (!success && context.mounted) {
+          SimakFeedback.showError(
+            context,
+            controller.error ?? trStatic(context, 'failed_to_remove'),
+          );
+        }
       },
       background: Container(
         alignment: Alignment.centerRight,
@@ -158,19 +169,14 @@ class _CartScreenState extends State<CartScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Image
-            Opacity(
-              opacity: (item.product.stock == 0 || !item.product.isAvailable)
-                  ? 0.5
-                  : 1.0,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CustomImage(
-                  item.product.thumbnail,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  padding: const EdgeInsets.all(8.0),
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CustomImage(
+                item.product.thumbnail,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                padding: const EdgeInsets.all(8.0),
               ),
             ),
             const SizedBox(width: 16),
@@ -180,6 +186,7 @@ class _CartScreenState extends State<CartScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Title and Delete
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -189,185 +196,118 @@ class _CartScreenState extends State<CartScreen> {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Colors.black,
                           ),
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => controller.removeItem(item.product.id),
-                        icon: const Icon(
-                          Icons.delete_outline_rounded,
-                          size: 24,
-                          color: AppColors.error,
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        '${item.quantity} ${item.quantity == 1 ? 'unit' : 'units'}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (item.product.stock == 0 || !item.product.isAvailable)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            trStatic(context, 'out_of_stock'),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.error,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        )
-                      else if (item.quantity > item.product.stock)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            trStatic(
-                              context,
-                              'insufficient_stock',
-                              args: {'count': item.product.stock.toString()},
-                            ),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.error,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        )
-                      else if (item.product.stock <= 5)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            trStatic(context, 'only_few_left'),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Quantity and Price Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Quantity Selector
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildMiniBtn(
-                              icon: Icons.remove,
-                              onTap: () => controller.updateQuantity(
-                                item.product.id,
-                                item.quantity - 1,
+                      controller.isItemUpdating(item.product.id,
+                              preparationId: item.preparationSpecificationId,
+                              cartItemId: item.id)
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.error),
                               ),
-                              isDisabled:
-                                  item.quantity <= 1 ||
-                                  controller.isItemUpdating(item.product.id),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                              ),
-                              child: controller.isItemUpdating(item.product.id)
-                                  ? const SizedBox(
-                                      width: 14,
-                                      height: 14,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      '${item.quantity}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                            ),
-                            _buildMiniBtn(
-                              icon: Icons.add,
-                              onTap: () => controller.updateQuantity(
-                                item.product.id,
-                                item.quantity + 1,
-                              ),
-                              isDisabled:
-                                  item.product.stock == 0 ||
-                                  !item.product.isAvailable ||
-                                  item.quantity >= item.product.stock ||
-                                  controller.isItemUpdating(item.product.id),
-                              onDisabledTap: () {
-                                if (item.quantity >= item.product.stock &&
-                                    !controller.isItemUpdating(
-                                      item.product.id,
-                                    )) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "That's our full catch! Only ${item.product.stock} fresh from Simak.",
-                                      ),
-                                      backgroundColor: AppColors.error,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
+                            )
+                          : IconButton(
+                              onPressed: () async {
+                                final success = await controller.removeItem(
+                                  item.product.id,
+                                  preparationSpecificationId:
+                                      item.preparationSpecificationId,
+                                  cartItemId: item.id,
+                                );
+                                if (!success && context.mounted) {
+                                  SimakFeedback.showError(
+                                    context,
+                                    controller.error ?? trStatic(context, 'failed_to_remove'),
                                   );
                                 }
                               },
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                size: 20,
+                                color: Colors.grey,
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(),
                             ),
-                          ],
-                        ),
-                      ),
+                    ],
+                  ),
 
-                      // Price
-                      Flexible(
-                        child: Text(
-                          'AED ${item.subtotal.toStringAsFixed(2)}',
-                          textAlign: TextAlign.end,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.primary,
+                  Text(
+                    '${item.quantity.toInt()} ${item.product.unit.replaceAll('_', ' ')}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+
+                  // Preparation Badge
+                  if (item.preparationSpecificationName != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Prep: ',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
                           ),
+                          Text(
+                            item.preparationSpecificationName!,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 12),
+
+                  // Stock Status Badge
+                  if (item.product.stock == 0 || !item.product.isAvailable)
+                    _buildStatusBadge(trStatic(context, 'out_of_stock'), AppColors.error)
+                  else if (item.quantity > item.product.stock)
+                    _buildStatusBadge(
+                      trStatic(context, 'insufficient_stock', args: {'count': item.product.stock.toString()}),
+                      AppColors.error,
+                    )
+                  else if (item.product.stock <= 5)
+                    _buildStatusBadge(trStatic(context, 'only_few_left'), Colors.orange),
+
+                  const SizedBox(height: 12),
+
+                  // Quantity Selector and Price
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildQuantitySelector(item, controller),
+                      Text(
+                        'AED ${item.subtotal.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
@@ -381,14 +321,91 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  Widget _buildStatusBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuantitySelector(CartItemModel item, CartController controller) {
+    final isUpdating = controller.isItemUpdating(item.product.id,
+        preparationId: item.preparationSpecificationId,
+        cartItemId: item.id);
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildMiniBtn(
+            icon: Icons.remove,
+            onTap: () => controller.updateQuantity(item.product.id,
+                item.quantity - 1,
+                preparationSpecificationId: item.preparationSpecificationId,
+                cartItemId: item.id),
+            isDisabled: item.quantity <= 1 || isUpdating,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: isUpdating
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    '${item.quantity}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+          ),
+          _buildMiniBtn(
+            icon: Icons.add,
+            onTap: () {
+              if (item.quantity >= item.product.stock) {
+                SimakFeedback.showInfo(
+                  context,
+                  "That's our full catch! Only ${item.product.stock} fresh from Simak.",
+                );
+                return;
+              }
+              controller.updateQuantity(item.product.id, item.quantity + 1,
+                  preparationSpecificationId: item.preparationSpecificationId,
+                  cartItemId: item.id);
+            },
+            isDisabled: item.product.stock == 0 ||
+                !item.product.isAvailable ||
+                isUpdating,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMiniBtn({
     required IconData icon,
     required VoidCallback onTap,
     bool isDisabled = false,
-    VoidCallback? onDisabledTap,
   }) {
     return GestureDetector(
-      onTap: isDisabled ? onDisabledTap : onTap,
+      onTap: isDisabled ? null : onTap,
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
@@ -409,10 +426,17 @@ class _CartScreenState extends State<CartScreen> {
     ThemeData theme,
     CartController controller,
   ) {
-    // Show the subtotal for in-stock items only if OOS items exist, to be clear to the user
+    final orderController = context.watch<OrderController>();
+    final threshold = orderController.freeDeliveryThreshold;
+    
+    // Use in-stock total if there are OOS items
     final subtotal = controller.hasOutOfStock
         ? controller.inStockTotalPrice
         : controller.cart!.totalPrice;
+
+    final isFreeShipping = subtotal >= threshold;
+    final shippingCharge = isFreeShipping ? 0.0 : orderController.deliveryCharge;
+    final itemsTotal = subtotal + shippingCharge;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -435,24 +459,27 @@ class _CartScreenState extends State<CartScreen> {
             tr(context, 'order_summary'),
             style: const TextStyle(
               fontWeight: FontWeight.w900,
-              fontSize: 13,
+              fontSize: 14,
               letterSpacing: 0.5,
+              color: Colors.black,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+          
           _buildSummaryRow(
             tr(context, 'subtotal'),
             'AED ${subtotal.toStringAsFixed(2)}',
           ),
           const SizedBox(height: 12),
+          
           _buildSummaryRow(
             tr(context, 'shipping'),
-            'Calculated at checkout',
-            valueColor: Colors.grey,
+            isFreeShipping ? 'Free' : 'AED ${shippingCharge.toStringAsFixed(2)}',
+            valueColor: isFreeShipping ? AppColors.primary : Colors.black87,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
-            'Delivery is free for orders AED ${context.watch<OrderController>().freeDeliveryThreshold.toInt()} or more after discount.',
+            'Delivery is free for orders AED ${threshold.toInt()} above.',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade500,
@@ -461,24 +488,25 @@ class _CartScreenState extends State<CartScreen> {
           ),
 
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Divider(height: 1),
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Divider(height: 1, color: Colors.black12),
           ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Items total',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
               Text(
-                'AED ${subtotal.toStringAsFixed(2)}',
+                'AED ${itemsTotal.toStringAsFixed(2)}',
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.w900,
                   color: AppColors.primary,
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/features/auth/model/address_model.dart';
 import 'package:uae_ecom_project/features/auth/model/profile_model.dart';
+import 'package:uae_ecom_project/features/delivery/model/delivery_model.dart';
 
 class UserModel {
   final int? id;
@@ -15,6 +16,7 @@ class UserModel {
   final bool isPhoneVerified;
   final String? googleId;
   final ProfileModel? profile;
+  final DeliveryProfile? deliveryProfile;
   final List<AddressModel> addresses;
   final String? createdAt;
   final String? updatedAt;
@@ -34,6 +36,7 @@ class UserModel {
     this.isPhoneVerified = false,
     this.googleId,
     this.profile,
+    this.deliveryProfile,
     this.addresses = const [],
     this.createdAt,
     this.updatedAt,
@@ -56,6 +59,9 @@ class UserModel {
       googleId: json['google_id'] as String?,
       profile: json['profile'] != null
           ? ProfileModel.fromJson(json['profile'] as Map<String, dynamic>)
+          : null,
+      deliveryProfile: json['delivery_profile'] != null
+          ? DeliveryProfile.fromJson(json['delivery_profile'] as Map<String, dynamic>)
           : null,
       addresses: (json['addresses'] as List<dynamic>?)
               ?.map((e) =>
@@ -83,6 +89,7 @@ class UserModel {
       'is_phone_verified': isPhoneVerified,
       'google_id': googleId,
       'profile': profile?.toJson(),
+      'delivery_profile': deliveryProfile?.toJson(),
       'addresses': addresses.map((a) => a.toJson()).toList(),
       'created_at': createdAt,
       'updated_at': updatedAt,
@@ -161,6 +168,9 @@ class UserModel {
               ? ProfileModel.merge(existing.profile!, json['profile'] as Map<String, dynamic>)
               : ProfileModel.fromJson(json['profile'] as Map<String, dynamic>))
           : existing.profile,
+      deliveryProfile: json['delivery_profile'] != null
+          ? DeliveryProfile.fromJson(json['delivery_profile'] as Map<String, dynamic>)
+          : existing.deliveryProfile,
       addresses: json['addresses'] != null
           ? (json['addresses'] as List<dynamic>)
               .map((e) => AddressModel.fromJson(e as Map<String, dynamic>))
@@ -186,6 +196,7 @@ class UserModel {
     bool? isPhoneVerified,
     String? googleId,
     ProfileModel? profile,
+    DeliveryProfile? deliveryProfile,
     List<AddressModel>? addresses,
     String? createdAt,
     String? updatedAt,
@@ -205,6 +216,7 @@ class UserModel {
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
       googleId: googleId ?? this.googleId,
       profile: profile ?? this.profile,
+      deliveryProfile: deliveryProfile ?? this.deliveryProfile,
       addresses: addresses ?? this.addresses,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
