@@ -10,7 +10,10 @@ class OrderModel {
   final String paymentMethod;
   final String? preferredDeliveryDate;
   final String? preferredDeliverySlot;
+  final String? preferredDeliverySlotName;
   final String? deliveryNotes;
+  final String? customerName;
+  final String? customerPhone;
   final double tipAmount;
   final List<StatusHistoryItem> statusHistory;
   final PaymentInfo? paymentInfo;
@@ -33,7 +36,10 @@ class OrderModel {
     required this.paymentMethod,
     this.preferredDeliveryDate,
     this.preferredDeliverySlot,
+    this.preferredDeliverySlotName,
     this.deliveryNotes,
+    this.customerName,
+    this.customerPhone,
     this.tipAmount = 0.0,
     this.statusHistory = const [],
     this.paymentInfo,
@@ -63,7 +69,10 @@ class OrderModel {
       paymentMethod: json['payment_method']?.toString() ?? '',
       preferredDeliveryDate: json['preferred_delivery_date']?.toString(),
       preferredDeliverySlot: json['preferred_delivery_slot']?.toString(),
+      preferredDeliverySlotName: json['preferred_delivery_slot_name']?.toString(),
       deliveryNotes: json['delivery_notes']?.toString(),
+      customerName: json['customer_name']?.toString(),
+      customerPhone: json['customer_phone']?.toString(),
       tipAmount: double.tryParse(json['tip_amount']?.toString() ?? '0') ?? 0.0,
       statusHistory: (json['status_history'] as List<dynamic>?)
           ?.map((e) => StatusHistoryItem.fromJson(e))
@@ -71,7 +80,9 @@ class OrderModel {
       paymentInfo: json['payment'] != null ? PaymentInfo.fromJson(json['payment']) : null,
       shippingAddressDetails: json['shipping_address_details'] != null 
           ? AddressModel.fromJson(json['shipping_address_details']) 
-          : null,
+          : (json['shipping_address_summary'] != null 
+              ? AddressModel.fromJson(json['shipping_address_summary']) 
+              : null),
       paymentUrl: json['payment_url']?.toString(),
       subTotal: double.tryParse(json['sub_total']?.toString() ?? '0') ?? 0.0,
       deliveryCharge: double.tryParse(json['delivery_charge']?.toString() ?? '0') ?? 0.0,

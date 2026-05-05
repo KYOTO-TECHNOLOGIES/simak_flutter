@@ -121,8 +121,11 @@ class OrderService {
     return [];
   }
 
-  Future<List<Map<String, dynamic>>> getMyOrders() async {
-    final response = await _dio.get('orders/');
+  Future<List<Map<String, dynamic>>> getMyOrders({int limit = 6, int offset = 0}) async {
+    final response = await _dio.get(
+      'orders/',
+      queryParameters: {'limit': limit, 'offset': offset},
+    );
     final dynamic data = response.data;
     if (data is List) {
       return List<Map<String, dynamic>>.from(data);

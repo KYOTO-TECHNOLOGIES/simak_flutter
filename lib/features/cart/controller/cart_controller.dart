@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:uae_ecom_project/features/cart/model/cart_item_model.dart';
 import 'package:uae_ecom_project/features/cart/model/cart_model.dart';
 import 'package:uae_ecom_project/features/cart/service/cart_service.dart';
 
@@ -7,7 +8,24 @@ class CartController extends ChangeNotifier {
   final CartService _service = CartService();
 
   final Map<int, Timer> _debounceTimers = {};
-  final Set<int> _updatingItemIds = {};
+  final Set<int> _removingItemIds = {};
+  final Set<int> _updatingQuantityIds = {};
+  final Map<int, int> _optimisticQuantities = {};
+
+  bool isItemRemoving(int productId, {int? preparationId, int? cartItemId}) {
+    final key = cartItemId ?? (preparationId != null ? '$productId\_$preparationId'.hashCode : productId);
+    return _removingItemIds.contains(key);
+  }
+
+  bool isItemUpdatingQuantity(int productId, {int? preparationId, int? cartItemId}) {
+    final key = cartItemId ?? (preparationId != null ? '$productId\_$preparationId'.hashCode : productId);
+    return _updatingQuantityIds.contains(key);
+  }
+
+  int getItemQuantity(CartItemModel item) {
+    final key = item.id; // Always use item.id for optimistic quantity
+    return _optimisticQuantities[key] ?? item.quantity;
+  }
 
 
   CartModel? _cart;
@@ -25,6 +43,9 @@ class CartController extends ChangeNotifier {
 
   bool get hasOutOfStock => (_cart?.items ?? []).any((item) => item.product.stock == 0 || !item.product.isAvailable);
   bool get hasInsufficientStock => (_cart?.items ?? []).any((item) => item.quantity > item.product.stock && item.product.stock > 0);
+  List<CartItemModel> get outOfStockItems => (_cart?.items ?? [])
+      .where((item) => item.product.stock == 0 || !item.product.isAvailable)
+      .toList();
   
   // New getters for partial checkout
   int get uniqueInStockItemCount => (_cart?.items ?? []).where((item) => item.product.stock > 0 && item.product.isAvailable).length;
@@ -74,11 +95,6 @@ class CartController extends ChangeNotifier {
     }
   }
 
-  bool isItemUpdating(int productId, {int? preparationId, int? cartItemId}) {
-    if (cartItemId != null) return _updatingItemIds.contains(cartItemId);
-    final key = preparationId != null ? '$productId\_$preparationId' : '$productId';
-    return _updatingItemIds.contains(key.hashCode);
-  }
 
   // ... (previous methods)
 
@@ -89,7 +105,12 @@ class CartController extends ChangeNotifier {
         ? '$productId\_$preparationSpecificationId'.hashCode 
         : productId);
     
-    _updatingItemIds.add(itemKey);
+    // Optimistic update
+    if (cartItemId != null) {
+      _optimisticQuantities[cartItemId] = quantity;
+    }
+    
+    _updatingQuantityIds.add(itemKey);
     notifyListeners();
 
     _debounceTimers[itemKey]?.cancel();
@@ -103,8 +124,13 @@ class CartController extends ChangeNotifier {
       } catch (e) {
         _error = e.toString();
         debugPrint('CartController.updateQuantity Error: $e');
+        // Rollback optimistic update on error? 
+        // Better to just let fetchCart fix it or notify user.
       } finally {
-        _updatingItemIds.remove(itemKey);
+        if (cartItemId != null) {
+          _optimisticQuantities.remove(cartItemId);
+        }
+        _updatingQuantityIds.remove(itemKey);
         notifyListeners();
       }
     });
@@ -115,7 +141,7 @@ class CartController extends ChangeNotifier {
         ? '$productId\_$preparationSpecificationId'.hashCode 
         : productId);
         
-    _updatingItemIds.add(itemKey);
+    _removingItemIds.add(itemKey);
     _error = null;
     notifyListeners();
     try {
@@ -130,7 +156,7 @@ class CartController extends ChangeNotifier {
       debugPrint('CartController.removeItem Error: $e');
       return false;
     } finally {
-      _updatingItemIds.remove(itemKey);
+      _removingItemIds.remove(itemKey);
       notifyListeners();
     }
   }
@@ -138,7 +164,7 @@ class CartController extends ChangeNotifier {
   Future<void> removeOutOfStockItems() async {
     if (_cart == null) return;
     
-    final oosItems = _cart!.items.where((item) => item.product.stock == 0 || !item.product.isAvailable).toList();
+    final oosItems = outOfStockItems;
     
     if (oosItems.isEmpty) return;
     
@@ -147,7 +173,11 @@ class CartController extends ChangeNotifier {
     
     try {
       for (final item in oosItems) {
-        await _service.removeItem(item.product.id);
+        await _service.removeItem(
+          item.product.id,
+          preparationSpecificationId: item.preparationSpecificationId,
+          cartItemId: item.id,
+        );
       }
       await fetchCart();
     } catch (e) {

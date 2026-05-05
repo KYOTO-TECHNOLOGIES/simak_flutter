@@ -85,6 +85,186 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  Future<void> _handleProceedToCheckout(
+    BuildContext context,
+    CartController controller,
+  ) async {
+    if (controller.hasOutOfStock) {
+      final shouldContinue = await _showOutOfStockItemsDialog(context, controller);
+      if (shouldContinue != true) return;
+      await controller.removeOutOfStockItems();
+      if (!context.mounted || !controller.hasInStockItems) return;
+    }
+
+    if (!context.mounted) return;
+    Navigator.pushNamed(
+      context,
+      '/order',
+      arguments: {'isCartMode': true},
+    );
+  }
+
+  Future<bool?> _showOutOfStockItemsDialog(
+    BuildContext context,
+    CartController controller,
+  ) {
+    final unavailableItems = controller.outOfStockItems;
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 620),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Text(
+                    'Few items are unavailable for checkout',
+                    style: TextStyle(
+                      fontSize: 22,
+                      height: 1.2,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: unavailableItems.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      itemBuilder: (_, index) =>
+                          _buildUnavailableItemTile(unavailableItems[index]),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                  child: Text(
+                    'Please continue with other available items.',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                SizedBox(
+                  height: 56,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => Navigator.pop(dialogContext, false),
+                          child: Center(
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(width: 1, color: Colors.grey.shade300),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => Navigator.pop(dialogContext, true),
+                          child: Center(
+                            child: Text(
+                              'Yes, Continue',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildUnavailableItemTile(CartItemModel item) {
+    final details = item.preparationSpecificationName != null &&
+            item.preparationSpecificationName!.trim().isNotEmpty
+        ? item.preparationSpecificationName!.trim()
+        : '${item.quantity} ${item.product.unit.replaceAll('_', ' ')}';
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: CustomImage(
+            item.product.thumbnail,
+            width: 52,
+            height: 52,
+            fit: BoxFit.cover,
+            padding: const EdgeInsets.all(4),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.product.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 1.2,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                details,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.red.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Out Of Stock',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.red.shade400,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCartBody(
     BuildContext context,
     ThemeData theme,
@@ -200,7 +380,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ),
-                      controller.isItemUpdating(item.product.id,
+                      controller.isItemRemoving(item.product.id,
                               preparationId: item.preparationSpecificationId,
                               cartItemId: item.id)
                           ? const SizedBox(
@@ -302,12 +482,16 @@ class _CartScreenState extends State<CartScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildQuantitySelector(item, controller),
-                      Text(
-                        'AED ${item.subtotal.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'AED ${item.subtotal.toStringAsFixed(2)}',
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -340,9 +524,10 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildQuantitySelector(CartItemModel item, CartController controller) {
-    final isUpdating = controller.isItemUpdating(item.product.id,
+    final isUpdating = controller.isItemUpdatingQuantity(item.product.id,
         preparationId: item.preparationSpecificationId,
         cartItemId: item.id);
+    final displayQuantity = controller.getItemQuantity(item);
 
     return Container(
       padding: const EdgeInsets.all(4),
@@ -357,10 +542,10 @@ class _CartScreenState extends State<CartScreen> {
           _buildMiniBtn(
             icon: Icons.remove,
             onTap: () => controller.updateQuantity(item.product.id,
-                item.quantity - 1,
+                displayQuantity - 1,
                 preparationSpecificationId: item.preparationSpecificationId,
                 cartItemId: item.id),
-            isDisabled: item.quantity <= 1 || isUpdating,
+            isDisabled: displayQuantity <= 1 || isUpdating,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -371,7 +556,7 @@ class _CartScreenState extends State<CartScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : Text(
-                    '${item.quantity}',
+                    '${displayQuantity}',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
@@ -379,14 +564,14 @@ class _CartScreenState extends State<CartScreen> {
           _buildMiniBtn(
             icon: Icons.add,
             onTap: () {
-              if (item.quantity >= item.product.stock) {
+              if (displayQuantity >= item.product.stock) {
                 SimakFeedback.showInfo(
                   context,
                   "That's our full catch! Only ${item.product.stock} fresh from Simak.",
                 );
                 return;
               }
-              controller.updateQuantity(item.product.id, item.quantity + 1,
+              controller.updateQuantity(item.product.id, displayQuantity + 1,
                   preparationSpecificationId: item.preparationSpecificationId,
                   cartItemId: item.id);
             },
@@ -521,18 +706,7 @@ class _CartScreenState extends State<CartScreen> {
             child: ElevatedButton(
               onPressed: controller.isCartValid
                   ? () async {
-                      if (controller.hasOutOfStock) {
-                        // Automatically exclude out-of-stock items without interruption
-                        await controller.removeOutOfStockItems();
-                      }
-
-                      if (context.mounted) {
-                        Navigator.pushNamed(
-                          context,
-                          '/order',
-                          arguments: {'isCartMode': true},
-                        );
-                      }
+                      await _handleProceedToCheckout(context, controller);
                     }
                   : () {
                       if (controller.cart == null ||

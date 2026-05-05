@@ -347,8 +347,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> with SingleTicker
   Widget _buildPreferredLanguageDropdown() {
     final Map<String, String> languageLabels = {
       'en': 'English',
-      'ar': 'Arabic',
       'cn': 'Chinese',
+      'ar': 'Arabic',
     };
 
     return DropdownButtonFormField<String>(

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 
 class HowItWorksSection extends StatelessWidget {
-  const HowItWorksSection({super.key});
+  final VoidCallback? onStartShopping;
+  const HowItWorksSection({super.key, this.onStartShopping});
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +148,7 @@ class HowItWorksSection extends StatelessWidget {
           const SizedBox(height: 60),
           
           GestureDetector(
-            onTap: () {},
+            onTap: onStartShopping,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
               decoration: BoxDecoration(

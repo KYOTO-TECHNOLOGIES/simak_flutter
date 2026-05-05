@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:provider/provider.dart';
-import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/delivery/controller/delivery_controller.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/delivery_widgets.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/available_orders_view.dart';
@@ -28,7 +27,6 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authController = context.watch<AuthController>();
     final deliveryController = context.watch<DeliveryController>();
     
     return Scaffold(

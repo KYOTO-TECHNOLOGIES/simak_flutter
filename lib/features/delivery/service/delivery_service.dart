@@ -12,10 +12,24 @@ class DeliveryService {
     return DeliveryDashboardData.fromJson(response.data);
   }
 
-  Future<List<OrderModel>> getAvailableOrders() async {
-    final response = await _dio.get('orders/available_orders/');
-    final List data = response.data;
-    return data.map((e) => OrderModel.fromJson(e)).toList();
+  Future<List<OrderModel>> getAvailableOrders({int? limit, int? offset}) async {
+    final response = await _dio.get(
+      'orders/available_orders/',
+      queryParameters: {
+        if (limit != null) 'limit': limit,
+        if (offset != null) 'offset': offset,
+      },
+    );
+    
+    final dynamic responseData = response.data;
+    if (responseData is List) {
+      return responseData.map((e) => OrderModel.fromJson(e)).toList();
+    } else if (responseData is Map && responseData.containsKey('results')) {
+      final List results = responseData['results'];
+      return results.map((e) => OrderModel.fromJson(e)).toList();
+    } else {
+      return [];
+    }
   }
 
   Future<Map<String, dynamic>> claimOrder(int orderId, {String? notes}) async {

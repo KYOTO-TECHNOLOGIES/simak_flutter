@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
     // Fetch products once when the page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final emirate = context.read<EmirateController>().selectedEmirate;
-      context.read<ProductController>().fetchProducts(emirate: emirate);
+      context.read<ProductController>().fetchHomeProducts();
       context.read<ProductController>().fetchCategories();
       context.read<MarketingController>().fetchBanners();
       context.read<MarketingController>().fetchDeliveryOffers();
@@ -533,11 +533,11 @@ class _HomePageState extends State<HomePage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(
+                            context.read<ProductController>().selectCategory('All');
+                            Navigator.pushReplacementNamed(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const AllPopularProductsPage(),
-                              ),
+                              '/home',
+                              arguments: {'index': 1},
                             );
                           },
                           child: Row(
@@ -568,7 +568,7 @@ class _HomePageState extends State<HomePage> {
                 // ─── Product Grid (limited to 4) ──────────────────────
                 Consumer<ProductController>(
                   builder: (context, controller, child) {
-                    if (controller.isLoading && controller.products.isEmpty) {
+                    if (controller.isLoading && controller.allProducts.isEmpty) {
                       return SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.all(40),
@@ -580,7 +580,7 @@ class _HomePageState extends State<HomePage> {
                     }
 
                     if (controller.error != null &&
-                        controller.products.isEmpty) {
+                        controller.allProducts.isEmpty) {
                       return SliverToBoxAdapter(
                         child: Center(
                           child: Padding(
@@ -594,7 +594,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     }
 
-                    if (controller.products.isEmpty) {
+                    if (controller.allProducts.isEmpty) {
                       return SliverToBoxAdapter(
                         child: Center(
                           child: Padding(
@@ -612,9 +612,9 @@ class _HomePageState extends State<HomePage> {
                       );
                     }
 
-                    // Show only up to 4 products on the home page
-                    final displayCount = controller.products.length < 4
-                        ? controller.products.length
+                    // Show only up to 4 products from 'All' category on the home page
+                    final displayCount = controller.allProducts.length < 4
+                        ? controller.allProducts.length
                         : 4;
 
                     return SliverPadding(
@@ -628,7 +628,7 @@ class _HomePageState extends State<HomePage> {
                               childAspectRatio: 0.7,
                             ),
                         delegate: SliverChildBuilderDelegate((context, index) {
-                          final product = controller.products[index];
+                          final product = controller.allProducts[index];
                           return _ProductCard(
                             product: product,
                             fallbackImageUrl: controller.fallbackImageUrl,
@@ -648,10 +648,19 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
 
-                // ─── How It Works ──────────────────────────────────
-                const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  sliver: SliverToBoxAdapter(child: HowItWorksSection()),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: HowItWorksSection(
+                      onStartShopping: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/home',
+                          arguments: {'index': 1},
+                        );
+                      },
+                    ),
+                  ),
                 ),
 
                 // ─── Why Choose Us ──────────────────────────────────

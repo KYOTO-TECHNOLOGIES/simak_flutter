@@ -4,6 +4,8 @@ import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/features/delivery/controller/delivery_controller.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
+import 'package:uae_ecom_project/features/orders/model/order_model.dart';
+import 'package:uae_ecom_project/features/delivery/screens/delivery_order_detail_screen.dart';
 
 class DeliveryHeader extends StatelessWidget {
   const DeliveryHeader({super.key});
@@ -138,12 +140,12 @@ class DriverGreeting extends StatelessWidget {
   Widget build(BuildContext context) {
     final authController = context.watch<AuthController>();
     final user = authController.currentUser;
-    final driverName = user?.firstName ?? 'Driver';
     final deliveryController = context.watch<DeliveryController>();
     final profile = deliveryController.dashboardData?.profile;
     final isAvailable = profile?.isAvailable ?? false;
     final emirates = profile?.assignedEmiratesDisplay.join(', ') ?? 'NO REGION ASSIGNED';
-
+    final driverName = profile?.name ?? user?.firstName ?? 'Driver';
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -516,24 +518,47 @@ class RecentAssignmentsList extends StatelessWidget {
 
     return Column(
       children: recentAssignments.map((order) {
-        Color statusColor = Colors.grey;
-        Color statusBg = const Color(0xFFF5F5F5);
+        Color statusColor = const Color(0xFF636E72);
+        Color statusBg = const Color(0xFFF1F2F6);
 
         if (order.status == 'DELIVERED') {
-          statusColor = const Color(0xFF43D152);
-          statusBg = const Color(0xFFEBFAED);
-        } else if (order.status == 'PROCESSING' || order.status == 'SHIPPED') {
-          statusColor = const Color(0xFFFF9F43);
-          statusBg = const Color(0xFFFFF3E8);
+          statusColor = const Color(0xFF00B894);
+          statusBg = const Color(0xFFE3FAF4);
+        } else if (order.status == 'SHIPPED' || order.status == 'IN_TRANSIT') {
+          statusColor = const Color(0xFF6C5CE7);
+          statusBg = const Color(0xFFF3F1FF);
+        } else if (order.status == 'PROCESSING') {
+          statusColor = const Color(0xFF0984E3);
+          statusBg = const Color(0xFFE1F5FE);
+        } else if (order.status == 'CANCELLED') {
+          statusColor = const Color(0xFFD63031);
+          statusBg = const Color(0xFFFFEBEB);
+        }
+
+        // Use preferred delivery date if available, otherwise createdAt
+        String displayDate = '';
+        if (order.preferredDeliveryDate != null) {
+          try {
+            final date = DateTime.parse(order.preferredDeliveryDate!);
+            displayDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+          } catch (_) {
+            displayDate = order.preferredDeliveryDate!;
+          }
+        } else {
+          displayDate = '${order.createdAt.day.toString().padLeft(2, '0')}/${order.createdAt.month.toString().padLeft(2, '0')}/${order.createdAt.year}';
         }
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: AssignmentCard(
+            order: order,
             orderNumber: order.id.toString(),
             status: order.status,
-            location: order.shippingAddressDetails?.state ?? 'N/A',
-            items: '${order.items.length} ${order.items.length == 1 ? 'item' : 'items'}',
+            region: order.shippingAddressDetails?.state ?? 'No Region',
+            date: displayDate,
+            slot: order.preferredDeliverySlotName,
+            totalPrice: order.totalPrice,
+            tipAmount: order.tipAmount,
             statusColor: statusColor,
             statusBg: statusBg,
           ),
@@ -544,118 +569,151 @@ class RecentAssignmentsList extends StatelessWidget {
 }
 
 class AssignmentCard extends StatelessWidget {
+  final OrderModel order;
   final String orderNumber;
   final String status;
-  final String location;
-  final String items;
+  final String region;
+  final String date;
+  final String? slot;
+  final double totalPrice;
+  final double tipAmount;
   final Color statusColor;
   final Color statusBg;
 
   const AssignmentCard({
     super.key,
+    required this.order,
     required this.orderNumber,
     required this.status,
-    required this.location,
-    required this.items,
+    required this.region,
+    required this.date,
+    this.slot,
+    required this.totalPrice,
+    required this.tipAmount,
     required this.statusColor,
     required this.statusBg,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF1F2F6)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DeliveryOrderDetailScreen(order: order),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFF1F2F6)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '#$orderNumber',
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF2D3436),
+                    ),
+                  ),
+                  Text(
+                    'DELIVERY: $date${slot != null ? ' ($slot)' : ''}',
+                    style: GoogleFonts.outfit(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.withOpacity(0.6),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade400),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                            children: [
+                              TextSpan(text: region),
+                              const TextSpan(text: ' · '),
+                              TextSpan(
+                                text: 'AED ${totalPrice.toStringAsFixed(2)}',
+                                style: const TextStyle(color: Color(0xFF2D3436), fontWeight: FontWeight.w800),
+                              ),
+                              if (tipAmount > 0) ...[
+                                const TextSpan(text: ' + '),
+                                TextSpan(
+                                  text: 'AED ${tipAmount.toStringAsFixed(2)} Tip',
+                                  style: const TextStyle(color: Color(0xFF00B894), fontWeight: FontWeight.w800),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        '#$orderNumber',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18, // Slightly smaller to prevent overflow
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2D3436),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: statusColor.withOpacity(0.2)),
+                  ),
+                  child: Text(
+                    status.toUpperCase(),
+                    style: GoogleFonts.outfit(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: statusColor,
+                      letterSpacing: 0.5,
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: statusBg,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: statusColor.withOpacity(0.1)),
-                      ),
-                      child: Text(
-                        status,
-                        style: GoogleFonts.outfit(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: statusColor,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  'RECENT ASSIGNMENT',
-                  style: GoogleFonts.outfit(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.withOpacity(0.5),
-                    letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$location · $items',
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+                Container(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAFAFA),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFF1F2F6)),
+                  ),
+                  child: const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            height: 36,
-            width: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAFAFA),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFF1F2F6)),
-            ),
-            child: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

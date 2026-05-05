@@ -87,8 +87,7 @@ class _ProductsPageState extends State<ProductsPage>
                 _buildSliverAppBar(theme, isDark, controller),
 
                 // ─── Category Chips ──────────────────────────────────
-                if (controller.products.isNotEmpty)
-                  _buildCategoryChips(theme, controller),
+                _buildCategoryChips(theme, controller),
 
                 // ─── Loading / Error / Content ───────────────────────
                 if (controller.isLoading && controller.products.isEmpty)

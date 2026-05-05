@@ -53,17 +53,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   static const Map<String, String> _languageLabels = {
     'en': 'English',
-    'ar': 'Arabic',
     'zh': 'Chinese',
     'cn': 'Chinese',
+    'ar': 'Arabic',
   };
 
   static const List<String> _genderOptions = ['Male', 'Female', 'Other'];
 
   static const Map<String, String> _editableLanguageLabels = {
     'en': 'English',
-    'ar': 'Arabic',
     'cn': 'Chinese',
+    'ar': 'Arabic',
   };
 
   String _languageDisplay(String code) =>

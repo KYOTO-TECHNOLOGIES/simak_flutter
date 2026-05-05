@@ -25,32 +25,43 @@ class DeliveryController with ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  Future<void> fetchDashboard() async {
-    _isLoadingDashboard = true;
+  Future<void> fetchDashboard({bool silent = false}) async {
+    if (!silent) {
+      _isLoadingDashboard = true;
+      notifyListeners();
+    }
     _error = null;
-    notifyListeners();
 
     try {
       _dashboardData = await _deliveryService.getDeliveryDashboard();
+      
+      // Dashboard also needs to call available orders with limit 6
+      _availableOrders = await _deliveryService.getAvailableOrders(limit: 6, offset: 0);
     } catch (e) {
       _error = e.toString();
     } finally {
-      _isLoadingDashboard = false;
+      if (!silent) {
+        _isLoadingDashboard = false;
+      }
       notifyListeners();
     }
   }
 
-  Future<void> fetchAvailableOrders() async {
-    _isLoadingAvailableOrders = true;
+  Future<void> fetchAvailableOrders({int? limit, int? offset, bool silent = false}) async {
+    if (!silent) {
+      _isLoadingAvailableOrders = true;
+      notifyListeners();
+    }
     _error = null;
-    notifyListeners();
 
     try {
-      _availableOrders = await _deliveryService.getAvailableOrders();
+      _availableOrders = await _deliveryService.getAvailableOrders(limit: limit, offset: offset);
     } catch (e) {
       _error = e.toString();
     } finally {
-      _isLoadingAvailableOrders = false;
+      if (!silent) {
+        _isLoadingAvailableOrders = false;
+      }
       notifyListeners();
     }
   }
@@ -61,8 +72,8 @@ class DeliveryController with ChangeNotifier {
 
     try {
       await _deliveryService.claimOrder(orderId, notes: notes);
-      await fetchDashboard();
-      await fetchAvailableOrders();
+      await fetchDashboard(silent: true);
+      await fetchAvailableOrders(silent: true);
       return true;
     } catch (e) {
       _error = e.toString();

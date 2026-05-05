@@ -2,6 +2,7 @@ import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 
 class DeliveryProfile {
   final int? id;
+  final String? name;
   final bool isAvailable;
   final double rating;
   final double earningsTotal;
@@ -14,6 +15,7 @@ class DeliveryProfile {
 
   DeliveryProfile({
     this.id,
+    this.name,
     required this.isAvailable,
     this.rating = 0.0,
     this.earningsTotal = 0.0,
@@ -28,6 +30,7 @@ class DeliveryProfile {
   factory DeliveryProfile.fromJson(Map<String, dynamic> json) {
     return DeliveryProfile(
       id: json['id'],
+      name: json['name'],
       isAvailable: json['is_available'] ?? false,
       rating: (json['rating'] ?? 0.0).toDouble(),
       earningsTotal: (json['earnings_total'] ?? 0.0).toDouble(),
@@ -45,6 +48,7 @@ extension DeliveryProfileExt on DeliveryProfile {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'name': name,
       'is_available': isAvailable,
       'rating': rating,
       'earnings_total': earningsTotal,
@@ -78,15 +82,18 @@ class DeliveryDashboardData {
   });
 
   factory DeliveryDashboardData.fromJson(Map<String, dynamic> json) {
+    final kpis = json['kpis'] as Map<String, dynamic>? ?? {};
+    final recentOrders = (json['recent_assigned_orders'] ?? json['recent_assignments']) as List? ?? [];
+    
     return DeliveryDashboardData(
-      profile: DeliveryProfile.fromJson(json['profile'] ?? {}),
-      assignedOrders: json['assigned_orders'] ?? 0,
-      completedToday: json['completed_today'] ?? 0,
-      pendingAssignedOrders: json['pending_assigned_orders'] ?? 0,
-      availableOrdersInRegion: json['available_orders_in_region'] ?? 0,
-      completedTotal: json['completed_total'] ?? 0,
-      recentAssignments: (json['recent_assignments'] as List? ?? [])
-          .map((e) => OrderModel.fromJson(e))
+      profile: DeliveryProfile.fromJson(json['delivery_boy'] ?? json['profile'] ?? {}),
+      assignedOrders: kpis['assigned_orders'] ?? json['assigned_orders'] ?? 0,
+      completedToday: kpis['completed_today'] ?? json['completed_today'] ?? 0,
+      pendingAssignedOrders: kpis['pending_assigned_orders'] ?? json['pending_assigned_orders'] ?? 0,
+      availableOrdersInRegion: kpis['available_orders_in_region'] ?? json['available_orders_in_region'] ?? 0,
+      completedTotal: kpis['completed_total'] ?? json['completed_total'] ?? 0,
+      recentAssignments: recentOrders
+          .map((e) => OrderModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }

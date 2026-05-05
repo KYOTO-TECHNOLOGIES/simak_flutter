@@ -21,6 +21,15 @@ class OrderController extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  bool _isLoadingMore = false;
+  bool get isLoadingMore => _isLoadingMore;
+
+  bool _hasMoreOrders = true;
+  bool get hasMoreOrders => _hasMoreOrders;
+
+  int _currentOffset = 0;
+  final int _orderLimit = 6;
+
   double _freeDeliveryThreshold = 40.0;
   double get freeDeliveryThreshold => _freeDeliveryThreshold;
 
@@ -65,13 +74,14 @@ class OrderController extends ChangeNotifier {
 
   Future<void> fetchMyOrders({required int userId}) async {
     _isLoading = true;
-    _error = null;
+    _currentOffset = 0;
+    _hasMoreOrders = true;
     notifyListeners();
 
     try {
       // Fetch orders and reviews in parallel
       final results = await Future.wait([
-        _orderService.getMyOrders(),
+        _orderService.getMyOrders(limit: _orderLimit, offset: _currentOffset),
         _reviewService.getUserReviews(userId),
       ]);
 
@@ -122,6 +132,34 @@ class OrderController extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMoreOrders({required int userId}) async {
+    if (_isLoadingMore || !_hasMoreOrders || _isLoading) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      _currentOffset += _orderLimit;
+      final orderData = await _orderService.getMyOrders(limit: _orderLimit, offset: _currentOffset);
+      
+      if (orderData.isEmpty) {
+        _hasMoreOrders = false;
+      } else {
+        final newOrders = orderData.map((json) => OrderModel.fromJson(json)).toList();
+        newOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        _orders.addAll(newOrders);
+        if (newOrders.length < _orderLimit) {
+          _hasMoreOrders = false;
+        }
+      }
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoadingMore = false;
       notifyListeners();
     }
   }

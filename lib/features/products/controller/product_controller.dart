@@ -8,12 +8,10 @@ class ProductController extends ChangeNotifier {
   final ProductService _service = ProductService();
 
   List<ProductModel> _products = [];
-  List<ProductModel> get products {
-    // TEMPORARY: Disable emirate filtering
-    // if (_activeEmirate == null || _activeEmirate!.isEmpty) return _products;
-    // return _products.where((p) => p.availableEmirates.contains(_activeEmirate!.toLowerCase())).toList();
-    return _products;
-  }
+  List<ProductModel> _allProducts = []; // Always "All" category products
+
+  List<ProductModel> get products => _products;
+  List<ProductModel> get allProducts => _allProducts;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -157,21 +155,46 @@ class ProductController extends ChangeNotifier {
         // This callback fires when background API refresh completes.
         onRefresh: (refreshedData) {
           _products = refreshedData;
+          if (cat == 'All') {
+            _allProducts = refreshedData;
+          }
           notifyListeners();
         },
       );
       
       // Set the initial (cached or first-fetch) data
       _products = freshProducts;
+      if (cat == 'All') {
+        _allProducts = freshProducts;
+      }
+      notifyListeners();
     } catch (e) {
       // Only error out if we have absolutely no data to show.
       if (_products.isEmpty) {
         _error = 'failed_load_products';
       }
-      debugPrint('Error in fetchProducts: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Specifically fetches "All" products for the Home screen Popular Now section.
+  /// This ensures Home products are cached independently of any active category filter.
+  Future<void> fetchHomeProducts() async {
+    try {
+      final freshProducts = await _service.fetchProducts(
+        emirate: null,
+        categoryName: 'All',
+        onRefresh: (refreshedData) {
+          _allProducts = refreshedData;
+          notifyListeners();
+        },
+      );
+      _allProducts = freshProducts;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error in fetchHomeProducts: $e');
     }
   }
 
