@@ -59,7 +59,7 @@ class ApiClient {
           final response = await Dio(
             BaseOptions(baseUrl: Env.baseUrl),
           ).post(
-            'auth/refresh/',
+            'auth/refresh',
             data: {'refresh': refreshToken},
           );
 

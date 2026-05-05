@@ -1862,7 +1862,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                trStatic(context, 'Price per ${widget.product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')}'),
+                                _quantity == 1
+                                    ? trStatic(
+                                        context,
+                                        'Price per ${widget.product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')}',
+                                      )
+                                    : trStatic(
+                                        context,
+                                        widget.product.unit.toLowerCase().contains('kg')
+                                            ? 'price_for_quantity_kg'
+                                            : 'price_for_quantity_pieces',
+                                        args: {'count': _quantity.toString()},
+                                      ),
                                 style: TextStyle(
                                   color: theme.colorScheme.onSurface
                                       .withOpacity(0.5),

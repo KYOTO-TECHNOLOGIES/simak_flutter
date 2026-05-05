@@ -703,7 +703,7 @@ final Map<String, Map<String, String>> _translations = {
 
     // ── How It Works ──────────────────────────────────────────
     'how_it_works': 'HOW IT WORKS',
-    'ocean_to_plate': 'From Ocean to Your Plate',
+    'ocean_to_plate': 'Live Seafood from SEA to HOME',
     'how_it_works_sub':
         'Four simple steps to the freshest seafood you\'ve ever tasted. No middlemen, no delays — just pure freshness.',
 
@@ -738,8 +738,8 @@ final Map<String, Map<String, String>> _translations = {
     'enter_name_continue': 'Please enter your name to continue',
 
     // -- Home Stats & Layout --
-    'from_ocean_to': 'From Ocean to ',
-    'your_plate': 'Your Plate',
+    'from_ocean_to': 'Live Seafood from SEA ',
+    'your_plate': 'to HOME',
     'stat_happy_customers': 'HAPPY\nCUSTOMERS',
     'stat_seafood_varieties': 'SEAFOOD\nVARIETIES',
     'stat_average_rating': 'AVERAGE\nRATING',
@@ -852,6 +852,9 @@ final Map<String, Map<String, String>> _translations = {
     'This product can be delivered in the following emirates:':
         'This product can be delivered in the following emirates:',
     'Price per Piece': 'Price per Piece',
+    'Price per Kg': 'Price per Kg',
+    'price_for_quantity_pieces': 'Price for {count} pieces',
+    'price_for_quantity_kg': 'Price for {count} kg',
     'Fast Delivery': 'Fast Delivery',
     'Fresh Guaranteed': 'Fresh Guaranteed',
     'preparation_specification': 'Preparation Specification',
@@ -1565,6 +1568,9 @@ final Map<String, Map<String, String>> _translations = {
     'Available in': '可用地区',
     'This product can be delivered in the following emirates:': '此产品可在以下酋长国配送：',
     'Price per Piece': '单价',
+    'Price per Kg': '每公斤价格',
+    'price_for_quantity_pieces': '{count} 件的价格',
+    'price_for_quantity_kg': '{count} 公斤的价格',
     'Fast Delivery': '极速送达',
     'Fresh Guaranteed': '新鲜保证',
     'preparation_specification': '准备规格',
@@ -2324,6 +2330,9 @@ final Map<String, Map<String, String>> _translations = {
     'This product can be delivered in the following emirates:':
         'يمكن توصيل هذا المنتج في الإمارات التالية:',
     'Price per Piece': 'السعر للقطعة',
+    'Price per Kg': 'السعر للكيلو',
+    'price_for_quantity_pieces': 'السعر لـ {count} قطع',
+    'price_for_quantity_kg': 'السعر لـ {count} كيلو',
     'Fast Delivery': 'توصيل سريع',
     'Fresh Guaranteed': 'طازج مضمون',
     'preparation_specification': 'مواصفات التحضير',
