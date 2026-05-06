@@ -39,7 +39,7 @@ class _StatusUpdateSheetState extends State<StatusUpdateSheet> {
 
     List<String> availableTransitions = [];
     if (currentStatus == 'PAID' || currentStatus == 'PROCESSING') {
-      availableTransitions = ['SHIPPED', 'CANCELLED'];
+      availableTransitions = ['SHIPPED', 'DELIVERED', 'CANCELLED'];
     } else if (currentStatus == 'SHIPPED') {
       availableTransitions = ['DELIVERED', 'CANCELLED'];
     }

@@ -442,12 +442,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () => _showConfirmationDialog(
-                          context, 
-                          'SHIPPED', 
-                          'Mark Order #${order.id} as Shipped?',
-                          order
-                        ),
+                        onPressed: () => _showUpdateStatusSheet(context, null, order),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
@@ -890,7 +885,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     }
   }
 
-  void _showUpdateStatusSheet(BuildContext context, String status, OrderModel order) {
+  void _showUpdateStatusSheet(BuildContext context, String? status, OrderModel order) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

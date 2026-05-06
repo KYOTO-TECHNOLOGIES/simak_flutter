@@ -63,7 +63,12 @@ class _MyOrdersViewState extends State<MyOrdersView> {
       final status = o.status.toUpperCase();
       
       if (filterStatus == 'PROCESSING') {
-        return status == 'PROCESSING' || status == 'PAID' || status == 'PENDING' || status == 'CONFIRMED';
+        // Broaden the filter: If it's not finished/shipped/cancelled, it's processing for the rider
+        return status != 'SHIPPED' && 
+               status != 'DELIVERED' && 
+               status != 'CANCELLED' && 
+               status != 'COMPLETED' &&
+               status != 'RETURNED';
       }
       return status == filterStatus;
     }).toList();
@@ -88,12 +93,6 @@ class _MyOrdersViewState extends State<MyOrdersView> {
                       color: const Color(0xFF2D3436),
                     ),
                   ),
-                  if (orderController.isLoading)
-                    const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
                 ],
               ),
               const SizedBox(height: 4),
@@ -155,13 +154,14 @@ class _MyOrdersViewState extends State<MyOrdersView> {
 
         // ─── Orders List ──────────────────────────────────────────
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: _refresh,
-            child: filteredOrders.isEmpty && !orderController.isLoading
+          child: orderController.error != null
+            ? _buildErrorState(orderController.error!)
+            : (filteredOrders.isEmpty && !orderController.isLoading
               ? _buildEmptyState()
               : ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                  physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: filteredOrders.length + (orderController.isLoadingMore ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (index == filteredOrders.length) {
@@ -173,8 +173,7 @@ class _MyOrdersViewState extends State<MyOrdersView> {
                     final order = filteredOrders[index];
                     return MyOrderCard(order: order);
                   },
-                ),
-          ),
+                )),
         ),
       ],
     );
@@ -203,6 +202,57 @@ class _MyOrdersViewState extends State<MyOrdersView> {
       ],
     );
   }
+
+  Widget _buildErrorState(String message) {
+    return ListView(
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Column(
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Color(0xFFFF7675)),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load orders',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2D3436),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _refresh,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.actionBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(
+                    'Try Again',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class MyOrderCard extends StatelessWidget {
@@ -218,6 +268,10 @@ class MyOrderCard extends StatelessWidget {
     Color getStatusColor() {
       switch (order.status.toUpperCase()) {
         case 'PROCESSING':
+        case 'PAID':
+        case 'ASSIGNED':
+        case 'ACCEPTED':
+        case 'READY':
           return const Color(0xFFF39C12);
         case 'SHIPPED':
           return const Color(0xFF6C5CE7);

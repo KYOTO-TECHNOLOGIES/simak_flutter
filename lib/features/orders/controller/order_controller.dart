@@ -28,7 +28,7 @@ class OrderController extends ChangeNotifier {
   bool get hasMoreOrders => _hasMoreOrders;
 
   int _currentOffset = 0;
-  final int _orderLimit = 6;
+  final int _orderLimit = 20;
 
   double _freeDeliveryThreshold = 40.0;
   double get freeDeliveryThreshold => _freeDeliveryThreshold;
@@ -73,20 +73,25 @@ class OrderController extends ChangeNotifier {
   Map<int, ReviewModel> get productReviewMap => _productReviewMap;
 
   Future<void> fetchMyOrders({required int userId}) async {
+    if (_isLoading && _currentOffset == 0) return;
+    
     _isLoading = true;
     _currentOffset = 0;
     _hasMoreOrders = true;
+    _error = null;
     notifyListeners();
 
     try {
-      // Fetch orders and reviews in parallel
-      final results = await Future.wait([
-        _orderService.getMyOrders(limit: _orderLimit, offset: _currentOffset),
-        _reviewService.getUserReviews(userId),
-      ]);
-
-      final orderData = results[0] as List<Map<String, dynamic>>;
-      final reviewData = results[1] as List<Map<String, dynamic>>;
+      // Increase limit to ensure we capture processing orders
+      final orderData = await _orderService.getMyOrders(limit: _orderLimit, offset: _currentOffset);
+      
+      // Fetch reviews separately to avoid failing the whole request if reviews fail
+      List<Map<String, dynamic>> reviewData = [];
+      try {
+        reviewData = await _reviewService.getUserReviews(userId);
+      } catch (e) {
+        debugPrint('Failed to fetch reviews: $e');
+      }
 
       _orders = orderData.map((json) => OrderModel.fromJson(json)).toList();
       _orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -128,6 +133,10 @@ class OrderController extends ChangeNotifier {
 
       _productReviewMap = {for (var r in reviews) r.product: r};
       _userReviews = reviews; // Update the list used in Profile screen too
+
+      if (orderData.length < _orderLimit) {
+        _hasMoreOrders = false;
+      }
     } catch (e) {
       _error = e.toString();
     } finally {

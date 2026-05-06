@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:provider/provider.dart';
+import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/delivery/controller/delivery_controller.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/delivery_widgets.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/available_orders_view.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/my_orders_view.dart';
+import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   const DeliveryDashboardScreen({super.key});
@@ -56,17 +58,24 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                       await context.read<DeliveryController>().fetchDashboard();
                     } else if (_activeTab == 1) {
                       await context.read<DeliveryController>().fetchAvailableOrders();
+                    } else if (_activeTab == 2) {
+                      final auth = context.read<AuthController>();
+                      if (auth.currentUser?.id != null) {
+                        await context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+                      }
                     }
                   },
-                  child: deliveryController.isLoadingDashboard && _activeTab == 0
-                      ? const Center(child: CircularProgressIndicator())
-                      : _activeTab == 0 
-                        ? _buildDashboardView()
-                        : _activeTab == 1 
-                          ? const AvailableOrdersView()
-                          : _activeTab == 2
-                            ? const MyOrdersView()
-                            : _buildMyOrdersPlaceholder(),
+                  child: IndexedStack(
+                    index: _activeTab,
+                    children: [
+                      deliveryController.isLoadingDashboard
+                          ? const Center(child: CircularProgressIndicator())
+                          : _buildDashboardView(),
+                      const AvailableOrdersView(),
+                      const MyOrdersView(),
+                      _buildMyOrdersPlaceholder(),
+                    ],
+                  ),
                 ),
               ),
             ],
