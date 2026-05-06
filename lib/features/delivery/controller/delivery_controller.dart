@@ -22,8 +22,29 @@ class DeliveryController with ChangeNotifier {
   bool _isActionLoading = false;
   bool get isActionLoading => _isActionLoading;
 
+  bool _isLoadingOrderDetails = false;
+  bool get isLoadingOrderDetails => _isLoadingOrderDetails;
+
+  OrderModel? _selectedOrder;
+  OrderModel? get selectedOrder => _selectedOrder;
+
   String? _error;
   String? get error => _error;
+
+  Future<void> fetchOrderDetails(int orderId) async {
+    _isLoadingOrderDetails = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _selectedOrder = await _deliveryService.getOrderDetails(orderId);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoadingOrderDetails = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> fetchDashboard({bool silent = false}) async {
     if (!silent) {
@@ -106,7 +127,11 @@ class DeliveryController with ChangeNotifier {
         notes: notes,
         cancelReason: cancelReason,
       );
+      
+      // Refresh local state and dashboard
+      await fetchOrderDetails(orderId);
       await fetchDashboard();
+      
       return true;
     } catch (e) {
       _error = e.toString();

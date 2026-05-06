@@ -12,6 +12,11 @@ class DeliveryService {
     return DeliveryDashboardData.fromJson(response.data);
   }
 
+  Future<OrderModel> getOrderDetails(int orderId) async {
+    final response = await _dio.get('orders/$orderId/');
+    return OrderModel.fromJson(response.data);
+  }
+
   Future<List<OrderModel>> getAvailableOrders({int? limit, int? offset}) async {
     final response = await _dio.get(
       'orders/available_orders/',

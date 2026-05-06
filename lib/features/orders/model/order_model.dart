@@ -26,6 +26,10 @@ class OrderModel {
   final String? receiptPdf;
   final String? receiptRef;
   final String? receiptImage;
+  final String? deliveryAssignmentStatus;
+  final DateTime? deliveryAssignedAt;
+  final DateTime? deliveryAcceptedAt;
+  final DateTime? deliveryDeliveredAt;
 
   OrderModel({
     required this.id,
@@ -52,12 +56,16 @@ class OrderModel {
     this.receiptPdf,
     this.receiptRef,
     this.receiptImage,
+    this.deliveryAssignmentStatus,
+    this.deliveryAssignedAt,
+    this.deliveryAcceptedAt,
+    this.deliveryDeliveredAt,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
       id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      items: (json['items'] as List<dynamic>?)
+      items: ((json['items'] ?? json['order_items'] ?? json['order_item'] ?? json['shipment_manifest'] ?? json['manifest']) as List<dynamic>?)
               ?.map((e) => OrderItem.fromJson(e))
               .toList() ??
           [],
@@ -66,13 +74,19 @@ class OrderModel {
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at']) 
           : DateTime.now(),
-      paymentMethod: json['payment_method']?.toString() ?? '',
+      paymentMethod: (json['payment']?['payment_method']?.toString() ?? 
+                      json['payment_method']?.toString() ?? 
+                      json['payment_type']?.toString() ?? 
+                      json['gateway']?.toString() ?? 
+                      'ZIINA').toString(),
       preferredDeliveryDate: json['preferred_delivery_date']?.toString(),
       preferredDeliverySlot: json['preferred_delivery_slot']?.toString(),
       preferredDeliverySlotName: json['preferred_delivery_slot_name']?.toString(),
       deliveryNotes: json['delivery_notes']?.toString(),
-      customerName: json['customer_name']?.toString(),
-      customerPhone: json['customer_phone']?.toString(),
+      customerName: (json['customer_name'] ?? json['customer'] ?? json['user_name'] ?? json['full_name'])?.toString() ??
+          (json['shipping_address_details'] != null ? AddressModel.fromJson(json['shipping_address_details']).name : null),
+      customerPhone: (json['customer_phone'] ?? json['phone'])?.toString() ??
+          (json['shipping_address_details'] != null ? AddressModel.fromJson(json['shipping_address_details']).phoneNumber : null),
       tipAmount: double.tryParse(json['tip_amount']?.toString() ?? '0') ?? 0.0,
       statusHistory: (json['status_history'] as List<dynamic>?)
           ?.map((e) => StatusHistoryItem.fromJson(e))
@@ -90,7 +104,17 @@ class OrderModel {
       couponCode: json['coupon_code']?.toString(),
       receiptPdf: json['receipt_pdf']?.toString(),
       receiptRef: json['receipt_ref']?.toString(),
-      receiptImage: json['receipt_image']?.toString(),
+      receiptImage: (json['delivery_proof']?['proof_image'] ?? json['receipt_image'])?.toString(),
+      deliveryAssignmentStatus: json['delivery_assignment']?['status']?.toString(),
+      deliveryAssignedAt: json['delivery_assignment']?['assigned_at'] != null 
+          ? DateTime.parse(json['delivery_assignment']['assigned_at']) 
+          : null,
+      deliveryAcceptedAt: json['delivery_assignment']?['accepted_at'] != null 
+          ? DateTime.parse(json['delivery_assignment']['accepted_at']) 
+          : null,
+      deliveryDeliveredAt: json['delivery_assignment']?['delivered_at'] != null 
+          ? DateTime.parse(json['delivery_assignment']['delivered_at']) 
+          : null,
     );
   }
 }

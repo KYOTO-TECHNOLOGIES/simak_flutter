@@ -84,24 +84,26 @@ class _StatusUpdateSheetState extends State<StatusUpdateSheet> {
           ),
           const SizedBox(height: 24),
           
-          Wrap(
-            spacing: 12,
-            children: availableTransitions.map((status) {
-              final isSelected = _selectedStatus == status;
-              return ChoiceChip(
-                label: Text(status),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() => _selectedStatus = selected ? status : null);
-                },
-                selectedColor: AppColors.actionBlue.withOpacity(0.1),
-                labelStyle: GoogleFonts.outfit(
-                  color: isSelected ? AppColors.actionBlue : Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            }).toList(),
-          ),
+          if (widget.initialStatus == null) ...[
+            Wrap(
+              spacing: 12,
+              children: availableTransitions.map((status) {
+                final isSelected = _selectedStatus == status;
+                return ChoiceChip(
+                  label: Text(status),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() => _selectedStatus = selected ? status : null);
+                  },
+                  selectedColor: AppColors.actionBlue.withOpacity(0.1),
+                  labelStyle: GoogleFonts.outfit(
+                    color: isSelected ? AppColors.actionBlue : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
 
           if (_selectedStatus == 'DELIVERED') ...[
             const SizedBox(height: 24),
@@ -186,10 +188,14 @@ class _StatusUpdateSheetState extends State<StatusUpdateSheet> {
                       
                       if (success) {
                         Navigator.pop(context);
+                        
+                        String message = 'Status updated successfully!';
+                        if (_selectedStatus == 'CANCELLED') message = 'Cancellation request submitted';
+                        if (_selectedStatus == 'SHIPPED') message = 'Order marked as Shipped';
+                        if (_selectedStatus == 'DELIVERED') message = 'Order delivered successfully!';
+
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(_selectedStatus == 'CANCELLED' 
-                            ? 'Cancellation request submitted' 
-                            : 'Status updated successfully!')),
+                          SnackBar(content: Text(message)),
                         );
                         // Refresh orders
                         final auth = context.read<AuthController>();

@@ -29,39 +29,48 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   Widget build(BuildContext context) {
     final deliveryController = context.watch<DeliveryController>();
     
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ─── Header Section ──────────────────────────────────────
-            const DeliveryHeader(),
-
-            // ─── Tab Bar ─────────────────────────────────────────────
-            _buildTabBar(),
-
-            // ─── Content ─────────────────────────────────────────────
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  if (_activeTab == 0) {
-                    await context.read<DeliveryController>().fetchDashboard();
-                  } else if (_activeTab == 1) {
-                    await context.read<DeliveryController>().fetchAvailableOrders();
-                  }
-                },
-                child: deliveryController.isLoadingDashboard && _activeTab == 0
-                    ? const Center(child: CircularProgressIndicator())
-                    : _activeTab == 0 
-                      ? _buildDashboardView()
-                      : _activeTab == 1 
-                        ? const AvailableOrdersView()
-                        : _activeTab == 2
-                          ? const MyOrdersView()
-                          : _buildMyOrdersPlaceholder(),
+    return WillPopScope(
+      onWillPop: () async {
+        if (_activeTab != 0) {
+          setState(() => _activeTab = 0);
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // ─── Header Section ──────────────────────────────────────
+              const DeliveryHeader(),
+  
+              // ─── Tab Bar ─────────────────────────────────────────────
+              _buildTabBar(),
+  
+              // ─── Content ─────────────────────────────────────────────
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    if (_activeTab == 0) {
+                      await context.read<DeliveryController>().fetchDashboard();
+                    } else if (_activeTab == 1) {
+                      await context.read<DeliveryController>().fetchAvailableOrders();
+                    }
+                  },
+                  child: deliveryController.isLoadingDashboard && _activeTab == 0
+                      ? const Center(child: CircularProgressIndicator())
+                      : _activeTab == 0 
+                        ? _buildDashboardView()
+                        : _activeTab == 1 
+                          ? const AvailableOrdersView()
+                          : _activeTab == 2
+                            ? const MyOrdersView()
+                            : _buildMyOrdersPlaceholder(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
