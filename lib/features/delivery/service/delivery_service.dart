@@ -68,6 +68,7 @@ class DeliveryService {
       data = {
         'status': status,
         'reason': cancelReason ?? 'No reason provided',
+        if (notes != null) 'notes': notes,
       };
     } else {
       data = {

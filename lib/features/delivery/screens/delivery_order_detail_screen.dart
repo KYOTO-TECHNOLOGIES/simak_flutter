@@ -37,25 +37,19 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
         : widget.order;
     final isLoading = deliveryController.isLoadingOrderDetails;
 
+    final addressPhone = order.shippingAddressDetails?.phoneNumber;
+    final profilePhone = order.profileMobileNumber;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        title: Text('BACK', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'BACK',
-          style: GoogleFonts.outfit(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-          ),
-        ),
-        centerTitle: false,
-        titleSpacing: 0,
       ),
       body: isLoading && order.items.isEmpty
           ? const Center(child: CircularProgressIndicator())
@@ -69,29 +63,31 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '#${order.id}',
-                            style: GoogleFonts.outfit(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              color: const Color(0xFF2D3436),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '#${order.id}',
+                              style: GoogleFonts.outfit(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                                color: const Color(0xFF2D3436),
+                              ),
                             ),
-                          ),
-                          Text(
-                            'LOGISTICS / ORDER ID',
-                            style: GoogleFonts.outfit(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade400,
-                              letterSpacing: 1.0,
+                            Text(
+                              'LOGISTICS / ORDER ID',
+                              style: GoogleFonts.outfit(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade400,
+                                letterSpacing: 1.0,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      _buildStatusBadge(order.status),
+                      _buildStatusBadge(order),
                     ],
                   ),
 
@@ -110,6 +106,13 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                   const SizedBox(height: 40),
                   const Divider(color: Color(0xFFF1F2F6), thickness: 1),
                   const SizedBox(height: 40),
+
+                  if (order.deliveryCancelRequest != null) ...[
+                    _buildCancellationRequestSection(order.deliveryCancelRequest!),
+                    const SizedBox(height: 40),
+                    const Divider(color: Color(0xFFF1F2F6), thickness: 1),
+                    const SizedBox(height: 40),
+                  ],
 
                   // ─── Destination Section ──────────────────────────────
                   Text(
@@ -143,6 +146,32 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  
+                  // ─── Contact Section ──────────────────────────────────
+                  Text(
+                    'CONTACT INFORMATION',
+                    style: GoogleFonts.outfit(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade400,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (addressPhone != null && addressPhone.isNotEmpty)
+                    _buildPhoneRow(
+                      label: 'ADDRESS PHONE',
+                      phone: addressPhone,
+                    ),
+                  if (profilePhone != null && profilePhone.isNotEmpty) ...[
+                    if (addressPhone != null && addressPhone.isNotEmpty)
+                      const SizedBox(height: 12),
+                    _buildPhoneRow(
+                      label: 'MOBILE NUMBER',
+                      phone: profilePhone,
+                    ),
+                  ],
+                  const SizedBox(height: 24),
                   if (order.deliveryNotes != null) ...[
                     Text(
                       'ENTRY PROTOCOL / NOTES',
@@ -163,22 +192,22 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // Action Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildActionButton('CALL CUSTOMER', Icons.phone_outlined, () => _launchCaller(order.customerPhone)),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildActionButton('COPY NUMBER', Icons.copy_outlined, () => _copyToClipboard(context, order.customerPhone)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActionButton('MAP NAVIGATION', Icons.map_outlined, () => _launchMap(order.shippingAddressDetails?.line1), isFullWidth: true),
+                  if (order.status != 'CANCELLED' && 
+                      order.deliveryCancelRequest?.status != 'APPROVED' && 
+                      order.deliveryCancelRequest?.status != 'REJECTED') ...[
+                    Row(
+                      // children: [
+                      //   Expanded(
+                      //     child: _buildActionButton('COPY NUMBER', Icons.copy_outlined, () => _copyToClipboard(context, order.customerPhone)),
+                      //   ),
+                      // ],
+                    ),
+                    const SizedBox(height: 2),
+                    _buildActionButton('MAP NAVIGATION', Icons.map_outlined, () => _launchMap(order.shippingAddressDetails?.line1), isFullWidth: true),
+                  ],
 
                   const SizedBox(height: 48),
 
@@ -193,7 +222,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _buildLogisticsItem('PHASE', (order.deliveryAssignmentStatus ?? order.status).toUpperCase()),
+                  _buildLogisticsItem('PHASE', _formatStatus(order.deliveryAssignmentStatus ?? order.status)),
                   const SizedBox(height: 16),
                   _buildLogisticsItem('TIME ASSIGNED', _formatDateTime(order.deliveryAssignedAt ?? order.createdAt)),
 
@@ -216,54 +245,26 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     const Center(child: CircularProgressIndicator())
                   else if (order.items.isEmpty)
                     Text('No items in this order', style: GoogleFonts.outfit(color: Colors.grey))
-                  else
+                  else ...[
                     ...order.items.map((item) => _buildManifestItem(item)),
+                    if (order.tipAmount > 0)
+                      _buildTipManifestItem(order.tipAmount),
+                  ],
 
                   const SizedBox(height: 48),
                   const DashedDivider(),
                   const SizedBox(height: 48),
 
                   // ─── Financials ──────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          'ORDER VALUE',
-                          style: GoogleFonts.outfit(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey.shade400,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: RichText(
-                          text: TextSpan(
-                            style: GoogleFonts.outfit(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF2D3436),
-                            ),
-                            children: [
-                              const TextSpan(text: 'AED '),
-                              TextSpan(
-                                text: order.totalPrice.toStringAsFixed(2),
-                                style: GoogleFonts.outfit(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2D3436),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildFinancialRow('ORDER VALUE', order.subTotal > 0 ? order.subTotal : (order.totalPrice - order.tipAmount - order.deliveryCharge)),
+                  if (order.deliveryCharge > 0) ...[
+                    const SizedBox(height: 12),
+                    _buildFinancialRow('DELIVERY CHARGE', order.deliveryCharge),
+                  ],
+                  if (order.tipAmount > 0) ...[
+                    const SizedBox(height: 12),
+                    _buildFinancialRow('TIP AMOUNT', order.tipAmount),
+                  ],
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -340,7 +341,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    order.paymentMethod.toUpperCase(),
+                                    _formatStatus(order.paymentMethod),
                                     style: GoogleFonts.outfit(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w900,
@@ -361,11 +362,15 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                                       ),
                                     ),
                                     Text(
-                                      (order.paymentInfo?.status ?? 'SUCCESS').toUpperCase(),
+                                      _formatStatus(order.paymentInfo?.status ?? 'PENDING'),
                                       style: GoogleFonts.outfit(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w900,
-                                        color: const Color(0xFF00B894),
+                                        color: (order.paymentInfo?.status?.toUpperCase() == 'PENDING')
+                                            ? const Color(0xFFF39C12)
+                                            : (order.paymentInfo?.status?.toUpperCase() == 'FAILED')
+                                                ? const Color(0xFFD63031)
+                                                : const Color(0xFF00B894),
                                       ),
                                     ),
                                   ],
@@ -411,9 +416,9 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  _buildIntelligenceItem('ASSIGNED', order.deliveryAssignedAt),
+                  _buildIntelligenceItem(_formatStatus('ASSIGNED'), order.deliveryAssignedAt),
                   const SizedBox(height: 16),
-                  _buildIntelligenceItem('ACCEPTED', order.deliveryAcceptedAt),
+                  _buildIntelligenceItem(_formatStatus('ACCEPTED'), order.deliveryAcceptedAt),
 
                   const SizedBox(height: 48),
                   const DashedDivider(),
@@ -435,7 +440,10 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                   const SizedBox(height: 60),
 
                   // ─── Footer Buttons ──────────────────────────────────
-                  if (order.status == 'DELIVERED')
+                  if (order.status == 'DELIVERED' || 
+                      order.status == 'CANCELLED' || 
+                      order.deliveryCancelRequest?.status == 'APPROVED' || 
+                      order.deliveryCancelRequest?.status == 'REJECTED')
                     const SizedBox.shrink()
                   else if (order.status == 'PROCESSING')
                     SizedBox(
@@ -647,28 +655,254 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildTipManifestItem(double amount) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TIP FOR DELIVERY PARTNER',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF2D3436),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'GRATUITY',
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'AED ${amount.toStringAsFixed(2)}',
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF2D3436),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialRow(String label, double amount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade400,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: RichText(
+            text: TextSpan(
+              style: GoogleFonts.outfit(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2D3436),
+              ),
+              children: [
+                const TextSpan(text: 'AED '),
+                TextSpan(
+                  text: amount.toStringAsFixed(2),
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2D3436),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge(OrderModel order) {
+    String status = order.status;
     Color statusColor = Colors.grey;
-    switch (status.toUpperCase()) {
-      case 'PROCESSING': statusColor = const Color(0xFFF39C12); break;
-      case 'SHIPPED': statusColor = const Color(0xFF6C5CE7); break;
-      case 'DELIVERED': statusColor = const Color(0xFF00B894); break;
-      case 'CANCELLED': statusColor = const Color(0xFFD63031); break;
+    bool isPendingCancel = order.deliveryCancelRequest != null && order.deliveryCancelRequest!.status == 'PENDING';
+
+    if (isPendingCancel) {
+      status = 'CANCELLATION PENDING';
+      statusColor = const Color(0xFFE17055); // Orange-ish
+    } else {
+      switch (status.toUpperCase()) {
+        case 'PROCESSING': statusColor = const Color(0xFFF39C12); break;
+        case 'SHIPPED': statusColor = const Color(0xFF6C5CE7); break;
+        case 'DELIVERED': statusColor = const Color(0xFF00B894); break;
+        case 'CANCELLED': statusColor = const Color(0xFFD63031); break;
+      }
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        border: Border.all(color: statusColor),
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: statusColor.withOpacity(0.2)),
       ),
-      child: Text(
-        status.toUpperCase(),
-        style: GoogleFonts.outfit(
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          color: statusColor,
-          letterSpacing: 1.0,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 120),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            _formatStatus(status),
+            style: GoogleFonts.outfit(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: statusColor,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCancellationRequestSection(DeliveryCancelRequest request) {
+    Color statusColor = const Color(0xFFF39C12);
+    IconData statusIcon = Icons.pending_actions_outlined;
+    String statusText = 'CANCELLATION REQUEST UNDER REVIEW';
+
+    if (request.status == 'APPROVED') {
+      statusColor = const Color(0xFF00B894);
+      statusIcon = Icons.check_circle_outline;
+      statusText = 'CANCELLATION APPROVED';
+    } else if (request.status == 'REJECTED') {
+      statusColor = const Color(0xFFD63031);
+      statusIcon = Icons.cancel_outlined;
+      statusText = 'CANCELLATION REJECTED';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.05),
+        border: Border.all(color: statusColor.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(statusIcon, color: statusColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'DELIVERY CANCELLATION REQUEST',
+                style: GoogleFonts.outfit(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: statusColor,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            statusText,
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF2D3436),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'REASON',
+            style: GoogleFonts.outfit(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade400,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            request.reason,
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF636E72),
+            ),
+          ),
+          if (request.reviewNotes != null && request.reviewNotes!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              'ADMIN FEEDBACK',
+              style: GoogleFonts.outfit(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade400,
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              request.reviewNotes!,
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF2D3436),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Requested on ${_formatDateTime(request.requestedAt)}',
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  color: Colors.grey,
+                ),
+              ),
+              if (request.reviewedAt != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Reviewed on ${_formatDateTime(request.reviewedAt!)}',
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -802,7 +1036,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.status.toUpperCase(),
+                        _formatStatus(item.status),
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
@@ -867,6 +1101,11 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     }
+  }
+
+  String _formatStatus(String status) {
+    if (status.isEmpty) return 'N/A';
+    return status.replaceAll('_', ' ').toUpperCase();
   }
 
   void _copyToClipboard(BuildContext context, String? text) {
@@ -1087,6 +1326,79 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPhoneRow({required String label, required String phone}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F2F6)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(Icons.phone_outlined, color: Colors.grey.shade400, size: 18),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.outfit(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  phone,
+                  style: GoogleFonts.outfit(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF2D3436),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: const Color(0xFF00B894),
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: () async {
+                final Uri launchUri = Uri(scheme: 'tel', path: phone);
+                if (await canLaunchUrl(launchUri)) {
+                  await launchUrl(launchUri);
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: const Icon(Icons.call, color: Colors.white, size: 18),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

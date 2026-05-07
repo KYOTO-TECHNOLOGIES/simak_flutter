@@ -128,9 +128,21 @@ class DeliveryController with ChangeNotifier {
         cancelReason: cancelReason,
       );
       
-      // Refresh local state and dashboard
+      // Refresh local state
       await fetchOrderDetails(orderId);
-      await fetchDashboard();
+      
+      // Update the local dashboard list manually to ensure immediate UI reflection
+      if (_dashboardData != null) {
+        final updatedOrder = _selectedOrder;
+        if (updatedOrder != null) {
+          final index = _dashboardData!.recentAssignments.indexWhere((o) => o.id == orderId);
+          if (index != -1) {
+            _dashboardData!.recentAssignments[index] = updatedOrder;
+          }
+        }
+      }
+      
+      await fetchDashboard(silent: true);
       
       return true;
     } catch (e) {

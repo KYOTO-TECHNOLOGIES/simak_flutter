@@ -266,6 +266,9 @@ class MyOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color getStatusColor() {
+      if (order.deliveryCancelRequest != null && order.deliveryCancelRequest!.status == 'PENDING') {
+        return const Color(0xFFFD8D3C); // Vibrant orange for pending cancel
+      }
       switch (order.status.toUpperCase()) {
         case 'PROCESSING':
         case 'PAID':
@@ -354,22 +357,46 @@ class MyOrderCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: statusBg,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: statusColor.withOpacity(0.2)),
-                    ),
-                    child: Text(
-                      order.status.toUpperCase(),
-                      style: GoogleFonts.outfit(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: statusColor,
-                        letterSpacing: 0.5,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: statusColor, width: 1.5),
+                        ),
+                        child: Text(
+                          _formatStatus(order.status),
+                          style: GoogleFonts.outfit(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: statusColor,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
-                    ),
+                      if (order.deliveryCancelRequest != null && order.deliveryCancelRequest!.status == 'PENDING') ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF4E6),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'CANCEL PENDING',
+                            style: GoogleFonts.outfit(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFFFD8D3C),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -485,7 +512,9 @@ class MyOrderCard extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      if (order.status.toUpperCase() != 'DELIVERED' && order.status.toUpperCase() != 'CANCELLED')
+                      if (order.status.toUpperCase() != 'DELIVERED' && 
+                          order.status.toUpperCase() != 'CANCELLED' && 
+                          order.deliveryCancelRequest?.status != 'PENDING')
                         TextButton(
                           onPressed: () => _showUpdateStatusSheet(context, order),
                           child: Text(
@@ -527,6 +556,11 @@ class MyOrderCard extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => StatusUpdateSheet(order: order),
     );
+  }
+
+  String _formatStatus(String status) {
+    if (status.isEmpty) return 'N/A';
+    return status.replaceAll('_', ' ').toUpperCase();
   }
 }
 

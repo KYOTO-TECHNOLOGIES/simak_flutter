@@ -30,6 +30,8 @@ class OrderModel {
   final DateTime? deliveryAssignedAt;
   final DateTime? deliveryAcceptedAt;
   final DateTime? deliveryDeliveredAt;
+  final DeliveryCancelRequest? deliveryCancelRequest;
+  final String? profileMobileNumber;
 
   OrderModel({
     required this.id,
@@ -60,6 +62,8 @@ class OrderModel {
     this.deliveryAssignedAt,
     this.deliveryAcceptedAt,
     this.deliveryDeliveredAt,
+    this.deliveryCancelRequest,
+    this.profileMobileNumber,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -85,8 +89,26 @@ class OrderModel {
       deliveryNotes: json['delivery_notes']?.toString(),
       customerName: (json['customer_name'] ?? json['customer'] ?? json['user_name'] ?? json['full_name'])?.toString() ??
           (json['shipping_address_details'] != null ? AddressModel.fromJson(json['shipping_address_details']).name : null),
-      customerPhone: (json['customer_phone'] ?? json['phone'])?.toString() ??
-          (json['shipping_address_details'] != null ? AddressModel.fromJson(json['shipping_address_details']).phoneNumber : null),
+      customerPhone: (
+        json['customer_phone'] ?? 
+        json['phone'] ?? 
+        (json['customer'] is Map ? json['customer']['phone'] : null) ??
+        (json['customer'] is Map ? json['customer']['mobile'] : null) ??
+        (json['customer'] is Map ? json['customer']['mobile_number'] : null) ??
+        (json['customer'] is Map ? json['customer']['phone_number'] : null) ??
+        (json['user'] is Map ? json['user']['phone'] : null) ??
+        (json['user'] is Map ? json['user']['mobile'] : null) ??
+        (json['user'] is Map ? json['user']['mobile_number'] : null) ??
+        (json['user'] is Map ? json['user']['phone_number'] : null) ??
+        json['customer_phone_number'] ??
+        json['user_phone'] ??
+        json['account_phone'] ??
+        json['mobile_number'] ??
+        json['customer_mobile'] ??
+        json['phone'] ??
+        (json['billing_address'] is Map ? json['billing_address']['phone_number'] : null) ??
+        (json['payment_details'] is Map ? json['payment_details']['phone'] : null)
+      )?.toString(),
       tipAmount: double.tryParse(json['tip_amount']?.toString() ?? '0') ?? 0.0,
       statusHistory: (json['status_history'] as List<dynamic>?)
           ?.map((e) => StatusHistoryItem.fromJson(e))
@@ -115,6 +137,39 @@ class OrderModel {
       deliveryDeliveredAt: json['delivery_assignment']?['delivered_at'] != null 
           ? DateTime.parse(json['delivery_assignment']['delivered_at']) 
           : null,
+      deliveryCancelRequest: json['delivery_cancel_request'] != null
+          ? DeliveryCancelRequest.fromJson(json['delivery_cancel_request'])
+          : null,
+      profileMobileNumber: json['profile_mobile_number']?.toString(),
+    );
+  }
+}
+
+class DeliveryCancelRequest {
+  final int id;
+  final String reason;
+  final String status;
+  final String? reviewNotes;
+  final DateTime requestedAt;
+  final DateTime? reviewedAt;
+
+  DeliveryCancelRequest({
+    required this.id,
+    required this.reason,
+    required this.status,
+    this.reviewNotes,
+    required this.requestedAt,
+    this.reviewedAt,
+  });
+
+  factory DeliveryCancelRequest.fromJson(Map<String, dynamic> json) {
+    return DeliveryCancelRequest(
+      id: json['id'] as int,
+      reason: json['reason'] as String? ?? '',
+      status: json['status'] as String? ?? 'PENDING',
+      reviewNotes: json['review_notes'] as String?,
+      requestedAt: DateTime.parse(json['requested_at']),
+      reviewedAt: json['reviewed_at'] != null ? DateTime.parse(json['reviewed_at']) : null,
     );
   }
 }

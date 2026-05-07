@@ -521,7 +521,10 @@ class RecentAssignmentsList extends StatelessWidget {
         Color statusColor = const Color(0xFF636E72);
         Color statusBg = const Color(0xFFF1F2F6);
 
-        if (order.status == 'DELIVERED') {
+        if (order.deliveryCancelRequest != null && order.deliveryCancelRequest!.status == 'PENDING') {
+          statusColor = const Color(0xFFFD8D3C); // Vibrant orange for pending cancel
+          statusBg = const Color(0xFFFFF4E6);
+        } else if (order.status == 'DELIVERED') {
           statusColor = const Color(0xFF00B894);
           statusBg = const Color(0xFFE3FAF4);
         } else if (order.status == 'SHIPPED' || order.status == 'IN_TRANSIT') {
@@ -683,22 +686,41 @@ class AssignmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: statusBg,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: statusColor.withOpacity(0.2)),
+                    border: Border.all(color: statusColor, width: 1.5),
                   ),
                   child: Text(
-                    status.toUpperCase(),
+                    status.replaceAll('_', ' ').toUpperCase(),
                     style: GoogleFonts.outfit(
-                      fontSize: 9,
+                      fontSize: 10,
                       fontWeight: FontWeight.w900,
                       color: statusColor,
                       letterSpacing: 0.5,
                     ),
                   ),
                 ),
+                if (order.deliveryCancelRequest != null && order.deliveryCancelRequest!.status == 'PENDING') ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF4E6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'CANCEL PENDING',
+                      style: GoogleFonts.outfit(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFFFD8D3C),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Container(
                   height: 32,
