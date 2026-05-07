@@ -37,11 +37,17 @@ class _StatusUpdateSheetState extends State<StatusUpdateSheet> {
     final controller = context.watch<DeliveryController>();
     final currentStatus = widget.order.status;
 
+    final isPendingCancel = widget.order.deliveryCancelRequest?.status == 'PENDING';
+
     List<String> availableTransitions = [];
     if (currentStatus == 'PAID' || currentStatus == 'PROCESSING') {
       availableTransitions = ['SHIPPED', 'DELIVERED', 'CANCELLED'];
     } else if (currentStatus == 'SHIPPED') {
       availableTransitions = ['DELIVERED', 'CANCELLED'];
+    }
+
+    if (isPendingCancel) {
+      availableTransitions.remove('CANCELLED');
     }
 
     return Container(
