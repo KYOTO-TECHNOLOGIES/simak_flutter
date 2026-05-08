@@ -3013,7 +3013,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final success = await auth.deleteAccount();
             if (success && mounted) {
               Navigator.of(context).pushNamedAndRemoveUntil(
-                '/language_selection',
+                '/login',
                 (route) => false,
               );
             } else if (mounted) {

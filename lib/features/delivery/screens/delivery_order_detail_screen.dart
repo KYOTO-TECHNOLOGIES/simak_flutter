@@ -1217,115 +1217,140 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
 
   void _showCancellationDialog(BuildContext context, OrderModel order) {
     final reasonController = TextEditingController();
+    
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Request Cancellation',
-                style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF2D3436),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Briefly explain why this delivery cannot be completed.',
-                style: GoogleFonts.outfit(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: reasonController,
-                maxLines: 4,
-                style: GoogleFonts.outfit(fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'e.g., Customer unreachable or incorrect address',
-                  hintStyle: GoogleFonts.outfit(fontSize: 12, color: Colors.grey.shade400),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final controller = context.watch<DeliveryController>();
+          final bool isReasonProvided = reasonController.text.trim().isNotEmpty;
+          final bool isLoading = controller.isActionLoading;
+
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Request Cancellation',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF2D3436),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (reasonController.text.isEmpty) return;
-                    Navigator.pop(context);
-                    final success = await context.read<DeliveryController>().updateStatus(
-                      order.id,
-                      'CANCELLED',
-                      cancelReason: reasonController.text,
-                    );
-                    if (success) {
-                       // Refresh My Orders tab
-                       final auth = context.read<AuthController>();
-                       if (auth.currentUser?.id != null) {
-                         context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
-                       }
-                       ScaffoldMessenger.of(context).showSnackBar(
-                         const SnackBar(content: Text('Cancellation request submitted')),
-                       );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFB2B2), // Pinkish color
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'SUBMIT REQUEST',
+                  const SizedBox(height: 8),
+                  Text(
+                    'Briefly explain why this delivery cannot be completed.',
                     style: GoogleFonts.outfit(
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 1,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: reasonController,
+                    onChanged: (_) => setDialogState(() {}),
+                    maxLines: 4,
+                    style: GoogleFonts.outfit(fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'e.g., Customer unreachable or incorrect address',
+                      hintStyle: GoogleFonts.outfit(fontSize: 12, color: Colors.grey.shade400),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: (!isReasonProvided || isLoading)
+                          ? null
+                          : () async {
+                              final success = await context.read<DeliveryController>().updateStatus(
+                                order.id,
+                                'CANCELLED',
+                                cancelReason: reasonController.text.trim(),
+                              );
+                              
+                              if (!context.mounted) return;
+                              
+                              if (success) {
+                                Navigator.pop(context);
+                                // Refresh My Orders tab
+                                final auth = context.read<AuthController>();
+                                if (auth.currentUser?.id != null) {
+                                  context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Cancellation request submitted')),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: ${controller.error}')),
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isReasonProvided ? const Color(0xFFD63031) : const Color(0xFFFFB2B2),
+                        disabledBackgroundColor: const Color(0xFFFFE8E8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : Text(
+                              'SUBMIT REQUEST',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: TextButton(
+                      onPressed: isLoading ? null : () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.grey.shade100),
+                        ),
+                      ),
+                      child: Text(
+                        'GO BACK',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.grey.shade400,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade100),
-                    ),
-                  ),
-                  child: Text(
-                    'GO BACK',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.grey.shade400,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -11,7 +11,12 @@ class LoginScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.of(context).pushReplacementNamed('/home');
+        return false;
+      },
+      child: Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -114,6 +119,7 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

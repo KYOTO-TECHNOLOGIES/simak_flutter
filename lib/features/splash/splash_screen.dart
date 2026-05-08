@@ -64,7 +64,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         Navigator.of(context).pushReplacementNamed('/home');
       }
     } else {
-      Navigator.of(context).pushReplacementNamed('/language_selection');
+      final langProvider = context.read<LanguageProvider>();
+      if (langProvider.hasSelectedLanguage) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/language_selection');
+      }
     }
   }
 

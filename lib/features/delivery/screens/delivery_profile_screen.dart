@@ -64,6 +64,7 @@ class DeliveryProfileScreen extends StatelessWidget {
                   icon: Icons.phone_outlined,
                   label: 'PHONE NUMBER',
                   value: user?.phoneNumber ?? 'Not Provided',
+                  onTap: () => _showEditPhoneDialog(context),
                 ),
                 _InfoItem(
                   icon: Icons.location_on_outlined,
@@ -93,6 +94,7 @@ class DeliveryProfileScreen extends StatelessWidget {
                   icon: Icons.calendar_today_outlined,
                   label: 'DATE OF BIRTH',
                   value: user?.profile?.dateOfBirth ?? 'Not set',
+                  onTap: () => _selectDateOfBirth(context),
                 ),
                 _InfoItem(
                   icon: Icons.history_outlined,
@@ -339,45 +341,55 @@ class DeliveryProfileScreen extends StatelessWidget {
               final isLast = items.indexOf(item) == items.length - 1;
               return Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFAFAFA),
-                            borderRadius: BorderRadius.circular(12),
+                  InkWell(
+                    onTap: item.onTap,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFAFAFA),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(item.icon, size: 20, color: Colors.grey.shade400),
                           ),
-                          child: Icon(item.icon, size: 20, color: Colors.grey.shade400),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.label,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                  letterSpacing: 0.5,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.label,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.dynamicValue ?? item.value,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF2D3436),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.dynamicValue ?? item.value,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF2D3436),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          if (item.onTap != null)
+                            Icon(
+                              Icons.edit_note_outlined,
+                              size: 20,
+                              color: AppColors.actionBlue.withOpacity(0.5),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   if (!isLast)
@@ -394,11 +406,104 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
+  void _showEditPhoneDialog(BuildContext context) {
+    final authController = context.read<AuthController>();
+    final phoneController = TextEditingController(text: authController.currentUser?.phoneNumber);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'Update Phone Number',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                hintText: '+971XXXXXXXXX',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CANCEL', style: GoogleFonts.outfit(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final success = await authController.updateProfile({'phone_number': phoneController.text.trim()});
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(success ? 'Phone number updated' : 'Update failed')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.actionBlue,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('SAVE', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectDateOfBirth(BuildContext context) async {
+    final authController = context.read<AuthController>();
+    DateTime initialDate = DateTime.now().subtract(const Duration(days: 365 * 20));
+    
+    if (authController.currentUser?.profile?.dateOfBirth != null) {
+      try {
+        initialDate = DateTime.parse(authController.currentUser!.profile!.dateOfBirth!);
+      } catch (_) {}
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.actionBlue,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final String formattedDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      final success = await authController.updateProfile({
+        'profile': {'date_of_birth': formattedDate}
+      });
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(success ? 'Date of birth updated' : 'Update failed')),
+        );
+      }
+    }
+  }
+
   Widget _buildSignOutButton(BuildContext context) {
     return TextButton(
       onPressed: () {
         context.read<AuthController>().logout();
-        Navigator.of(context).pushNamedAndRemoveUntil('/language_selection', (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -478,10 +583,12 @@ class _InfoItem {
   final String label;
   final String value;
   String? dynamicValue;
+  final VoidCallback? onTap;
 
   _InfoItem({
     required this.icon,
     required this.label,
     required this.value,
+    this.onTap,
   });
 }

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
+import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/features/auth/screens/otp_screen.dart';
 import 'package:uae_ecom_project/features/auth/screens/register_screen.dart';
 import 'package:uae_ecom_project/features/home/home_shell.dart';
@@ -224,6 +225,7 @@ class _MyAppState extends State<MyApp> {
             routes: {
               '/': (_) => const SplashScreen(),
               '/language_selection': (_) => const LanguageSelectionScreen(),
+              '/login': (_) => const LoginScreen(),
               '/emirate_selection': (_) => const EmirateSelectionScreen(),
               '/register': (_) => const RegisterScreen(),
               '/otp': (_) => const OtpScreen(),
