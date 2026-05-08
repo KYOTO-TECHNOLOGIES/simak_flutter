@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:uae_ecom_project/core/localization/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -238,469 +239,490 @@ class _HomePageState extends State<HomePage> {
       child: SafeArea(
         bottom: false,
         child: RefreshIndicator(
-            onRefresh: () async {
-              final emirate = context.read<EmirateController>().selectedEmirate;
-              await Future.wait([
-                context.read<ProductController>().fetchProducts(
-                  emirate: emirate,
-                ),
-                context.read<ProductController>().fetchCategories(),
-                context.read<MarketingController>().fetchBanners(),
-                context.read<MarketingController>().fetchDeliveryOffers(),
-                context.read<OrderController>().fetchHomeReviews(),
-              ]);
-            },
-            color: AppColors.primary,
-            child: CustomScrollView(
-              slivers: [
-                // ─── App Bar ─────────────────────────────────────────
-                SliverAppBar(
-                  floating: true,
-                  snap: true,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
-                  backgroundColor: theme.scaffoldBackgroundColor,
-                  automaticallyImplyLeading: false,
-                  toolbarHeight: 80,
-                  title: Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: 7,
-                      top: 4,
-                    ), // Breathing room
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Image.asset(
-                                'assets/images/home_logo.png',
-                                height: 30,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Container(
-                                  height: 50,
+          onRefresh: () async {
+            final emirate = context.read<EmirateController>().selectedEmirate;
+            await Future.wait([
+              context.read<ProductController>().fetchProducts(emirate: emirate),
+              context.read<ProductController>().fetchCategories(),
+              context.read<MarketingController>().fetchBanners(),
+              context.read<MarketingController>().fetchDeliveryOffers(),
+              context.read<OrderController>().fetchHomeReviews(),
+            ]);
+          },
+          color: AppColors.primary,
+          child: CustomScrollView(
+            slivers: [
+              // ─── App Bar ─────────────────────────────────────────
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                backgroundColor: theme.scaffoldBackgroundColor,
+                automaticallyImplyLeading: false,
+                toolbarHeight: 80,
+                title: Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: 7,
+                    top: 4,
+                  ), // Breathing room
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              'assets/images/home_logo.png',
+                              height: 30,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Container(
+                                height: 50,
+                                alignment: AlignmentDirectional.centerStart,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
                                   alignment: AlignmentDirectional.centerStart,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: AlignmentDirectional.centerStart,
-                                    child: IntrinsicWidth(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                tr(
-                                                  context,
-                                                  'app_name_simak',
-                                                ).trim().toUpperCase(),
-                                                style: TextStyle(
-                                                  fontSize: 55,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: theme
-                                                      .colorScheme
-                                                      .onSurface,
-                                                  height: 1.0,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Text(
-                                                tr(
-                                                  context,
-                                                  'app_name_fresh',
-                                                ).trim().toUpperCase(),
-                                                style: TextStyle(
-                                                  fontSize: 55,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: AppColors.actionBlue,
-                                                  height: 1.0,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 1),
-                                          FittedBox(
-                                            fit: BoxFit.fitWidth,
-                                            child: _buildStyledText(
-                                              context,
+                                  child: IntrinsicWidth(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
                                               tr(
                                                 context,
-                                                'tagline',
-                                              ).toUpperCase(),
-                                              TextStyle(
-                                                fontSize: 30,
-                                                fontWeight: FontWeight.w800,
-                                                color: AppColors.primary,
-                                                letterSpacing: 1.0,
+                                                'app_name_simak',
+                                              ).trim().toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 55,
+                                                fontWeight: FontWeight.w900,
+                                                color:
+                                                    theme.colorScheme.onSurface,
                                                 height: 1.0,
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              tr(
+                                                context,
+                                                'app_name_fresh',
+                                              ).trim().toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 55,
+                                                fontWeight: FontWeight.w900,
+                                                color: AppColors.actionBlue,
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 1),
+                                        Builder(
+                                          builder: (context) {
+                                            final lang = context.watch<LanguageProvider>().locale;
+                                            final isEnglish = lang == 'en';
+
+                                            if (isEnglish) {
+                                              return FittedBox(
+                                                fit: BoxFit.fitWidth,
+                                                alignment: AlignmentDirectional.centerStart,
+                                                child: _buildStyledText(
+                                                  context,
+                                                  tr(context, 'tagline').toUpperCase(),
+                                                  TextStyle(
+                                                    fontSize: 30,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: AppColors.primary,
+                                                    letterSpacing: 1.0,
+                                                    height: 1.0,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+
+                                            return Center(
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(top: 4),
+                                                child: _buildStyledText(
+                                                  context,
+                                                  tr(context, 'tagline').toUpperCase(),
+                                                  TextStyle(
+                                                    fontSize: 34,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.primary.withOpacity(0.9),
+                                                    letterSpacing: 1.2,
+                                                    height: 1.1,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Spacer(),
-                        // Language Selection Icon (Always visible)
-                        const Padding(
-                          padding: EdgeInsetsDirectional.only(end: 9),
-                          child: LanguageSelectionIcon(),
-                        ),
-                        // Floating Animated Cart Icon
-                        const FloatingCartIcon(),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // ─── Search Bar ──────────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverToBoxAdapter(
-                    child: GestureDetector(
-                      onTap: () {
-                        // Navigate to Products tab in HomeShell with auto-focus flag
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/home',
-                          arguments: {'index': 1, 'focusSearch': true},
-                        );
-                      },
-                      child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: theme.cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: theme.dividerColor.withOpacity(0.8),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.search_rounded,
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.4,
-                              ),
-                              size: 22,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              tr(context, 'search_hint'),
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.4,
-                                ),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+                      const Spacer(),
+                      // Language Selection Icon (Always visible)
+                      const Padding(
+                        padding: EdgeInsetsDirectional.only(end: 9),
+                        child: LanguageSelectionIcon(),
+                      ),
+                      // Floating Animated Cart Icon
+                      const FloatingCartIcon(),
+                    ],
                   ),
                 ),
+              ),
 
-                // ─── Banner Slider ────────────────────────────────────
-                const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                  sliver: SliverToBoxAdapter(child: _BannerSlider()),
-                ),
-
-                // ─── Delivery Offers Marquee ──────────────────────────
-                SliverToBoxAdapter(
-                  child: Consumer<MarketingController>(
-                    builder: (context, controller, child) {
-                      if (controller.deliveryOffers.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: DeliveryOffersMarquee(
-                          offers: controller.deliveryOffers,
-                        ),
+              // ─── Search Bar ──────────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverToBoxAdapter(
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to Products tab in HomeShell with auto-focus flag
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/home',
+                        arguments: {'index': 1, 'focusSearch': true},
                       );
                     },
-                  ),
-                ),
-
-                // ─── Categories ──────────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tr(context, 'shop_by_category'),
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                          ),
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.dividerColor.withOpacity(0.8),
                         ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 110,
-                          child: Consumer<ProductController>(
-                            builder: (context, controller, child) {
-                              if (controller.isCategoriesLoading &&
-                                  controller.backendCategories.isEmpty) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-
-                              final categories = controller.backendCategories;
-                              if (categories.isEmpty) {
-                                return Center(
-                                  child: Text(
-                                    tr(context, 'no_categories'),
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onSurface
-                                          .withOpacity(0.5),
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              return ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: categories.length,
-                                itemBuilder: (context, index) {
-                                  final category = categories[index];
-                                  return _CategoryCard(
-                                    index: index,
-                                    imageUrl:
-                                        category.image ??
-                                        AppConstants.kDefaultProductImage,
-                                    label: category.name,
-                                    onTap: () {
-                                      // Set selected category and navigate
-                                      controller.selectCategory(category.name);
-                                      Navigator.pushReplacementNamed(
-                                        context,
-                                        '/home',
-                                        arguments: {'index': 1},
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            tr(context, 'search_hint'),
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.4,
+                              ),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+              ),
 
-                // ─── Product Grid Title ──────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          tr(context, 'popular_now'),
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            context.read<ProductController>().selectCategory('All');
-                            Navigator.pushReplacementNamed(
-                              context,
-                              '/home',
-                              arguments: {'index': 1},
-                            );
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                tr(context, 'see_all'),
-                                style: const TextStyle(
-                                  color: AppColors.accent,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 12,
-                                color: AppColors.accent,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              // ─── Banner Slider ────────────────────────────────────
+              const SliverPadding(
+                padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                sliver: SliverToBoxAdapter(child: _BannerSlider()),
+              ),
 
-                // ─── Product Grid (limited to 4) ──────────────────────
-                Consumer<ProductController>(
+              // ─── Delivery Offers Marquee ──────────────────────────
+              SliverToBoxAdapter(
+                child: Consumer<MarketingController>(
                   builder: (context, controller, child) {
-                    if (controller.isLoading && controller.allProducts.isEmpty) {
-                      return SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: FishLoader(
-                            message: tr(context, 'loading_products'),
-                          ),
-                        ),
-                      );
+                    if (controller.deliveryOffers.isEmpty) {
+                      return const SizedBox.shrink();
                     }
-
-                    if (controller.error != null &&
-                        controller.allProducts.isEmpty) {
-                      return SliverToBoxAdapter(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(40),
-                            child: Text(
-                              controller.error!,
-                              style: const TextStyle(color: AppColors.error),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    if (controller.allProducts.isEmpty) {
-                      return SliverToBoxAdapter(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(40),
-                            child: Text(
-                              tr(context, 'no_products'),
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.6,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    // Show only up to 4 products from 'All' category on the home page
-                    final displayCount = controller.allProducts.length < 4
-                        ? controller.allProducts.length
-                        : 4;
-
-                    return SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 14,
-                              crossAxisSpacing: 14,
-                              childAspectRatio: 0.7,
-                            ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final product = controller.allProducts[index];
-                          return _ProductCard(
-                            product: product,
-                            fallbackImageUrl: controller.fallbackImageUrl,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      ProductDetailScreen(product: product),
-                                ),
-                              );
-                            },
-                          );
-                        }, childCount: displayCount),
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: DeliveryOffersMarquee(
+                        offers: controller.deliveryOffers,
                       ),
                     );
                   },
                 ),
+              ),
 
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: HowItWorksSection(
-                      onStartShopping: () {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/home',
-                          arguments: {'index': 1},
-                        );
-                      },
-                    ),
+              // ─── Categories ──────────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr(context, 'shop_by_category'),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 110,
+                        child: Consumer<ProductController>(
+                          builder: (context, controller, child) {
+                            if (controller.isCategoriesLoading &&
+                                controller.backendCategories.isEmpty) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            final categories = controller.backendCategories;
+                            if (categories.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  tr(context, 'no_categories'),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.5),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                return _CategoryCard(
+                                  index: index,
+                                  imageUrl:
+                                      category.image ??
+                                      AppConstants.kDefaultProductImage,
+                                  label: category.name,
+                                  onTap: () {
+                                    // Set selected category and navigate
+                                    controller.selectCategory(category.name);
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/home',
+                                      arguments: {'index': 1},
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
 
-                // ─── Why Choose Us ──────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  sliver: SliverToBoxAdapter(child: _WhyChooseUs()),
+              // ─── Product Grid Title ──────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
+                sliver: SliverToBoxAdapter(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        tr(context, 'popular_now'),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          context.read<ProductController>().selectCategory(
+                            'All',
+                          );
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/home',
+                            arguments: {'index': 1},
+                          );
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              tr(context, 'see_all'),
+                              style: const TextStyle(
+                                color: AppColors.accent,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 12,
+                              color: AppColors.accent,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ),
 
-                // ─── Stats Bar (New) ────────────────────────────────
-                const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  sliver: SliverToBoxAdapter(child: _HomeStatsBar()),
-                ),
+              // ─── Product Grid (limited to 4) ──────────────────────
+              Consumer<ProductController>(
+                builder: (context, controller, child) {
+                  if (controller.isLoading && controller.allProducts.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: FishLoader(
+                          message: tr(context, 'loading_products'),
+                        ),
+                      ),
+                    );
+                  }
 
-                // ─── Highlighted Testimonial (New) ──────────────────
-                const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  sliver: SliverToBoxAdapter(child: _HighlightedTestimonial()),
-                ),
+                  if (controller.error != null &&
+                      controller.allProducts.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Text(
+                            controller.error!,
+                            style: const TextStyle(color: AppColors.error),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
 
-                // ─── User Reviews ───────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  sliver: SliverToBoxAdapter(child: _UserReviews()),
-                ),
+                  if (controller.allProducts.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Text(
+                            tr(context, 'no_products'),
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
 
-                // ─── Featured Recipe ────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    20,
-                    32,
-                    20,
-                    100,
-                  ), // Keep 100 padding at the very bottom
-                  sliver: SliverToBoxAdapter(child: _FeaturedRecipe()),
+                  // Show only up to 4 products from 'All' category on the home page
+                  final displayCount = controller.allProducts.length < 4
+                      ? controller.allProducts.length
+                      : 4;
+
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 14,
+                            crossAxisSpacing: 14,
+                            childAspectRatio: 0.7,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final product = controller.allProducts[index];
+                        return _ProductCard(
+                          product: product,
+                          fallbackImageUrl: controller.fallbackImageUrl,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ProductDetailScreen(product: product),
+                              ),
+                            );
+                          },
+                        );
+                      }, childCount: displayCount),
+                    ),
+                  );
+                },
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: SliverToBoxAdapter(
+                  child: HowItWorksSection(
+                    onStartShopping: () {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/home',
+                        arguments: {'index': 1},
+                      );
+                    },
+                  ),
                 ),
-              ],
-            ),
+              ),
+
+              // ─── Why Choose Us ──────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: SliverToBoxAdapter(child: _WhyChooseUs()),
+              ),
+
+              // ─── Stats Bar (New) ────────────────────────────────
+              const SliverPadding(
+                padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: SliverToBoxAdapter(child: _HomeStatsBar()),
+              ),
+
+              // ─── Highlighted Testimonial (New) ──────────────────
+              const SliverPadding(
+                padding: EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: SliverToBoxAdapter(child: _HighlightedTestimonial()),
+              ),
+
+              // ─── User Reviews ───────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: SliverToBoxAdapter(child: _UserReviews()),
+              ),
+
+              // ─── Featured Recipe ────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  32,
+                  20,
+                  100,
+                ), // Keep 100 padding at the very bottom
+                sliver: SliverToBoxAdapter(child: _FeaturedRecipe()),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }
 

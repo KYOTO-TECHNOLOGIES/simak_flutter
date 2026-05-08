@@ -19,6 +19,7 @@ import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/widgets/video_player_widget.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
+import 'package:uae_ecom_project/core/widgets/floating_view_cart_bar.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final ProductModel product;
@@ -41,6 +42,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final TextEditingController _specialInstructionsController =
       TextEditingController();
   bool _showPreparationError = false;
+  bool _showFloatingCart = false;
 
   @override
   void initState() {
@@ -134,12 +136,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   bool get _inStock => widget.product.isAvailable && widget.product.stock > 0;
 
-  void _showAddedToCartSnackbar() {
-    SimakFeedback.showSuccess(
-      context,
-      '${widget.product.name} ${trStatic(context, 'added_to_cart')}',
-    );
-  }
 
   /// Returns the quantity of this product already in the cart.
   void _showPrepSelectionModal() {
@@ -246,9 +242,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
               ),
             ),
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
+            child: Stack(
+              children: [
+                CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
                 // ── Gallery header (full-bleed) ──────────────
                 SliverToBoxAdapter(
                   child: Padding(
@@ -1027,7 +1025,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ],
             ),
-          ),
+            // ── Floating View Cart Bar ─────────────────────
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: FloatingViewCartBar(isVisible: _showFloatingCart),
+            ),
+          ],
+        ),
+      ),
           bottomNavigationBar: Container(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             decoration: BoxDecoration(
@@ -1183,7 +1190,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                               );
                                           if (!mounted) return;
                                           if (success) {
-                                            _showAddedToCartSnackbar();
+                                            setState(() => _showFloatingCart = true);
                                           } else {
                                             SimakFeedback.showError(
                                               context,
@@ -1303,6 +1310,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             if (!mounted) return;
 
                                             if (success) {
+                                              setState(() => _showFloatingCart = true);
                                               Navigator.pushNamed(
                                                 context,
                                                 '/cart',
