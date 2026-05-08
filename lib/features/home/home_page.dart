@@ -149,13 +149,12 @@ class _HomePageState extends State<HomePage> {
           marketing: activePopup,
           delay: Duration.zero,
           onShopNow: () {
-            if (activePopup.link != null && activePopup.link!.isNotEmpty) {
-              if (activePopup.link!.startsWith('http')) {
-                // Open browser or handle external link
-              } else {
-                Navigator.pushNamed(context, activePopup.link!);
-              }
-            }
+            // Navigate to Products tab in HomeShell
+            Navigator.pushReplacementNamed(
+              context,
+              '/home',
+              arguments: {'index': 1},
+            );
           },
         ).then((_) {
           if (!mounted) return;
@@ -1289,7 +1288,12 @@ class _BannerSlide extends StatelessWidget {
                     if (slide.ctaText != null)
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Handle CTA link
+                          // Navigate to Products tab in HomeShell
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/home',
+                            arguments: {'index': 1},
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.actionBlue,

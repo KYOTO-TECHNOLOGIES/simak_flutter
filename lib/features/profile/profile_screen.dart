@@ -350,14 +350,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       centerTitle: true,
       actions: [
         IconButton(
-          icon: Icon(
-            Icons.cleaning_services_outlined,
-            color: theme.colorScheme.onSurface,
-          ),
-          onPressed: () => _showClearCacheDialog(context),
-          tooltip: tr(context, 'clear_cache'),
-        ),
-        IconButton(
           icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
           onPressed: () => _showLogoutConfirmation(context),
         ),
@@ -1578,102 +1570,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _showClearCacheDialog(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (contextDialog) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          tr(context, 'clear_cache_confirm_title'),
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          tr(context, 'clear_cache_confirm_message'),
-          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.8)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(contextDialog),
-            child: Text(
-              tr(context, 'cancel'),
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(contextDialog);
-
-              // Show loading overlay
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (contextLoading) => Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(
-                          color: AppColors.actionBlue,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          tr(context, 'clearing_cache'),
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface,
-                            fontSize: 14,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-
-              // Perform clearing
-              await CacheService().clearAllCache();
-
-              if (context.mounted) {
-                Navigator.pop(context); // Close loading overlay
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(tr(context, 'cache_cleared')),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    margin: const EdgeInsets.all(20),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.actionBlue,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0,
-            ),
-            child: Text(tr(context, 'clear_cache')),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showLogoutConfirmation(BuildContext context) {
     final theme = Theme.of(context);
