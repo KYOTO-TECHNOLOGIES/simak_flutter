@@ -286,11 +286,22 @@ class AvailableOrderCard extends StatelessWidget {
                             child: InkWell(
                               onTap: controller.isActionLoading ? null : () async {
                                 final success = await context.read<DeliveryController>().claimOrder(order.id);
-                                if (success) {
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Order claimed successfully')),
-                                  );
+                                  if (success) {
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Order Claimed Successfully',
+                                          style: GoogleFonts.outfit(fontWeight: FontWeight.w600, color: Colors.white),
+                                        ),
+                                        backgroundColor: const Color(0xFF00B894),
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: const EdgeInsets.all(20),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        duration: const Duration(seconds: 3),
+                                      ),
+                                    );
                                   
                                   // Refresh My Orders
                                   final auth = context.read<AuthController>();
