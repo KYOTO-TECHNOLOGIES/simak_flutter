@@ -501,6 +501,53 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (!_isEmail) ...[
+                  Consumer<AuthController>(
+                    builder: (context, auth, _) {
+                      final bool isWhatsApp = auth.otpPlatform?.toLowerCase() == 'whatsapp';
+                      
+                      if (!isWhatsApp) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF25D366).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF25D366).withOpacity(0.1),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.chat_bubble_rounded,
+                                  size: 18,
+                                  color: Color(0xFF25D366),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    tr(context, 'otp_sent_via_whatsapp'),
+                                    style: const TextStyle(
+                                      color: Color(0xFF075E54),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Text(
                   tr(context, 'enter_otp_label'),

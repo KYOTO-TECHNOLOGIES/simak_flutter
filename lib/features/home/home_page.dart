@@ -27,7 +27,7 @@ import 'package:uae_ecom_project/features/home/widgets/language_selection_icon.d
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
-import 'package:uae_ecom_project/features/home/widgets/delivery_offers_marquee.dart';
+import 'package:uae_ecom_project/features/home/widgets/trending_offers_section.dart';
 
 Widget _buildStyledText(
   BuildContext context,
@@ -447,18 +447,14 @@ class _HomePageState extends State<HomePage> {
                 sliver: SliverToBoxAdapter(child: _BannerSlider()),
               ),
 
-              // ─── Delivery Offers Marquee ──────────────────────────
               SliverToBoxAdapter(
                 child: Consumer<MarketingController>(
                   builder: (context, controller, child) {
                     if (controller.deliveryOffers.isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: DeliveryOffersMarquee(
-                        offers: controller.deliveryOffers,
-                      ),
+                    return TrendingOffersSection(
+                      offers: controller.deliveryOffers,
                     );
                   },
                 ),

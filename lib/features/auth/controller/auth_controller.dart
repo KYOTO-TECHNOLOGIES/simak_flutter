@@ -25,6 +25,7 @@ class AuthController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _isOtpSent = false;
+  String? _otpPlatform;
 
   // ─── Getters ────────────────────────────────────────────────
   UserModel? get currentUser => _currentUser;
@@ -32,6 +33,7 @@ class AuthController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _currentUser != null;
   bool get isOtpSent => _isOtpSent;
+  String? get otpPlatform => _otpPlatform;
   bool get isDeliveryUser => _currentUser?.email == 'delivery.abudhabi@demo.com';
 
   // ─── State Helpers ──────────────────────────────────────────
@@ -231,8 +233,11 @@ class AuthController extends ChangeNotifier {
         }
       }
 
-      await _authService.requestOtp(OtpRequestModel(identifier: identifier));
+      final responseData = await _authService.requestOtp(OtpRequestModel(identifier: identifier));
       _isOtpSent = true;
+      // Capture otp_platform here
+      _otpPlatform = responseData['otp_platform']?.toString();
+      debugPrint('OTP Platform received: $_otpPlatform');
       _setLoading(false);
       return true;
     } on DioException catch (e) {
@@ -491,6 +496,7 @@ class AuthController extends ChangeNotifier {
     await _tokenStorage.clearAll();
     _currentUser = null;
     _isOtpSent = false;
+    _otpPlatform = null;
     _setLoading(false);
   }
 
@@ -700,6 +706,7 @@ class AuthController extends ChangeNotifier {
   // ─── Reset OTP State ───────────────────────────────────────
   void resetOtpState() {
     _isOtpSent = false;
+    _otpPlatform = null;
     notifyListeners();
   }
 }

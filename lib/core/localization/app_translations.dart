@@ -281,6 +281,8 @@ final Map<String, Map<String, String>> _translations = {
     'no_products_found': 'No products found',
     'retry': 'Retry',
     'hot_label': '🔥 HOT',
+    'limited time offer': 'Limited Time Offer',
+    'express delivery': 'Express Delivery',
 
     // ── Login Screen ─────────────────────────────────────────
     'sign_in_to_shop': 'Sign In to Shop',
@@ -320,6 +322,8 @@ final Map<String, Map<String, String>> _translations = {
     'enter_otp': 'Enter OTP',
     'otp_login': 'OTP Login',
     'otp_sent_msg': 'We sent a 6-digit code to',
+    'otp_sent_via_whatsapp': 'OTP sent via WhatsApp',
+    'whatsapp_check_msg': 'Check your WhatsApp for the 6-digit code',
     'otp_enter_msg':
         'Enter your phone number or email\nto receive a verification code',
     'phone_or_email': 'Phone or Email',
@@ -1022,6 +1026,8 @@ final Map<String, Map<String, String>> _translations = {
     'no_products_found': '未找到产品',
     'retry': '重试',
     'hot_label': '🔥 热门',
+    'limited time offer': '限时优惠',
+    'express delivery': '极速送达',
     'sign_in_to_shop': '登录购物',
     'fresh_deals_waiting': '新鲜优惠等您来抢',
     'welcome_back': '欢迎回来',
@@ -1054,6 +1060,8 @@ final Map<String, Map<String, String>> _translations = {
     'enter_otp': '输入验证码',
     'otp_login': '验证码登录',
     'otp_sent_msg': '我们已发送6位验证码至',
+    'otp_sent_via_whatsapp': '验证码已通过 WhatsApp 发送',
+    'whatsapp_check_msg': '请检查您的 WhatsApp 以获取6位验证码',
     'otp_enter_msg': '输入您的手机号码或电子邮箱\n以接收验证码',
     'phone_or_email': '手机号或邮箱',
     'phone_hint': '+971501234567 或 you@email.com',
@@ -1775,6 +1783,8 @@ final Map<String, Map<String, String>> _translations = {
     'no_products_found': 'لم يتم العثور على منتجات',
     'retry': 'إعادة المحاولة',
     'hot_label': '🔥 رائج',
+    'limited time offer': 'عرض لفترة محدودة',
+    'express delivery': 'توصيل سريع',
 
     // ── Login Screen ─────────────────────────────────────────
     'sign_in_to_shop': 'سجّل الدخول للتسوق',
@@ -1814,7 +1824,9 @@ final Map<String, Map<String, String>> _translations = {
     // ── OTP Screen ───────────────────────────────────────────
     'enter_otp': 'أدخل رمز التحقق',
     'otp_login': 'الدخول برمز التحقق',
-    'otp_sent_msg': 'أرسلنا رمزاً مكوناً من 6 أرقام إلى',
+    'otp_sent_msg': 'لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى',
+    'otp_sent_via_whatsapp': 'تم إرسال الرمز عبر واتساب',
+    'whatsapp_check_msg': 'يرجى التحقق من واتساب الخاص بك للحصول على رمز التحقق',
     'otp_enter_msg': 'أدخل رقم هاتفك أو بريدك الإلكتروني\nلتلقي رمز التحقق',
     'phone_or_email': 'الهاتف أو البريد الإلكتروني',
     'phone_hint': '+971501234567 أو you@email.com',

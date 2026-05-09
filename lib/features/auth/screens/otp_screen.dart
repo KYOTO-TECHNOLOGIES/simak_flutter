@@ -265,6 +265,76 @@ class _OtpScreenState extends State<OtpScreen> {
                               height: 1.5,
                             ),
                           ),
+                          // WhatsApp Indicator (E-commerce Style)
+                          Consumer<AuthController>(
+                            builder: (context, auth, _) {
+                              final bool isWhatsApp = auth.otpPlatform?.toLowerCase() == 'whatsapp';
+                              
+                              if (!isWhatsApp) {
+                                return const SizedBox.shrink();
+                              }
+                              return Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(top: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color(0xFF25D366).withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color:
+                                        const Color(0xFF25D366).withOpacity(0.2),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF25D366),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.chat_bubble_rounded,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            tr(context, 'otp_sent_via_whatsapp'),
+                                            style: const TextStyle(
+                                              color: Color(0xFF075E54),
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 0.2,
+                                            ),
+                                          ),
+                                          Text(
+                                            tr(context, 'whatsapp_check_msg'),
+                                            style: TextStyle(
+                                              color: const Color(0xFF075E54)
+                                                  .withOpacity(0.7),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                           const SizedBox(height: 32),
 
                           // OTP Input Row
