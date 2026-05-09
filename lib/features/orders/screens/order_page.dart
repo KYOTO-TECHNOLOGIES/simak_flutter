@@ -689,27 +689,25 @@ class _OrderPageState extends State<OrderPage> {
                             checkout.minDeliveryDate ??
                             DateTime(now.year, now.month, now.day + 1);
 
-                        // Ensure initial date is safe
+                        // Ensure initial date is safe and within the new limited range
                         DateTime initialDate = minDate;
-                        if (checkout.deliveryDate != null &&
-                            !checkout.deliveryDate!.isBefore(minDate)) {
-                          initialDate = checkout.deliveryDate!;
+                        if (checkout.deliveryDate != null) {
+                          final maxDate = minDate.add(const Duration(days: 1));
+                          if (!checkout.deliveryDate!.isBefore(minDate) &&
+                              !checkout.deliveryDate!.isAfter(maxDate)) {
+                            initialDate = checkout.deliveryDate!;
+                          }
                         }
 
-                        // Ensure at least a 7-day window for date selection,
-                        // even if backend estimates a shorter delivery time.
-                        final selectableDays = (checkout.maxDeliveryDays !=
-                                    null &&
-                                checkout.maxDeliveryDays! > 7)
-                            ? checkout.maxDeliveryDays!
-                            : 7;
+                        // Limit selection to only 2 available dates starting from the minDate
+                        const selectableDays = 1;
 
                         final date = await showDatePicker(
                           context: context,
                           initialDate: initialDate,
                           firstDate: minDate,
                           lastDate: minDate.add(
-                            Duration(days: selectableDays),
+                            const Duration(days: selectableDays),
                           ),
                         );
                         if (date != null)

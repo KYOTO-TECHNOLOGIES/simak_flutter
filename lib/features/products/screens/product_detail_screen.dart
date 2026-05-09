@@ -780,8 +780,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       ),
                                       _QtyButton(
                                         icon: Icons.add,
-                                        onTap: () =>
-                                            setState(() => _quantity++),
+                                        onTap: _quantity < widget.product.stock
+                                            ? () => setState(() => _quantity++)
+                                            : null,
                                         theme: theme,
                                         isPrimary: true,
                                       ),

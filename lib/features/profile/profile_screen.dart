@@ -289,13 +289,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SliverAppBar(
       floating: true,
       backgroundColor: theme.scaffoldBackgroundColor,
-      title: Text(
-        tr(context, 'profile'),
-        style: TextStyle(
-          color: theme.colorScheme.onSurface,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+      title: Image.asset(
+        'assets/images/home_logo.png',
+        height: 35,
+        fit: BoxFit.contain,
       ),
       leading: Consumer<NotificationController>(
         builder: (context, notifCtrl, _) {
