@@ -12,7 +12,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _mainFadeController;
   late AnimationController _logoFloatController;
   bool _isVisible = true;
@@ -56,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (!mounted) return;
 
     final auth = context.read<AuthController>();
-    
+
     if (auth.isLoggedIn) {
       if (auth.isDeliveryUser) {
         Navigator.of(context).pushReplacementNamed('/delivery_dashboard');
@@ -66,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     } else {
       final langProvider = context.read<LanguageProvider>();
       if (langProvider.hasSelectedLanguage) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushReplacementNamed('/home', arguments: 2);
       } else {
         Navigator.of(context).pushReplacementNamed('/language_selection');
       }
@@ -96,14 +97,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 animation: _logoFloatController,
                 builder: (context, child) {
                   return Transform.translate(
-                    offset: Offset(0, -8 * math.sin(_logoFloatController.value * 2 * math.pi)),
+                    offset: Offset(
+                      0,
+                      -8 * math.sin(_logoFloatController.value * 2 * math.pi),
+                    ),
                     child: child,
                   );
                 },
                 child: const Image(
                   image: AssetImage('assets/images/home_logo.png'),
-                  width: 80,
-                  height: 80,
+                  width: 60,
+                  height: 60,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -111,9 +115,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               const SizedBox(height: 20),
 
               // ─── Animated Language Text ─────────────────────
-              _LanguageAnimator(
-                onComplete: _onAnimationComplete,
-              ),
+              _LanguageAnimator(onComplete: _onAnimationComplete),
 
               const SizedBox(height: 20),
 
@@ -169,8 +171,8 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
   int _currentIndex = 0;
   final List<Map<String, String>> _languages = [
     {'a': 'SIMAK', 'b': 'FRESH'},
-    {'a': '西马克', 'b': '生鲜'},
     {'a': 'سيماك', 'b': 'فريش'},
+    {'a': '西马克', 'b': '生鲜'},
   ];
 
   @override
@@ -182,7 +184,7 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
   void _startSequence() async {
     // Initial delay for Logo to be seen
     await Future.delayed(const Duration(milliseconds: 1400));
-    
+
     for (int i = 0; i < _languages.length - 1; i++) {
       if (!mounted) return;
       setState(() => _currentIndex = i + 1);
@@ -197,7 +199,7 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
   @override
   Widget build(BuildContext context) {
     final lang = _languages[_currentIndex];
-    
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
       layoutBuilder: (currentChild, previousChildren) {
@@ -210,11 +212,14 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
         );
       },
       transitionBuilder: (Widget child, Animation<double> animation) {
-        final inAnimation = Tween<Offset>(
-          begin: const Offset(0.3, 0.0),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
-        
+        final inAnimation =
+            Tween<Offset>(
+              begin: const Offset(0.3, 0.0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            );
+
         final fadeAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeInOut,
@@ -222,10 +227,7 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
 
         return FadeTransition(
           opacity: fadeAnimation,
-          child: SlideTransition(
-            position: inAnimation,
-            child: child,
-          ),
+          child: SlideTransition(position: inAnimation, child: child),
         );
       },
       child: _ShimmerText(
@@ -242,17 +244,14 @@ class _ShimmerText extends StatefulWidget {
   final String textA;
   final String textB;
 
-  const _ShimmerText({
-    super.key,
-    required this.textA,
-    required this.textB,
-  });
+  const _ShimmerText({super.key, required this.textA, required this.textB});
 
   @override
   State<_ShimmerText> createState() => _ShimmerTextState();
 }
 
-class _ShimmerTextState extends State<_ShimmerText> with SingleTickerProviderStateMixin {
+class _ShimmerTextState extends State<_ShimmerText>
+    with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
 
   @override
@@ -288,7 +287,9 @@ class _ShimmerTextState extends State<_ShimmerText> with SingleTickerProviderSta
                 Color(0xFFF6DE37),
               ],
               stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
-              transform: _SlidingGradientTransform(slidePercent: _shimmerController.value),
+              transform: _SlidingGradientTransform(
+                slidePercent: _shimmerController.value,
+              ),
             ).createShader(bounds);
           },
           child: FittedBox(
@@ -324,7 +325,11 @@ class _SlidingGradientTransform extends GradientTransform {
 
   @override
   Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
-    return Matrix4.translationValues(bounds.width * (slidePercent * 2 - 1), 0.0, 0.0);
+    return Matrix4.translationValues(
+      bounds.width * (slidePercent * 2 - 1),
+      0.0,
+      0.0,
+    );
   }
 }
 
@@ -344,7 +349,8 @@ class _BouncingCreature extends StatefulWidget {
   State<_BouncingCreature> createState() => _BouncingCreatureState();
 }
 
-class _BouncingCreatureState extends State<_BouncingCreature> with SingleTickerProviderStateMixin {
+class _BouncingCreatureState extends State<_BouncingCreature>
+    with SingleTickerProviderStateMixin {
   late AnimationController _bounceController;
   late Animation<double> _yAnimation;
 
@@ -409,17 +415,17 @@ class _BouncingCreatureState extends State<_BouncingCreature> with SingleTickerP
         AnimatedBuilder(
           animation: _bounceController,
           builder: (context, _) {
-            final double scale = (1.0 + _yAnimation.value / 60.0).clamp(0.5, 1.0);
+            final double scale = (1.0 + _yAnimation.value / 60.0).clamp(
+              0.5,
+              1.0,
+            );
             return Container(
               width: 40 * scale,
               height: 4,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(2),
                 gradient: RadialGradient(
-                  colors: [
-                    widget.color.withOpacity(0.25),
-                    Colors.transparent,
-                  ],
+                  colors: [widget.color.withOpacity(0.25), Colors.transparent],
                 ),
               ),
             );
@@ -439,9 +445,7 @@ class _WaveDivider extends StatelessWidget {
     return SizedBox(
       width: 180,
       height: 7,
-      child: CustomPaint(
-        painter: _WavePainter(),
-      ),
+      child: CustomPaint(painter: _WavePainter()),
     );
   }
 }
@@ -456,12 +460,32 @@ class _WavePainter extends CustomPainter {
 
     final path = Path();
     path.moveTo(0, size.height / 2);
-    
+
     // M0 3.5 Q22.5 0 45 3.5 Q67.5 7 90 3.5 Q112.5 0 135 3.5 Q157.5 7 180 3.5
-    path.quadraticBezierTo(size.width * 0.125, 0, size.width * 0.25, size.height / 2);
-    path.quadraticBezierTo(size.width * 0.375, size.height, size.width * 0.5, size.height / 2);
-    path.quadraticBezierTo(size.width * 0.625, 0, size.width * 0.75, size.height / 2);
-    path.quadraticBezierTo(size.width * 0.875, size.height, size.width, size.height / 2);
+    path.quadraticBezierTo(
+      size.width * 0.125,
+      0,
+      size.width * 0.25,
+      size.height / 2,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.375,
+      size.height,
+      size.width * 0.5,
+      size.height / 2,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.625,
+      0,
+      size.width * 0.75,
+      size.height / 2,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.875,
+      size.height,
+      size.width,
+      size.height / 2,
+    );
 
     canvas.drawPath(path, paint);
   }

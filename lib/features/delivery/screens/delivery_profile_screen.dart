@@ -16,7 +16,8 @@ class DeliveryProfileScreen extends StatelessWidget {
     final deliveryController = context.watch<DeliveryController>();
     final data = deliveryController.dashboardData;
     final profile = data?.profile;
-    final emirates = profile?.assignedEmiratesDisplay.join(', ') ?? 'NONE ASSIGNED';
+    final emirates =
+        profile?.assignedEmiratesDisplay.join(', ') ?? 'NONE ASSIGNED';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -99,9 +100,10 @@ class DeliveryProfileScreen extends StatelessWidget {
                 _InfoItem(
                   icon: Icons.history_outlined,
                   label: 'JOINED SIMAK',
-                  value: user?.createdAt != null 
-                    ? user!.createdAt! // It's a string, so just use it or parse
-                    : 'N/A',
+                  value: user?.createdAt != null
+                      ? user!
+                            .createdAt! // It's a string, so just use it or parse
+                      : 'N/A',
                 ),
               ],
             ),
@@ -144,7 +146,9 @@ class DeliveryProfileScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: isAvailable ? const Color(0xFFE3F9E5) : const Color(0xFFFFE8E8),
+                color: isAvailable
+                    ? const Color(0xFFE3F9E5)
+                    : const Color(0xFFFFE8E8),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
@@ -228,7 +232,11 @@ class DeliveryProfileScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.camera_alt, size: 14, color: AppColors.actionBlue),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        size: 14,
+                        color: AppColors.actionBlue,
+                      ),
                     ),
                   ),
                 ],
@@ -249,7 +257,10 @@ class DeliveryProfileScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.actionBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(30),
@@ -264,7 +275,7 @@ class DeliveryProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                   const SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
                     'Partner ID: #${profile?.id ?? "N/A"}',
                     style: GoogleFonts.outfit(
@@ -312,7 +323,10 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection({required String title, required List<_InfoItem> items}) {
+  Widget _buildInfoSection({
+    required String title,
+    required List<_InfoItem> items,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -354,7 +368,11 @@ class DeliveryProfileScreen extends StatelessWidget {
                               color: const Color(0xFFFAFAFA),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(item.icon, size: 20, color: Colors.grey.shade400),
+                            child: Icon(
+                              item.icon,
+                              size: 20,
+                              color: Colors.grey.shade400,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -408,7 +426,9 @@ class DeliveryProfileScreen extends StatelessWidget {
 
   void _showEditPhoneDialog(BuildContext context) {
     final authController = context.read<AuthController>();
-    final phoneController = TextEditingController(text: authController.currentUser?.phoneNumber);
+    final phoneController = TextEditingController(
+      text: authController.currentUser?.phoneNumber,
+    );
 
     showDialog(
       context: context,
@@ -427,7 +447,9 @@ class DeliveryProfileScreen extends StatelessWidget {
               decoration: InputDecoration(
                 labelText: 'Phone Number',
                 hintText: '+971XXXXXXXXX',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -435,23 +457,40 @@ class DeliveryProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('CANCEL', style: GoogleFonts.outfit(color: Colors.grey)),
+            child: Text(
+              'CANCEL',
+              style: GoogleFonts.outfit(color: Colors.grey),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
-              final success = await authController.updateProfile({'phone_number': phoneController.text.trim()});
+              final success = await authController.updateProfile({
+                'phone_number': phoneController.text.trim(),
+              });
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(success ? 'Phone number updated' : 'Update failed')),
+                  SnackBar(
+                    content: Text(
+                      success ? 'Phone number updated' : 'Update failed',
+                    ),
+                  ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.actionBlue,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text('SAVE', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(
+              'SAVE',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -460,11 +499,15 @@ class DeliveryProfileScreen extends StatelessWidget {
 
   Future<void> _selectDateOfBirth(BuildContext context) async {
     final authController = context.read<AuthController>();
-    DateTime initialDate = DateTime.now().subtract(const Duration(days: 365 * 20));
-    
+    DateTime initialDate = DateTime.now().subtract(
+      const Duration(days: 365 * 20),
+    );
+
     if (authController.currentUser?.profile?.dateOfBirth != null) {
       try {
-        initialDate = DateTime.parse(authController.currentUser!.profile!.dateOfBirth!);
+        initialDate = DateTime.parse(
+          authController.currentUser!.profile!.dateOfBirth!,
+        );
       } catch (_) {}
     }
 
@@ -476,9 +519,7 @@ class DeliveryProfileScreen extends StatelessWidget {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.actionBlue,
-            ),
+            colorScheme: const ColorScheme.light(primary: AppColors.actionBlue),
           ),
           child: child!,
         );
@@ -486,14 +527,17 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
 
     if (picked != null) {
-      final String formattedDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      final String formattedDate =
+          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       final success = await authController.updateProfile({
-        'profile': {'date_of_birth': formattedDate}
+        'profile': {'date_of_birth': formattedDate},
       });
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(success ? 'Date of birth updated' : 'Update failed')),
+          SnackBar(
+            content: Text(success ? 'Date of birth updated' : 'Update failed'),
+          ),
         );
       }
     }
@@ -503,7 +547,9 @@ class DeliveryProfileScreen extends StatelessWidget {
     return TextButton(
       onPressed: () {
         context.read<AuthController>().logout();
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/home', (route) => false, arguments: 2);
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

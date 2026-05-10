@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -185,7 +186,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with SingleTicker
                     backgroundImage: _imageFile != null
                         ? FileImage(_imageFile!)
                         : (user.profile?.profilePicture != null && user.profile!.profilePicture!.isNotEmpty)
-                            ? NetworkImage(user.profile!.profilePicture!) as ImageProvider
+                            ? CustomImage.provider(user.profile!.profilePicture!)
                             : null,
                     child: (_imageFile == null && (user.profile?.profilePicture == null || user.profile!.profilePicture!.isEmpty))
                         ? Text(

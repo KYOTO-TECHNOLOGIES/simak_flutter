@@ -62,8 +62,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   static const Map<String, String> _editableLanguageLabels = {
     'en': 'English',
-    'cn': 'Chinese',
     'ar': 'Arabic',
+    'cn': 'Chinese',
   };
 
   String _languageDisplay(String code) =>
@@ -347,8 +347,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       centerTitle: true,
       actions: [
         IconButton(
-          icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
-          onPressed: () => _showLogoutConfirmation(context),
+          icon: Icon(
+            Icons.support_agent_outlined,
+            color: theme.colorScheme.onSurface,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  appBar: AppBar(
+                    title: Text(tr(context, 'support_center')),
+                    backgroundColor: theme.scaffoldBackgroundColor,
+                    elevation: 0,
+                    foregroundColor: theme.colorScheme.onSurface,
+                  ),
+                  body: const SingleChildScrollView(child: SupportWidget()),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -529,7 +547,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       (Icons.location_on_outlined, tr(context, 'my_addresses')),
       (Icons.rate_review_outlined, tr(context, 'my_reviews')),
       (Icons.card_giftcard_outlined, tr(context, 'referrals')),
-      (Icons.support_agent_outlined, tr(context, 'support_center')),
     ];
 
     return Stack(
@@ -677,11 +694,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return _buildMyReviewsSection(context, theme);
     }
 
-    if (_selectedSection == 4) {
-      return const ReferralScreen();
-    }
-
-    return const SupportWidget();
+    return const ReferralScreen();
   }
 
   Widget _buildPersonalInfoSection(
@@ -698,234 +711,260 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? _formatDate(profile.dateOfBirth!)
         : '—';
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with Edit button
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.person_outline, color: AppColors.actionBlue, size: 22),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              // Header with Edit button
+              Row(
+                children: [
+                  Icon(
+                    Icons.person_outline,
+                    color: AppColors.actionBlue,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tr(context, 'personal_info'),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          tr(context, 'profile_info_subtitle'),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!_isEditing)
+                    TextButton.icon(
+                      onPressed: () => _startEditing(user),
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: Text(tr(context, 'edit')),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.actionBlue,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                    )
+                  else
+                    TextButton(
+                      onPressed: _cancelEditing,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      child: Text(tr(context, 'cancel')),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // First name & Last name
+              if (_isEditing) ...[
+                Row(
                   children: [
-                    Text(
-                      tr(context, 'personal_info'),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
+                    Expanded(
+                      child: _buildEditableTextField(
+                        context,
+                        tr(context, 'first_name_label'),
+                        _firstNameController,
+                        theme,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      tr(context, 'profile_info_subtitle'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildEditableTextField(
+                        context,
+                        tr(context, 'last_name_label'),
+                        _lastNameController,
+                        theme,
                       ),
                     ),
                   ],
                 ),
-              ),
-              if (!_isEditing)
-                TextButton.icon(
-                  onPressed: () => _startEditing(user),
-                  icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: Text(tr(context, 'edit')),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.actionBlue,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                )
-              else
-                TextButton(
-                  onPressed: _cancelEditing,
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  child: Text(tr(context, 'cancel')),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoField(
+                        context,
+                        tr(context, 'first_name_label'),
+                        user.firstName.trim().isEmpty ? '—' : user.firstName,
+                        theme,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoField(
+                        context,
+                        tr(context, 'last_name_label'),
+                        user.lastName.trim().isEmpty ? '—' : user.lastName,
+                        theme,
+                      ),
+                    ),
+                  ],
                 ),
+              ],
+              const SizedBox(height: 20),
+
+              // Email field with Add/Edit button
+              _buildEmailField(context, user, theme),
+              const SizedBox(height: 20),
+
+              // Phone field with verification
+              _buildPhoneField(context, user, theme),
+              const SizedBox(height: 20),
+
+              // Gender
+              if (_isEditing) ...[
+                _buildGenderDropdown(context, theme),
+              ] else ...[
+                _buildInfoField(
+                  context,
+                  tr(context, 'gender_label'),
+                  _getGenderLabel(profile?.gender),
+                  theme,
+                ),
+              ],
+              const SizedBox(height: 20),
+
+              // Date of Birth
+              if (_isEditing) ...[
+                _buildDobPicker(context, theme),
+              ] else ...[
+                _buildInfoFieldWithIcon(
+                  context,
+                  tr(context, 'profile_dob_label'),
+                  dobDisplay,
+                  Icons.calendar_today_outlined,
+                  theme,
+                ),
+              ],
+              const SizedBox(height: 20),
+
+              // Preferred Language
+              if (_isEditing) ...[
+                _buildLanguageDropdown(context, theme),
+              ] else ...[
+                _buildInfoFieldWithWidgetIcon(
+                  context,
+                  tr(context, 'profile_lang_label'),
+                  _languageDisplay(profile?.preferredLanguage ?? 'en'),
+                  _getLanguageIcon(profile?.preferredLanguage ?? 'en', size: 18),
+                  theme,
+                ),
+              ],
+
+              // Save button in edit mode
+              if (_isEditing) ...[
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: Consumer<AuthController>(
+                    builder: (context, auth, _) {
+                      return ElevatedButton(
+                        onPressed: auth.isLoading ? null : _saveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.actionBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 4,
+                          shadowColor: AppColors.actionBlue.withOpacity(0.4),
+                        ),
+                        child: auth.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                tr(context, 'save_changes'),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              // Logout button inside the container
+              if (!_isEditing) ...[
+                const SizedBox(height: 32),
+                const Divider(),
+                const SizedBox(height: 16),
+                _buildLogoutTile(context, theme),
+              ],
             ],
           ),
-          const SizedBox(height: 24),
-
-          // First name & Last name
-          if (_isEditing) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _buildEditableTextField(
-                    context,
-                    tr(context, 'first_name_label'),
-                    _firstNameController,
-                    theme,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildEditableTextField(
-                    context,
-                    tr(context, 'last_name_label'),
-                    _lastNameController,
-                    theme,
-                  ),
-                ),
-              ],
-            ),
-          ] else ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInfoField(
-                    context,
-                    tr(context, 'first_name_label'),
-                    user.firstName.trim().isEmpty ? '—' : user.firstName,
-                    theme,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildInfoField(
-                    context,
-                    tr(context, 'last_name_label'),
-                    user.lastName.trim().isEmpty ? '—' : user.lastName,
-                    theme,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 20),
-
-          // Email field with Add/Edit button
-          _buildEmailField(context, user, theme),
-          const SizedBox(height: 20),
-
-          // Phone field with verification
-          _buildPhoneField(context, user, theme),
-          const SizedBox(height: 20),
-
-          // Gender
-          if (_isEditing) ...[
-            _buildGenderDropdown(context, theme),
-          ] else ...[
-            _buildInfoField(
-              context,
-              tr(context, 'gender_label'),
-              _getGenderLabel(profile?.gender),
-              theme,
-            ),
-          ],
-          const SizedBox(height: 20),
-
-          // Date of Birth
-          if (_isEditing) ...[
-            _buildDobPicker(context, theme),
-          ] else ...[
-            _buildInfoFieldWithIcon(
-              context,
-              tr(context, 'profile_dob_label'),
-              dobDisplay,
-              Icons.calendar_today_outlined,
-              theme,
-            ),
-          ],
-          const SizedBox(height: 20),
-
-          // Preferred Language
-          if (_isEditing) ...[
-            _buildLanguageDropdown(context, theme),
-          ] else ...[
-            _buildInfoFieldWithWidgetIcon(
-              context,
-              tr(context, 'profile_lang_label'),
-              _languageDisplay(profile?.preferredLanguage ?? 'en'),
-              _getLanguageIcon(profile?.preferredLanguage ?? 'en', size: 18),
-              theme,
-            ),
-          ],
-
-          // Save button in edit mode
-          if (_isEditing) ...[
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: Consumer<AuthController>(
-                builder: (context, auth, _) {
-                  return ElevatedButton(
-                    onPressed: auth.isLoading ? null : _saveProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.actionBlue,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 4,
-                      shadowColor: AppColors.actionBlue.withOpacity(0.4),
-                    ),
-                    child: auth.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            tr(context, 'save_changes'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  );
-                },
-              ),
-            ),
-          ],
-          const SizedBox(height: 32),
-          // Danger Zone / Delete Account
-          if (!_isEditing) ...[
-            const Divider(),
-            const SizedBox(height: 16),
-            SizedBox(
+        ),
+        // Delete Account button outside the container
+        if (!_isEditing) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () => _showAccountDeletionWorkflow(context),
-                icon: const Icon(Icons.delete_forever_outlined, color: Colors.red, size: 18),
+                icon: const Icon(
+                  Icons.delete_forever_outlined,
+                  color: Colors.red,
+                  size: 18,
+                ),
                 label: const Text(
                   'Delete Account',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.red.withOpacity(0.3)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
-          ],
+          ),
+          const SizedBox(height: 40),
         ],
-      ),
+      ],
     );
   }
 
@@ -1068,7 +1107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onTap: () async {
             final now = DateTime.now();
             final lastDate = DateTime(now.year - 10, now.month, now.day);
-            
+
             DateTime initialDate =
                 _selectedDob ?? DateTime(now.year - 18, now.month, now.day);
 
@@ -1567,6 +1606,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Widget _buildLogoutTile(BuildContext context, ThemeData theme) {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.red.withOpacity(0.1)),
+        ),
+        child: ListTile(
+          onTap: () => _showLogoutConfirmation(context),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.logout, color: Colors.red, size: 20),
+          ),
+          title: Text(
+            tr(context, 'logout'),
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.red,
+            size: 14,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showLogoutConfirmation(BuildContext context) {
     final theme = Theme.of(context);
@@ -2322,7 +2400,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: theme.dividerColor.withOpacity(0.05)),
+                  border: Border.all(
+                    color: theme.dividerColor.withOpacity(0.05),
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -2380,13 +2460,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final freshReview =
                       controller.getReviewForProduct(review.product) ?? review;
 
-                  final ProductModel targetProduct = freshReview.toProductModel();
+                  final ProductModel targetProduct = freshReview
+                      .toProductModel();
 
                   ReviewBottomSheet.show(
                     context,
                     product: targetProduct,
                     existingReview: freshReview,
-                   );
+                  );
                 },
                 icon: const Icon(
                   Icons.edit_outlined,
@@ -2472,20 +2553,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
+                  child: CustomImage(
                     item.product.thumbnail,
                     width: 76,
                     height: 76,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 76,
-                      height: 76,
-                      color: Colors.grey[100],
-                      child: const Icon(
-                        Icons.image_outlined,
-                        color: Colors.grey,
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -2885,7 +2957,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (deletionInfo == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Failed to load deletion information. Please try again.'),
+          content: Text(
+            'Failed to load deletion information. Please try again.',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -2905,14 +2979,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final auth = context.read<AuthController>();
             final success = await auth.deleteAccount();
             if (success && mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/login',
-                (route) => false,
-              );
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/login', (route) => false);
             } else if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(auth.errorMessage ?? 'Deletion failed. Please try again later.'),
+                  content: Text(
+                    auth.errorMessage ??
+                        'Deletion failed. Please try again later.',
+                  ),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -3051,7 +3127,7 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       padding: const EdgeInsets.all(24),
@@ -3065,12 +3141,16 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.orange,
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Text(
                 'Important Deletion Info',
                 style: TextStyle(
-                  fontSize: 20, 
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
                 ),
@@ -3081,7 +3161,7 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
           Text(
             widget.info,
             style: TextStyle(
-              height: 1.5, 
+              height: 1.5,
               color: theme.colorScheme.onSurface.withOpacity(0.8),
             ),
           ),
@@ -3091,14 +3171,18 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
               Checkbox(
                 value: _isConfirmed,
                 activeColor: Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                onChanged: _isDeleting ? null : (v) => setState(() => _isConfirmed = v ?? false),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                onChanged: _isDeleting
+                    ? null
+                    : (v) => setState(() => _isConfirmed = v ?? false),
               ),
               Expanded(
                 child: Text(
                   'I understand that this action is permanent and cannot be undone',
                   style: TextStyle(
-                    fontSize: 12, 
+                    fontSize: 12,
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                     height: 1.4,
                   ),
@@ -3111,27 +3195,37 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: (_isConfirmed && !_isDeleting) ? () async {
-                setState(() => _isDeleting = true);
-                await widget.onConfirm();
-                if (mounted) setState(() => _isDeleting = false);
-              } : null,
+              onPressed: (_isConfirmed && !_isDeleting)
+                  ? () async {
+                      setState(() => _isDeleting = true);
+                      await widget.onConfirm();
+                      if (mounted) setState(() => _isDeleting = false);
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 0,
               ),
-              child: _isDeleting 
-                ? const SizedBox(
-                    height: 20, 
-                    width: 20, 
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
-                : const Text(
-                    'Delete My Account Permanently',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
+              child: _isDeleting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Delete My Account Permanently',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
@@ -3141,7 +3235,9 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
               onPressed: _isDeleting ? null : () => Navigator.pop(context),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
             ),
           ),

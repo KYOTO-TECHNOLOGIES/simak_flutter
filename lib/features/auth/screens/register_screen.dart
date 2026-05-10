@@ -54,6 +54,16 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
+                  // ─── App Logo ──────────────────────────────
+                  Center(
+                    child: Image.asset(
+                      'assets/images/home_logo.png',
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   // ─── Register Card ─────────────────────────────
                   Container(
                     width: double.infinity,

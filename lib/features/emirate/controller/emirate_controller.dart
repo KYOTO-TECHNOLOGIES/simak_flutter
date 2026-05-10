@@ -11,6 +11,7 @@ class EmirateController extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
 
   final List<Map<String, String>> emirates = [
+    {'id': 'abu_dhabi', 'name': 'Abu Dhabi', 'flag': '🏙️'},
     {'id': 'dubai', 'name': 'Dubai', 'flag': '🏙️'},
     {'id': 'sharjah', 'name': 'Sharjah', 'flag': '🕌'},
     {'id': 'ajman', 'name': 'Ajman', 'flag': '⚓'},

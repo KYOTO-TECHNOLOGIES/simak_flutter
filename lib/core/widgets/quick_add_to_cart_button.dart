@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
-import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
+
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
@@ -30,81 +30,80 @@ class QuickAddToCartButton extends StatelessWidget {
 
     return GestureDetector(
       onTap: inStock
-            ? () async {
-                final auth = context.read<AuthController>();
-                final cart = context.read<CartController>();
+          ? () async {
+              final auth = context.read<AuthController>();
+              final cart = context.read<CartController>();
 
-                if (!auth.isLoggedIn) {
-                  if (context.mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  }
-                  return;
-                }
-
-                // MANDATORY: Preparation specification check
-                if (product.preparationSpecifications.isNotEmpty) {
-                  if (context.mounted) {
-                    SimakFeedback.showInfo(
-                      context,
-                      trTextStatic(context, 'Preparation specification is required for this product.'),
-                    );
-                  }
-                  return;
-                }
-
-                // Always try to add to cart (increments quantity if already exists)
-                final success = await cart.addToCart(product.id, 1);
-
+              if (!auth.isLoggedIn) {
                 if (context.mounted) {
-                  if (success) {
-                    SimakFeedback.showSuccess(
+                  Navigator.pushNamed(
+                    context,
+                    '/login',
+                  );
+                }
+                return;
+              }
+
+              // MANDATORY: Preparation specification check
+              if (product.preparationSpecifications.isNotEmpty) {
+                if (context.mounted) {
+                  SimakFeedback.showInfo(
+                    context,
+                    trTextStatic(
                       context,
-                      trStatic(context, 'added_to_cart'),
-                    );
-                  } else {
-                    SimakFeedback.showError(
-                      context,
-                      cart.error ?? trStatic(context, 'failed_add_cart'),
-                    );
-                  }
+                      'Preparation specification is required for this product.',
+                    ),
+                  );
+                }
+                return;
+              }
+
+              // Always try to add to cart (increments quantity if already exists)
+              final success = await cart.addToCart(product.id, 1);
+
+              if (context.mounted) {
+                if (success) {
+                  SimakFeedback.showSuccess(
+                    context,
+                    trStatic(context, 'added_to_cart'),
+                  );
+                } else {
+                  SimakFeedback.showError(
+                    context,
+                    cart.error ?? trStatic(context, 'failed_add_cart'),
+                  );
                 }
               }
-            : () async {
-                final auth = context.read<AuthController>();
-                if (!auth.isLoggedIn) {
-                  if (context.mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  }
-                  return;
-                }
-
-                final controller = context.read<ProductController>();
-                final success = await controller.notifyMe(product.id);
-
+            }
+          : () async {
+              final auth = context.read<AuthController>();
+              if (!auth.isLoggedIn) {
                 if (context.mounted) {
-                  if (success) {
-                    SimakFeedback.showSuccess(
-                      context,
-                      trStatic(context, 'notify_all_set'),
-                    );
-                  } else {
-                    SimakFeedback.showError(
-                      context,
-                      trStatic(context, 'notify_failed'),
-                    );
-                  }
+                  Navigator.pushNamed(
+                    context,
+                    '/login',
+                  );
                 }
-              },
+                return;
+              }
+
+              final controller = context.read<ProductController>();
+              final success = await controller.notifyMe(product.id);
+
+              if (context.mounted) {
+                if (success) {
+                  SimakFeedback.showSuccess(
+                    context,
+                    trStatic(context, 'notify_all_set'),
+                  );
+                } else {
+                  SimakFeedback.showError(
+                    context,
+                    trStatic(context, 'notify_failed'),
+                  );
+                }
+              }
+            },
       child: Container(
         width: size,
         height: size,

@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:uae_ecom_project/core/network/api_client.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -878,15 +880,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Future<void> _openReceipt(String? url) async {
-    if (url == null || url.isEmpty) return;
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+  Future<void> _downloadReceipt(int orderId, String type) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final tmpDir = Directory.systemTemp;
+      final ext = type == 'receipt_image' ? 'jpg' : 'pdf';
+      final fileName = 'receipt_${orderId}.$ext';
+      final savePath = '${tmpDir.path}/$fileName';
+
+      final endpoint = 'orders/$orderId/$type/';
+      final dio = ApiClient().dio;
+
+      await dio.download(endpoint, savePath);
+
       if (mounted) {
+        Navigator.pop(context); // close loader
+        await Share.shareXFiles([XFile(savePath)], text: 'Order $orderId Receipt');
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // close loader
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open receipt.')),
+          const SnackBar(content: Text('Failed to download receipt.')),
         );
       }
     }
@@ -1050,7 +1070,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
           ],
 
-          if (order.status.toUpperCase() == 'DELIVERED') ...[
+          if (isSuccess) ...[
             const SizedBox(height: 20),
             const Divider(height: 1),
             const SizedBox(height: 20),
@@ -1094,7 +1114,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => _openReceipt(order.receiptImage),
+                    onPressed: () => _downloadReceipt(order.id, 'receipt_image'),
                     icon: const Icon(Icons.image_outlined, size: 18),
                     label: const Text(
                       'Download Image',
@@ -1120,7 +1140,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => _openReceipt(order.receiptPdf),
+                    onPressed: () => _downloadReceipt(order.id, 'receipt_pdf'),
                     icon: const Icon(Icons.file_download_outlined, size: 18),
                     label: const Text(
                       'Download PDF',

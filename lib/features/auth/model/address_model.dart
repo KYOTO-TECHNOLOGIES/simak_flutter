@@ -108,6 +108,7 @@ class AddressModel {
   String _getEmirateCode(String? emirate) {
     if (emirate == null) return 'dubai';
     switch (emirate.toLowerCase()) {
+      case 'abu dhabi': return 'abu_dhabi';
       case 'dubai': return 'dubai'; 
       case 'sharjah': return 'sharjah';
       case 'ajman': return 'ajman';

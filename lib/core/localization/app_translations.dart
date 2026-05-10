@@ -272,7 +272,7 @@ final Map<String, Map<String, String>> _translations = {
     'month_ago': '1 month ago',
 
     // ── Products Page ────────────────────────────────────────
-    'categories_title': 'Categories',
+    'categories_title': 'Products',
     'browse_premium': 'Browse our premium selection',
     'search_products': 'Search products...',
     'trending_now': 'Trending Now',
@@ -290,7 +290,11 @@ final Map<String, Map<String, String>> _translations = {
     'welcome_back': 'Welcome Back',
     'otp_sign_in': 'OTP SIGN-IN',
     'email': 'EMAIL',
-    'agree_terms': 'I AGREE TO TERMS & PRIVACY',
+    'agree_terms': 'I agree to Terms and Privacy',
+    'agree_prefix': 'I agree to ',
+    'terms': 'Terms',
+    'and': ' and ',
+    'privacy': 'Privacy',
     'join_network_prompt': 'NO ACCOUNT? ',
     'join_network': 'Join the Network',
     'uae': 'UAE',
@@ -753,7 +757,7 @@ final Map<String, Map<String, String>> _translations = {
     'stat_ontime_delivery': 'ON-TIME\nDELIVERY',
     'testimonial_quote':
         '"The prawns were incredibly fresh—just like they came off the boat! Packaging was chilled and delivery was spot on."',
-    'testimonial_author': '— Priya R., Mumbai',
+    'testimonial_author': '— Zhakira, Abu Dhabi',
     'verified_purchase': 'Verified Purchase',
 
     // -- Profile Labels --
@@ -862,7 +866,7 @@ final Map<String, Map<String, String>> _translations = {
     'Price per Kg': 'Price per Kg',
     'price_for_quantity_pieces': 'Price for {count} pieces',
     'price_for_quantity_kg': 'Price for {count} kg',
-    'Fast Delivery': 'Fast Delivery',
+    '2 Hr Delivery': '2 Hr Delivery',
     'Fresh Guaranteed': 'Fresh Guaranteed',
     'preparation_specification': 'Preparation Specification',
     'please_select_preparation':
@@ -1017,7 +1021,7 @@ final Map<String, Map<String, String>> _translations = {
     'week_ago': '1周前',
     'weeks_ago': '2周前',
     'month_ago': '1个月前',
-    'categories_title': '分类',
+    'categories_title': '产品',
     'browse_premium': '浏览我们的精选商品',
     'search_products': '搜索产品...',
     'trending_now': '热门趋势',
@@ -1034,6 +1038,10 @@ final Map<String, Map<String, String>> _translations = {
     'otp_sign_in': '验证码登录',
     'email': '电子邮箱',
     'agree_terms': '我同意条款和隐私政策',
+    'agree_prefix': '我同意',
+    'terms': '条款',
+    'and': '和',
+    'privacy': '隐私政策',
     'join_network_prompt': '没有账号？',
     'join_network': '加入网络',
     'uae': '阿联酋',
@@ -1481,7 +1489,7 @@ final Map<String, Map<String, String>> _translations = {
     'stat_average_rating': '平均\n评分',
     'stat_ontime_delivery': '准时\n送达',
     'testimonial_quote': '“虾非常新鲜——就像刚从船上下来一样！包装是冰冷的，送货也非常准时。”',
-    'testimonial_author': "— Priya R., 孟买",
+    'testimonial_author': "— Zhakira, 阿布扎比",
     'verified_purchase': "已验证购买",
 
     // -- Profile Labels --
@@ -1587,7 +1595,7 @@ final Map<String, Map<String, String>> _translations = {
     'Price per Kg': '每公斤价格',
     'price_for_quantity_pieces': '{count} 件的价格',
     'price_for_quantity_kg': '{count} 公斤的价格',
-    'Fast Delivery': '极速送达',
+    '2 Hr Delivery': '2小时送达',
     'Fresh Guaranteed': '新鲜保证',
     'preparation_specification': '准备规格',
     'please_select_preparation': '请选择准备选项以加入购物车。',
@@ -1774,7 +1782,7 @@ final Map<String, Map<String, String>> _translations = {
     'month_ago': 'منذ شهر',
 
     // ── Products Page ────────────────────────────────────────
-    'categories_title': 'الفئات',
+    'categories_title': 'المنتجات',
     'browse_premium': 'تصفح مجموعتنا المميزة',
     'search_products': 'ابحث عن المنتجات...',
     'trending_now': 'الأكثر رواجاً',
@@ -1793,6 +1801,10 @@ final Map<String, Map<String, String>> _translations = {
     'otp_sign_in': 'تسجيل الدخول بكلمة المرور لمرة واحدة',
     'email': 'بريد إلكتروني',
     'agree_terms': 'أوافق على الشروط والخصوصية',
+    'agree_prefix': 'أوافق على ',
+    'terms': 'الشروط',
+    'and': ' و ',
+    'privacy': 'الخصوصية',
     'join_network_prompt': 'ليس لديك حساب؟ ',
     'join_network': 'انضم إلى الشبكة',
     'uae': 'الإمارات',
@@ -2193,7 +2205,7 @@ final Map<String, Map<String, String>> _translations = {
 
     // ── How It Works ──────────────────────────────────────────
     'how_it_works': 'كيف نعمل',
-    'ocean_to_plate': 'من المحيط إلى طبقك',
+    'ocean_to_plate': 'المأكولات البحرية الحية من البحر إلى المنزل',
     'how_it_works_sub':
         'أربع خطوات بسيطة لأذكى مأكولات بحرية تذوقتها على الإطلاق. لا وسطاء، لا تأخير - فقط نضارة نقية.',
 
@@ -2238,15 +2250,15 @@ final Map<String, Map<String, String>> _translations = {
     'enter_name_continue': 'يرجى إدخال اسمك للمتابعة',
 
     // -- Home Stats & Layout --
-    'from_ocean_to': 'من المحيط إلى ',
-    'your_plate': 'طبقك',
+    'from_ocean_to': 'المأكولات البحرية الحية من البحر ',
+    'your_plate': 'إلى المنزل',
     'stat_happy_customers': 'عملاء\nسعداء',
     'stat_seafood_varieties': 'أصناف\nبحرية',
     'stat_average_rating': 'متوسط\nالتقييم',
     'stat_ontime_delivery': 'توصيل\nفي الموعد',
     'testimonial_quote':
         '"كان الروبيان طازجًا بشكل لا يصدق - تمامًا كما لو كان قد خرج للتو من القارب! كان التغليف مبردًا وكان التوصيل مثاليًا."',
-    'testimonial_author': "— بريا ر.، مومباي",
+    'testimonial_author': "— Zhakira، أبو ظبي",
     'verified_purchase': "عملية شراء مؤكدة",
 
     // -- Profile Labels --
@@ -2355,7 +2367,7 @@ final Map<String, Map<String, String>> _translations = {
     'Price per Kg': 'السعر للكيلو',
     'price_for_quantity_pieces': 'السعر لـ {count} قطع',
     'price_for_quantity_kg': 'السعر لـ {count} كيلو',
-    'Fast Delivery': 'توصيل سريع',
+    '2 Hr Delivery': 'توصيل خلال ساعتين',
     'Fresh Guaranteed': 'طازج مضمون',
     'preparation_specification': 'مواصفات التحضير',
     'please_select_preparation': 'يرجى اختيار خيار التحضير للإضافة إلى السلة.',

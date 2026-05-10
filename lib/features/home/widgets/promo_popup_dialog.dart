@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
@@ -117,19 +118,9 @@ class PromoPopupDialog extends StatelessWidget {
                         fit: StackFit.expand,
                         children: [
                           // Product or Marketing image
-                          Image.network(
+                          CustomImage(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: isDark
-                                  ? const Color(0xFF2A1015)
-                                  : const Color(0xFFFFF0F0),
-                              child: const Icon(
-                                Icons.local_offer,
-                                size: 80,
-                                color: AppColors.primary,
-                              ),
-                            ),
                           ),
                           // Dark gradient overlay
                           Container(

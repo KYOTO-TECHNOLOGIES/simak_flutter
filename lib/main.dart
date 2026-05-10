@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
-import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
 import 'package:uae_ecom_project/features/auth/screens/otp_screen.dart';
 import 'package:uae_ecom_project/features/auth/screens/register_screen.dart';
 import 'package:uae_ecom_project/features/home/home_shell.dart';
@@ -53,11 +52,12 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Initialize Firebase in the background isolate
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (_) {}
   debugPrint("Background message: ${message.notification?.title}");
 }
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +66,9 @@ void main() async {
   // Initialize Hive cache before the app starts.
   await CacheService().init();
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } on FirebaseException catch (e) {
     if (e.code != 'duplicate-app') rethrow;
   } catch (e) {
@@ -90,11 +92,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   StreamSubscription? _sub;
   final _appLinks = AppLinks();
 
-   @override
+  @override
   void initState() {
     super.initState();
     setupFCM();
@@ -119,23 +120,26 @@ class _MyAppState extends State<MyApp> {
     }
 
     // 2. Handle subsequent links (app in background/foreground)
-    _sub = _appLinks.uriLinkStream.listen((Uri? uri) {
-      if (uri != null) {
-        _handleDeepLink(uri);
-      }
-    }, onError: (err) {
-      debugPrint('Deep Link Stream Error: $err');
-    });
+    _sub = _appLinks.uriLinkStream.listen(
+      (Uri? uri) {
+        if (uri != null) {
+          _handleDeepLink(uri);
+        }
+      },
+      onError: (err) {
+        debugPrint('Deep Link Stream Error: $err');
+      },
+    );
   }
 
   void _handleDeepLink(Uri uri) {
     debugPrint('Captured Deep Link: $uri');
-    
+
     // Only handle myapp://payment links
     if (uri.scheme == 'myapp' && uri.host == 'payment') {
       final String path = uri.path;
       final String orderId = uri.queryParameters['order_id'] ?? '';
-      
+
       if (path == '/success') {
         navigatorKey.currentState?.pushNamedAndRemoveUntil(
           '/payment-success',
@@ -144,7 +148,7 @@ class _MyAppState extends State<MyApp> {
         );
       } else if (path == '/cancel') {
         navigatorKey.currentState?.pushNamedAndRemoveUntil(
-          '/payment-failed', 
+          '/payment-failed',
           (route) => route.isFirst,
           arguments: orderId,
         );
@@ -190,7 +194,9 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => CartController()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
-        ChangeNotifierProvider(create: (_) => AddressController()..fetchAddresses()),
+        ChangeNotifierProvider(
+          create: (_) => AddressController()..fetchAddresses(),
+        ),
         ChangeNotifierProvider(create: (_) => CheckoutController()..init()),
         ChangeNotifierProvider(create: (_) => OrderController()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
@@ -225,27 +231,34 @@ class _MyAppState extends State<MyApp> {
             routes: {
               '/': (_) => const SplashScreen(),
               '/language_selection': (_) => const LanguageSelectionScreen(),
-              '/login': (_) => const LoginScreen(),
+              '/login': (_) => const LoginRedirect(),
               '/emirate_selection': (_) => const EmirateSelectionScreen(),
               '/register': (_) => const RegisterScreen(),
               '/otp': (_) => const OtpScreen(),
               '/home': (_) => const DeliveryUserGuard(child: HomeShell()),
               '/cart': (_) => const DeliveryUserGuard(child: CartScreen()),
-              '/order': (_) => DeliveryUserGuard(child: OrderPage(product: ProductModel.empty())),
+              '/order': (_) => DeliveryUserGuard(
+                child: OrderPage(product: ProductModel.empty()),
+              ),
               '/order-success': (context) {
-                final orderData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+                final orderData =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
                 return OrderSuccessScreen(orderData: orderData);
               },
               '/order-pending': (context) {
-                final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+                final String orderId =
+                    ModalRoute.of(context)!.settings.arguments as String? ?? '';
                 return OrderPendingScreen(orderId: orderId);
               },
               '/payment-failed': (context) {
-                final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+                final String orderId =
+                    ModalRoute.of(context)!.settings.arguments as String? ?? '';
                 return PaymentFailedScreen(orderId: orderId);
               },
               '/payment-success': (context) {
-                final String orderId = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+                final String orderId =
+                    ModalRoute.of(context)!.settings.arguments as String? ?? '';
                 return PaymentSuccessScreen(orderId: orderId);
               },
               '/delivery_dashboard': (_) => const DeliveryDashboardScreen(),
@@ -257,8 +270,7 @@ class _MyAppState extends State<MyApp> {
                 builder: (context, connectivity, _) {
                   // Only show the no-internet screen when offline
                   // AND there is no cached data to fall back to.
-                  final hasCachedProducts =
-                      CacheService().hasCache('products');
+                  final hasCachedProducts = CacheService().hasCache('products');
                   return Stack(
                     children: [
                       if (child != null) child,
@@ -271,6 +283,23 @@ class _MyAppState extends State<MyApp> {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class LoginRedirect extends StatelessWidget {
+  const LoginRedirect({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).pushReplacementNamed('/home', arguments: 2);
+    });
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: CircularProgressIndicator(color: AppColors.actionBlue),
       ),
     );
   }

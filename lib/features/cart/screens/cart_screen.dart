@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
-import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
+
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
@@ -90,18 +90,17 @@ class _CartScreenState extends State<CartScreen> {
     CartController controller,
   ) async {
     if (controller.hasOutOfStock) {
-      final shouldContinue = await _showOutOfStockItemsDialog(context, controller);
+      final shouldContinue = await _showOutOfStockItemsDialog(
+        context,
+        controller,
+      );
       if (shouldContinue != true) return;
       await controller.removeOutOfStockItems();
       if (!context.mounted || !controller.hasInStockItems) return;
     }
 
     if (!context.mounted) return;
-    Navigator.pushNamed(
-      context,
-      '/order',
-      arguments: {'isCartMode': true},
-    );
+    Navigator.pushNamed(context, '/order', arguments: {'isCartMode': true});
   }
 
   Future<bool?> _showOutOfStockItemsDialog(
@@ -115,8 +114,13 @@ class _CartScreenState extends State<CartScreen> {
       barrierDismissible: false,
       builder: (dialogContext) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 620),
             child: Column(
@@ -207,7 +211,8 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildUnavailableItemTile(CartItemModel item) {
-    final details = item.preparationSpecificationName != null &&
+    final details =
+        item.preparationSpecificationName != null &&
             item.preparationSpecificationName!.trim().isNotEmpty
         ? item.preparationSpecificationName!.trim()
         : '${item.quantity} ${item.product.unit.replaceAll('_', ' ')}';
@@ -380,16 +385,19 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ),
-                      controller.isItemRemoving(item.product.id,
-                              preparationId: item.preparationSpecificationId,
-                              cartItemId: item.id)
+                      controller.isItemRemoving(
+                            item.product.id,
+                            preparationId: item.preparationSpecificationId,
+                            cartItemId: item.id,
+                          )
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.error),
+                                  AppColors.error,
+                                ),
                               ),
                             )
                           : IconButton(
@@ -403,7 +411,8 @@ class _CartScreenState extends State<CartScreen> {
                                 if (!success && context.mounted) {
                                   SimakFeedback.showError(
                                     context,
-                                    controller.error ?? trStatic(context, 'failed_to_remove'),
+                                    controller.error ??
+                                        trStatic(context, 'failed_to_remove'),
                                   );
                                 }
                               },
@@ -420,10 +429,7 @@ class _CartScreenState extends State<CartScreen> {
 
                   Text(
                     '${item.quantity.toInt()} ${item.product.unit.replaceAll('_', ' ')}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
 
                   // Preparation Badge
@@ -466,14 +472,24 @@ class _CartScreenState extends State<CartScreen> {
 
                   // Stock Status Badge
                   if (item.product.stock == 0 || !item.product.isAvailable)
-                    _buildStatusBadge(trStatic(context, 'out_of_stock'), AppColors.error)
+                    _buildStatusBadge(
+                      trStatic(context, 'out_of_stock'),
+                      AppColors.error,
+                    )
                   else if (item.quantity > item.product.stock)
                     _buildStatusBadge(
-                      trStatic(context, 'insufficient_stock', args: {'count': item.product.stock.toString()}),
+                      trStatic(
+                        context,
+                        'insufficient_stock',
+                        args: {'count': item.product.stock.toString()},
+                      ),
                       AppColors.error,
                     )
                   else if (item.product.stock <= 5)
-                    _buildStatusBadge(trStatic(context, 'only_few_left'), Colors.orange),
+                    _buildStatusBadge(
+                      trStatic(context, 'only_few_left'),
+                      Colors.orange,
+                    ),
 
                   const SizedBox(height: 12),
 
@@ -524,9 +540,11 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildQuantitySelector(CartItemModel item, CartController controller) {
-    final isUpdating = controller.isItemUpdatingQuantity(item.product.id,
-        preparationId: item.preparationSpecificationId,
-        cartItemId: item.id);
+    final isUpdating = controller.isItemUpdatingQuantity(
+      item.product.id,
+      preparationId: item.preparationSpecificationId,
+      cartItemId: item.id,
+    );
     final displayQuantity = controller.getItemQuantity(item);
 
     return Container(
@@ -541,10 +559,12 @@ class _CartScreenState extends State<CartScreen> {
         children: [
           _buildMiniBtn(
             icon: Icons.remove,
-            onTap: () => controller.updateQuantity(item.product.id,
-                displayQuantity - 1,
-                preparationSpecificationId: item.preparationSpecificationId,
-                cartItemId: item.id),
+            onTap: () => controller.updateQuantity(
+              item.product.id,
+              displayQuantity - 1,
+              preparationSpecificationId: item.preparationSpecificationId,
+              cartItemId: item.id,
+            ),
             isDisabled: displayQuantity <= 1 || isUpdating,
           ),
           Padding(
@@ -558,7 +578,9 @@ class _CartScreenState extends State<CartScreen> {
                 : Text(
                     '${displayQuantity}',
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
           ),
           _buildMiniBtn(
@@ -571,11 +593,15 @@ class _CartScreenState extends State<CartScreen> {
                 );
                 return;
               }
-              controller.updateQuantity(item.product.id, displayQuantity + 1,
-                  preparationSpecificationId: item.preparationSpecificationId,
-                  cartItemId: item.id);
+              controller.updateQuantity(
+                item.product.id,
+                displayQuantity + 1,
+                preparationSpecificationId: item.preparationSpecificationId,
+                cartItemId: item.id,
+              );
             },
-            isDisabled: item.product.stock == 0 ||
+            isDisabled:
+                item.product.stock == 0 ||
                 !item.product.isAvailable ||
                 isUpdating,
           ),
@@ -613,14 +639,16 @@ class _CartScreenState extends State<CartScreen> {
   ) {
     final orderController = context.watch<OrderController>();
     final threshold = orderController.freeDeliveryThreshold;
-    
+
     // Use in-stock total if there are OOS items
     final subtotal = controller.hasOutOfStock
         ? controller.inStockTotalPrice
         : controller.cart!.totalPrice;
 
     final isFreeShipping = subtotal >= threshold;
-    final shippingCharge = isFreeShipping ? 0.0 : orderController.deliveryCharge;
+    final shippingCharge = isFreeShipping
+        ? 0.0
+        : orderController.deliveryCharge;
     final itemsTotal = subtotal + shippingCharge;
 
     return Container(
@@ -650,16 +678,18 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           _buildSummaryRow(
             tr(context, 'subtotal'),
             'AED ${subtotal.toStringAsFixed(2)}',
           ),
           const SizedBox(height: 12),
-          
+
           _buildSummaryRow(
             tr(context, 'shipping'),
-            isFreeShipping ? 'Free' : 'AED ${shippingCharge.toStringAsFixed(2)}',
+            isFreeShipping
+                ? 'Free'
+                : 'AED ${shippingCharge.toStringAsFixed(2)}',
             valueColor: isFreeShipping ? AppColors.primary : Colors.black87,
           ),
           const SizedBox(height: 6),
@@ -864,10 +894,7 @@ class _CartScreenState extends State<CartScreen> {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ),
+              onPressed: () => Navigator.pushNamed(context, '/login'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,

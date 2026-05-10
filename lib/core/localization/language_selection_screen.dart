@@ -15,8 +15,8 @@ class LanguageSelectionScreen extends StatelessWidget {
 
     final languages = [
       {'code': 'en', 'name': 'English', 'native': 'English', 'flag': '🇺🇸'},
-      {'code': 'cn', 'name': 'Chinese', 'native': '中文', 'flag': '🇨🇳'},
       {'code': 'ar', 'name': 'Arabic', 'native': 'العربية', 'flag': '🇦🇪'},
+      {'code': 'cn', 'name': 'Chinese', 'native': '中文', 'flag': '🇨🇳'},
     ];
 
     return Scaffold(

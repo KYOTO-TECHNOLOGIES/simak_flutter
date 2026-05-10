@@ -2,20 +2,18 @@ import 'dart:async';
 import 'dart:math';
 import 'package:uae_ecom_project/core/localization/language_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/config/app_constants.dart';
 import 'package:uae_ecom_project/core/widgets/fish_loader.dart';
-import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
+
 import 'package:uae_ecom_project/features/marketing/controller/marketing_controller.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/home/widgets/promo_popup_dialog.dart';
-import 'package:uae_ecom_project/features/home/screens/all_popular_products_page.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
@@ -81,6 +79,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _howItWorksKey = GlobalKey();
   bool _hasShownPromo = false;
   static bool _hasShownNameDialog = false;
 
@@ -89,7 +89,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     // Fetch products once when the page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final emirate = context.read<EmirateController>().selectedEmirate;
       context.read<ProductController>().fetchHomeProducts();
       context.read<ProductController>().fetchCategories();
       context.read<MarketingController>().fetchBanners();
@@ -218,9 +217,9 @@ class _HomePageState extends State<HomePage> {
             if (overlayEntry.mounted) {
               overlayEntry.remove();
             }
-            Navigator.push(
+            Navigator.pushNamed(
               context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              '/login',
             );
           },
         );
@@ -228,6 +227,12 @@ class _HomePageState extends State<HomePage> {
     );
 
     overlay.insert(overlayEntry);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -251,6 +256,7 @@ class _HomePageState extends State<HomePage> {
           },
           color: AppColors.primary,
           child: CustomScrollView(
+            controller: _scrollController,
             slivers: [
               // ─── App Bar ─────────────────────────────────────────
               SliverAppBar(
@@ -260,7 +266,7 @@ class _HomePageState extends State<HomePage> {
                 scrolledUnderElevation: 0,
                 backgroundColor: theme.scaffoldBackgroundColor,
                 automaticallyImplyLeading: false,
-                toolbarHeight: 80,
+                toolbarHeight: 76,
                 title: Padding(
                   padding: const EdgeInsetsDirectional.only(
                     start: 7,
@@ -325,16 +331,22 @@ class _HomePageState extends State<HomePage> {
                                         const SizedBox(height: 1),
                                         Builder(
                                           builder: (context) {
-                                            final lang = context.watch<LanguageProvider>().locale;
+                                            final lang = context
+                                                .watch<LanguageProvider>()
+                                                .locale;
                                             final isEnglish = lang == 'en';
 
                                             if (isEnglish) {
                                               return FittedBox(
                                                 fit: BoxFit.fitWidth,
-                                                alignment: AlignmentDirectional.centerStart,
+                                                alignment: AlignmentDirectional
+                                                    .centerStart,
                                                 child: _buildStyledText(
                                                   context,
-                                                  tr(context, 'tagline').toUpperCase(),
+                                                  tr(
+                                                    context,
+                                                    'tagline',
+                                                  ).toUpperCase(),
                                                   TextStyle(
                                                     fontSize: 30,
                                                     fontWeight: FontWeight.w800,
@@ -348,14 +360,20 @@ class _HomePageState extends State<HomePage> {
 
                                             return Center(
                                               child: Padding(
-                                                padding: const EdgeInsets.only(top: 4),
+                                                padding: const EdgeInsets.only(
+                                                  top: 4,
+                                                ),
                                                 child: _buildStyledText(
                                                   context,
-                                                  tr(context, 'tagline').toUpperCase(),
+                                                  tr(
+                                                    context,
+                                                    'tagline',
+                                                  ).toUpperCase(),
                                                   TextStyle(
                                                     fontSize: 34,
                                                     fontWeight: FontWeight.w600,
-                                                    color: AppColors.primary.withOpacity(0.9),
+                                                    color: AppColors.primary
+                                                        .withOpacity(0.9),
                                                     letterSpacing: 1.2,
                                                     height: 1.1,
                                                   ),
@@ -386,64 +404,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // ─── Search Bar ──────────────────────────────────────
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverToBoxAdapter(
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to Products tab in HomeShell with auto-focus flag
-                      Navigator.pushReplacementNamed(
-                        context,
-                        '/home',
-                        arguments: {'index': 1, 'focusSearch': true},
-                      );
-                    },
-                    child: Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: theme.cardColor,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.dividerColor.withOpacity(0.8),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.search_rounded,
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
-                            size: 22,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            tr(context, 'search_hint'),
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.4,
-                              ),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
               // ─── Banner Slider ────────────────────────────────────
               const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
                 sliver: SliverToBoxAdapter(child: _BannerSlider()),
               ),
 
@@ -462,7 +425,7 @@ class _HomePageState extends State<HomePage> {
 
               // ─── Categories ──────────────────────────────────────
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,7 +496,7 @@ class _HomePageState extends State<HomePage> {
 
               // ─── Product Grid Title ──────────────────────────────
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                 sliver: SliverToBoxAdapter(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -669,6 +632,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
                 sliver: SliverToBoxAdapter(
                   child: HowItWorksSection(
+                    key: _howItWorksKey,
                     onStartShopping: () {
                       Navigator.pushReplacementNamed(
                         context,
@@ -712,7 +676,19 @@ class _HomePageState extends State<HomePage> {
                   20,
                   100,
                 ), // Keep 100 padding at the very bottom
-                sliver: SliverToBoxAdapter(child: _FeaturedRecipe()),
+                sliver: SliverToBoxAdapter(
+                  child: _FeaturedRecipe(
+                    onTap: () {
+                      if (_howItWorksKey.currentContext != null) {
+                        Scrollable.ensureVisible(
+                          _howItWorksKey.currentContext!,
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+                  ),
+                ),
               ),
             ],
           ),
@@ -825,38 +801,7 @@ class _CategoryCardState extends State<_CategoryCard>
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: Image.network(
-                        widget.imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: AppColors.primary.withOpacity(0.05),
-                            child: Center(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  value:
-                                      loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                      : null,
-                                  color: AppColors.primary.withOpacity(0.3),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: AppColors.primary.withOpacity(0.05),
-                          child: Icon(
-                            Icons.set_meal_rounded,
-                            color: AppColors.primary.withOpacity(0.2),
-                          ),
-                        ),
-                      ),
+                      child: CustomImage(widget.imageUrl, fit: BoxFit.cover),
                     ),
                   ),
                 ),
@@ -1144,13 +1089,12 @@ class _BannerSliderState extends State<_BannerSlider>
                     },
                   ),
                 ),
-                const SizedBox(height: 14),
               ],
             ),
             // Dot indicators on the left
             Positioned(
               left: 40,
-              bottom: 28,
+              bottom: 14,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: List.generate(controller.banners.length, (i) {
@@ -1202,24 +1146,7 @@ class _BannerSlide extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Background image
-            Image.network(
-              slide.image,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, ___) => Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF003038), Color(0xFF001519)],
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.broken_image,
-                    color: Colors.white24,
-                    size: 48,
-                  ),
-                ),
-              ),
-            ),
+            CustomImage(slide.image, fit: BoxFit.cover),
 
             // Dark gradient overlay (stronger on left)
             Container(
@@ -1486,18 +1413,18 @@ class _WhyChooseUs extends StatelessWidget {
 }
 
 class _FeaturedRecipe extends StatelessWidget {
-  const _FeaturedRecipe();
+  final VoidCallback onTap;
+  const _FeaturedRecipe({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       height: 180,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        image: const DecorationImage(
-          image: NetworkImage(
+        image: DecorationImage(
+          image: CustomImage.provider(
             'https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop',
           ),
           fit: BoxFit.cover,
@@ -1524,63 +1451,46 @@ class _FeaturedRecipe extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                tr(context, 'recipe_of_day'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              tr(context, 'recipe_title'),
-              style: const TextStyle(
+            const Text(
+              'Live Seafood From Sea to Home',
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 height: 1.2,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(
-                  Icons.timer_outlined,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  tr(context, 'recipe_time'),
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
                 const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    tr(context, 'view_steps'),
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                GestureDetector(
+                  onTap: onTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      tr(context, 'view_steps'),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -1857,7 +1767,6 @@ class _HomeStatsBar extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isSmall = constraints.maxWidth < 350;
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [

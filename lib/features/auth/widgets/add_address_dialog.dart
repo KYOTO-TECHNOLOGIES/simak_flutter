@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -29,7 +30,7 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
   final _streetController = TextEditingController();
   final _areaController = TextEditingController();
   final _cityController = TextEditingController();
-  String _emirate = 'Dubai';
+  String _emirate = 'Abu Dhabi';
   bool _isDefault = false;
   double? _lat;
   double? _lng;
@@ -67,7 +68,13 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     },
   ];
 
-  final List<String> _emirates = ['Dubai', 'Sharjah', 'Ajman', 'Umm Al Quwain'];
+  final List<String> _emirates = [
+    'Abu Dhabi',
+    'Dubai',
+    'Sharjah',
+    'Ajman',
+    'Umm Al Quwain'
+  ];
 
   bool _showErrors = false;
 
@@ -265,7 +272,12 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                         _buildDropdown(
                           value: _emirate,
                           items: _emirates,
-                          onChanged: (v) => setState(() => _emirate = v!),
+                          disabledItems: _emirates.where((e) => e != 'Abu Dhabi').toList(),
+                          onChanged: (v) {
+                            if (v == 'Abu Dhabi') {
+                              setState(() => _emirate = v!);
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -404,6 +416,7 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
     String Function(String)? itemLabelBuilder,
+    List<String> disabledItems = const [],
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -418,12 +431,20 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
           isExpanded: true,
           items: items
               .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(
-                    itemLabelBuilder != null ? itemLabelBuilder(e) : e,
-                  ),
-                ),
+                (e) {
+                  final isDisabled = disabledItems.contains(e);
+                  return DropdownMenuItem(
+                    value: e,
+                    enabled: !isDisabled,
+                    child: Text(
+                      itemLabelBuilder != null ? itemLabelBuilder(e) : e,
+                      style: TextStyle(
+                        color: isDisabled ? Colors.grey.shade400 : Colors.black87,
+                        fontWeight: e == 'Abu Dhabi' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  );
+                },
               )
               .toList(),
           onChanged: onChanged,
@@ -685,13 +706,11 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     }
     return ClipRRect(
       borderRadius: BorderRadius.circular(2),
-      child: Image.network(
+      child: CustomImage(
         flagUrl,
         width: 20,
         height: 14,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.flag, size: 14),
       ),
     );
   }

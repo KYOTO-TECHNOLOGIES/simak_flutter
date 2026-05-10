@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -549,11 +550,9 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
+                                child: CustomImage(
                                   order.receiptImage!,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) => 
-                                    const Icon(Icons.broken_image, color: Colors.white, size: 48),
                                 ),
                               ),
                             ),

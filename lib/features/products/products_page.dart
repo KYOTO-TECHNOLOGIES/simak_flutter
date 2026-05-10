@@ -10,7 +10,7 @@ import 'package:uae_ecom_project/features/products/screens/product_detail_screen
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
-import 'package:uae_ecom_project/features/auth/screens/login_screen.dart';
+
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 import 'package:uae_ecom_project/core/widgets/quick_add_to_cart_button.dart';
 import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
@@ -824,9 +824,11 @@ class _ProductsPageState extends State<ProductsPage>
       '${trStatic(context, 'login_to_action')} ${trTextStatic(context, action)}',
     );
 
-    Navigator.push(
+    Navigator.pushNamedAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      '/home',
+      (route) => false,
+      arguments: 2, // 2 is the Profile tab
     );
     return false;
   }

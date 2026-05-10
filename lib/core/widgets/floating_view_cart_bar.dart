@@ -4,6 +4,7 @@ import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
+import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 
 class FloatingViewCartBar extends StatelessWidget {
   final bool isVisible;
@@ -11,10 +12,11 @@ class FloatingViewCartBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthController>();
     return Consumer<CartController>(
       builder: (context, controller, child) {
         final cart = controller.cart;
-        final hasItems = isVisible && cart != null && cart.items.isNotEmpty;
+        final hasItems = isVisible && auth.isLoggedIn && cart != null && cart.items.isNotEmpty;
 
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 400),
@@ -65,10 +67,16 @@ class FloatingViewCartBar extends StatelessWidget {
                               border: Border.all(color: Colors.white, width: 1.5),
                             ),
                             child: ClipOval(
-                              child: CustomImage(
-                                cart.items.last.product.mainImage ?? '',
-                                fit: BoxFit.cover,
-                              ),
+                              child: cart.items.isNotEmpty
+                                  ? CustomImage(
+                                      cart.items.last.product.mainImage ?? '',
+                                      fit: BoxFit.cover,
+                                    )
+                                  : const Icon(
+                                      Icons.shopping_cart_outlined,
+                                      size: 16,
+                                      color: AppColors.primary,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -88,7 +96,9 @@ class FloatingViewCartBar extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  '${cart.items.length} ${cart.items.length == 1 ? tr(context, 'item') : tr(context, 'items_count')}',
+                                  cart.items.isEmpty
+                                      ? tr(context, 'cart_is_empty')
+                                      : '${cart.items.length} ${cart.items.length == 1 ? tr(context, 'item') : tr(context, 'items_count')}',
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.9),
                                     fontSize: 11,

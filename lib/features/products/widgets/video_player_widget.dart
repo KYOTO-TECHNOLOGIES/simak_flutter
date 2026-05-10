@@ -1,4 +1,5 @@
 import 'package:chewie/chewie.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -108,10 +109,9 @@ class _ProductVideoPlayerState extends State<ProductVideoPlayer> {
         children: [
           // Thumbnail
           if (widget.thumbnail != null)
-            Image.network(
+            CustomImage(
               widget.thumbnail!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: Colors.black),
             )
           else
             Container(color: const Color(0xFF1E1E1E)),
