@@ -7,12 +7,25 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:470304276733:android:7a4bc795bfe8669a13be94",
+        "mobilesdk_app_id": "1:470304276733:android:252a7598a67cf8d213be94",
         "android_client_info": {
           "package_name": "com.simakfresh.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "470304276733-4tb1bevukctraknkri496ruh4pf4lo3q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.simakfresh.app",
+            "certificate_hash": "3a7a94696ef88748cae474b74f3fd9a8b25be801"
+          }
+        },
+        {
+          "client_id": "470304276733-kt1v78349g2kecepe4dpl1371jvdpb6k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDUJyvyUkqx7tFOzPrsb8crW7fn9HJrchc"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "470304276733-kt1v78349g2kecepe4dpl1371jvdpb6k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

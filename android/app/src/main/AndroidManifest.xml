@@ -6,7 +6,7 @@
 
 
     <application
-        android:label="Simak Fresh 西马克新鲜"
+        android:label="Simak Fresh"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

@@ -78,6 +78,16 @@ class ProductController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Resets all filters to default (All categories, empty search).
+  void clearFilters() {
+    _selectedCategory = 'All';
+    _searchQuery = '';
+    notifyListeners();
+    
+    // Refresh products to show 'All'
+    fetchProducts(categoryName: 'All');
+  }
+
   // ─── Filtered Products ──────────────────────────────────────────
   /// Products filtered by the selected category and search query.
   List<ProductModel> get filteredProducts {

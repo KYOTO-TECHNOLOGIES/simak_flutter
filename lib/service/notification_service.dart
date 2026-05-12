@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:uae_ecom_project/service/token_storage.dart';
 
 /// Service for push-notification device registration and in-app notifications.
 class NotificationService {
@@ -18,7 +19,12 @@ class NotificationService {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        await _registerWithToken(token);
+        // Only register if we have a valid session, otherwise the API returns 401
+        if (TokenStorage().isLoggedIn) {
+          await _registerWithToken(token);
+        } else {
+          debugPrint("⏭ Skipping FCM Sync: User not authenticated.");
+        }
       }
     } catch (e) {
       debugPrint("⚠ FCM Sync failed: $e");

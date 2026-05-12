@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/address_controller.dart';
 import 'package:uae_ecom_project/features/home/home_page.dart';
+import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/products_page.dart';
 import 'package:uae_ecom_project/features/profile/profile_screen.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
-import 'package:provider/provider.dart';
 
 /// Shell widget that holds the three main tabs with an animated bottom nav bar.
 class HomeShell extends StatefulWidget {
@@ -60,7 +61,19 @@ class _HomeShellState extends State<HomeShell> {
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
+
     setState(() => _currentIndex = index);
+
+    // Reset product filters when switching to the Products tab.
+    // Done in a post-frame callback to avoid notifyListeners conflicts
+    // with the ongoing setState rebuild.
+    if (index == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Provider.of<ProductController>(context, listen: false).clearFilters();
+        }
+      });
+    }
   }
 
   @override

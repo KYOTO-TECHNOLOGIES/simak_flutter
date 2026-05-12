@@ -7,6 +7,7 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
+import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
 import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
 
 // ═════════════════════════════════════════════════════════════════════
@@ -47,11 +48,39 @@ class QuickAddToCartButton extends StatelessWidget {
               // MANDATORY: Preparation specification check
               if (product.preparationSpecifications.isNotEmpty) {
                 if (context.mounted) {
-                  SimakFeedback.showInfo(
-                    context,
-                    trTextStatic(
-                      context,
-                      'Preparation specification is required for this product.',
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => PrepSelectionSheet(
+                      product: product,
+                      onSelected: (specId, instructions) async {
+                        final success = await cart.addToCart(
+                          product.id,
+                          1,
+                          preparationSpecificationId: specId,
+                          preparationInstructions: instructions,
+                        );
+
+                        if (success) {
+                          if (Navigator.canPop(context)) Navigator.pop(context);
+                          if (context.mounted) {
+                            SimakFeedback.showSuccess(
+                              context,
+                              trStatic(context, 'added_to_cart'),
+                            );
+                            // Optional: Navigate to cart if desired, matching "Buy Now"
+                            // Navigator.pushNamed(context, '/cart');
+                          }
+                        } else {
+                          if (context.mounted) {
+                            SimakFeedback.showError(
+                              context,
+                              cart.error ?? trStatic(context, 'failed_add_cart'),
+                            );
+                          }
+                        }
+                      },
                     ),
                   );
                 }

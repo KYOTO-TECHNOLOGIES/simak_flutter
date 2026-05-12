@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
@@ -114,96 +115,129 @@ class _CartScreenState extends State<CartScreen> {
       barrierDismissible: false,
       builder: (dialogContext) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 24,
-          ),
+          backgroundColor: Colors.white,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(24),
           ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 620),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Text(
-                    'Few items are unavailable for checkout',
-                    style: TextStyle(
-                      fontSize: 22,
-                      height: 1.2,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade900,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ─── Header ─────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.shopping_bag_outlined,
+                        color: AppColors.error,
+                        size: 32,
+                      ),
                     ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Few items are unavailable',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Some items in your cart are currently out of stock. Please remove them to continue with your purchase.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── List of items ──────────────────────────────────
+              Flexible(
+                child: Container(
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    shrinkWrap: true,
+                    itemCount: unavailableItems.length,
+                    separatorBuilder:
+                        (_, __) => Divider(height: 24, color: Colors.grey.shade100),
+                    itemBuilder:
+                        (_, index) =>
+                            _buildUnavailableItemTile(unavailableItems[index]),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemCount: unavailableItems.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
-                      itemBuilder: (_, index) =>
-                          _buildUnavailableItemTile(unavailableItems[index]),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
-                  child: Text(
-                    'Please continue with other available items.',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.grey.shade800,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const Divider(height: 1),
-                SizedBox(
-                  height: 56,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => Navigator.pop(dialogContext, false),
-                          child: Center(
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade700,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── Actions ────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Yes, Continue',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      Container(width: 1, color: Colors.grey.shade300),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => Navigator.pop(dialogContext, true),
-                          child: Center(
-                            child: Text(
-                              'Yes, Continue',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade700,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey.shade600,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -211,57 +245,62 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildUnavailableItemTile(CartItemModel item) {
-    final details =
-        item.preparationSpecificationName != null &&
-            item.preparationSpecificationName!.trim().isNotEmpty
-        ? item.preparationSpecificationName!.trim()
-        : '${item.quantity} ${item.product.unit.replaceAll('_', ' ')}';
-
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: CustomImage(
-            item.product.thumbnail,
-            width: 52,
-            height: 52,
-            fit: BoxFit.cover,
-            padding: const EdgeInsets.all(4),
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade100),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(11),
+            child: CustomImage(item.product.thumbnail, fit: BoxFit.cover),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 item.product.name,
+                style: GoogleFonts.outfit(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 16,
-                  height: 1.2,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
-              const SizedBox(height: 3),
-              Text(
-                details,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.red.shade700,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Out Of Stock',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.red.shade400,
-                  fontWeight: FontWeight.w700,
-                ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Text(
+                    'Out of Stock',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${item.quantity.toInt()} ${item.product.unit.replaceAll('_', ' ')}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                ],
               ),
             ],
           ),

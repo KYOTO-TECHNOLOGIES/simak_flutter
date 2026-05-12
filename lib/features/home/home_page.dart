@@ -81,7 +81,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _howItWorksKey = GlobalKey();
-  bool _hasShownPromo = false;
+  static bool _hasShownPromo = false;
   static bool _hasShownNameDialog = false;
 
   @override
@@ -217,10 +217,7 @@ class _HomePageState extends State<HomePage> {
             if (overlayEntry.mounted) {
               overlayEntry.remove();
             }
-            Navigator.pushNamed(
-              context,
-              '/login',
-            );
+            Navigator.pushNamed(context, '/login');
           },
         );
       },
@@ -1453,9 +1450,9 @@ class _FeaturedRecipe extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Live Seafood From Sea to Home',
-              style: TextStyle(
+            Text(
+              tr(context, 'live_seafood_from_sea_to_home'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

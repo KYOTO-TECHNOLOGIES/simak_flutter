@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/gestures.dart';
 
 class UnifiedRegisterForm extends StatefulWidget {
   const UnifiedRegisterForm({super.key});
@@ -115,6 +117,17 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
     }
   }
 
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.inAppWebView)) {
+        debugPrint('Could not launch $url');
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -195,13 +208,39 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
             Expanded(
               child: GestureDetector(
                 onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
-                child: Text(
-                  tr(context, 'agree_terms'),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    letterSpacing: 0.5,
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      letterSpacing: 0.5,
+                      fontFamily: theme.textTheme.bodyMedium?.fontFamily,
+                    ),
+                    children: [
+                      TextSpan(text: tr(context, 'agree_prefix')),
+                      TextSpan(
+                        text: tr(context, 'TERMS'),
+                        style: const TextStyle(
+                          color: AppColors.actionBlue,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () => _launchURL(
+                              'https://simakfresh.ae/terms-of-service'),
+                      ),
+                      TextSpan(text: tr(context, 'and')),
+                      TextSpan(
+                        text: tr(context, 'PRIVACY'),
+                        style: const TextStyle(
+                          color: AppColors.actionBlue,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () =>
+                              _launchURL('https://simakfresh.ae/privacy-policy'),
+                      ),
+                    ],
                   ),
                 ),
               ),

@@ -41,6 +41,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Restrict to real-device ABIs — x86_64 excluded because NDK 27 + CMake 3.22
+        // on Windows cannot detect the CXX compiler for that ABI.
+        ndk {
+            abiFilters.clear()
+            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
+        }
     }
     signingConfigs {
     create("release") {
