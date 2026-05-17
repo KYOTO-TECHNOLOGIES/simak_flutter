@@ -1110,60 +1110,31 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
 
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _downloadReceipt(order.id, 'receipt_image'),
-                    icon: const Icon(Icons.image_outlined, size: 18),
-                    label: const Text(
-                      'Download Image',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: theme.colorScheme.onSurface.withOpacity(
-                        0.8,
-                      ),
-                      side: BorderSide(
-                        color: theme.dividerColor.withOpacity(0.2),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _downloadReceipt(order.id, 'receipt_pdf'),
+                icon: const Icon(Icons.file_download_outlined, size: 18),
+                label: const Text(
+                  'Download PDF',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _downloadReceipt(order.id, 'receipt_pdf'),
-                    icon: const Icon(Icons.file_download_outlined, size: 18),
-                    label: const Text(
-                      'Download PDF',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: theme.colorScheme.onSurface.withOpacity(
-                        0.8,
-                      ),
-                      side: BorderSide(
-                        color: theme.dividerColor.withOpacity(0.2),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: theme.colorScheme.onSurface.withOpacity(
+                    0.8,
+                  ),
+                  side: BorderSide(
+                    color: theme.dividerColor.withOpacity(0.2),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ],
+              ),
             ),
           ],
 
