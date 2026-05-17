@@ -1,116 +1,71 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/marketing/model/delivery_offer_model.dart';
 import 'package:uae_ecom_project/core/localization/language_provider.dart';
+import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class TrendingOffersSection extends StatefulWidget {
+class TrendingOffersSection extends StatelessWidget {
   final List<DeliveryOfferModel> offers;
 
   const TrendingOffersSection({super.key, required this.offers});
 
-  @override
-  State<TrendingOffersSection> createState() => _TrendingOffersSectionState();
-}
+  List<_OfferData> _prepareOffers(BuildContext context) {
+    final langProvider = context.watch<LanguageProvider>();
+    final currentLocale = langProvider.locale;
+    final List<_OfferData> allOffers = [];
 
-class _TrendingOffersSectionState extends State<TrendingOffersSection> {
-  int _currentIndex = 0;
-  Timer? _timer;
-  final List<_OfferData> _allOffers = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 6), (timer) {
-      if (_allOffers.isNotEmpty && mounted) {
-        setState(() {
-          _currentIndex = (_currentIndex + 1) % _allOffers.length;
-        });
-      }
-    });
-  }
-
-  void _prepareOffers(String currentLocale) {
-    _allOffers.clear();
-    for (var offer in widget.offers) {
+    for (var offer in offers) {
       final freeText = offer.getFreeDelivery(currentLocale);
       if (freeText.isNotEmpty) {
-        _allOffers.add(
+        allOffers.add(
           _OfferData(
             id: 'free_${offer.id}',
             title: freeText,
+            subtitle: tr(context, 'limited_time_offer'),
             icon: Icons.local_shipping_rounded,
-            gradient: [
-              const Color.fromARGB(255, 1, 77, 96), // primaryDark
-              const Color.fromARGB(255, 38, 158, 188), // primary
-            ],
-            accentColor: AppColors.accent,
+            color: const Color(0xFF006D85),
+            iconColor: Colors.orange.shade400,
           ),
         );
       }
       final timeText = offer.getDeliveryTime(currentLocale);
       if (timeText.isNotEmpty) {
-        _allOffers.add(
+        allOffers.add(
           _OfferData(
             id: 'time_${offer.id}',
             title: timeText,
+            subtitle: tr(context, 'express_delivery'),
             icon: Icons.flash_on_rounded,
-            gradient: [
-              const Color.fromARGB(255, 9, 102, 126), // Darker action blue
-              const Color(0xFF1297BA), // actionBlue
-            ],
-            accentColor: const Color(0xFFE1F5FE), // actionBlueLight
+            color: const Color(0xFF0090B0),
+            iconColor: Colors.white,
           ),
         );
       }
     }
+    return allOffers;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.offers.isEmpty) return const SizedBox.shrink();
+    if (offers.isEmpty) return const SizedBox.shrink();
 
-    final langProvider = context.watch<LanguageProvider>();
-    final currentLocale = langProvider.locale;
+    final allOffers = _prepareOffers(context);
+    if (allOffers.isEmpty) return const SizedBox.shrink();
 
-    _prepareOffers(currentLocale);
-
-    if (_allOffers.isEmpty) return const SizedBox.shrink();
-
-    // Ensure _currentIndex is within bounds if offers changed
-    if (_currentIndex >= _allOffers.length) {
-      _currentIndex = 0;
-    }
-
-    final currentOffer = _allOffers[_currentIndex];
+    final displayOffers = allOffers.take(2).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 9, 20, 8),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 800),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        child: _OfferCard(
-          key: ValueKey(currentOffer.id),
-          offer: currentOffer,
-        ),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+      child: Column(
+        children: [
+          _OfferCard(offer: displayOffers[0]),
+          if (displayOffers.length > 1) ...[
+            const SizedBox(height: 4), // Reduced from 8 to 4
+            _OfferCard(offer: displayOffers[1]),
+          ],
+        ],
       ),
     );
   }
@@ -119,95 +74,92 @@ class _TrendingOffersSectionState extends State<TrendingOffersSection> {
 class _OfferData {
   final String id;
   final String title;
+  final String subtitle;
   final IconData icon;
-  final List<Color> gradient;
-  final Color accentColor;
+  final Color color;
+  final Color iconColor;
 
   _OfferData({
     required this.id,
     required this.title,
+    required this.subtitle,
     required this.icon,
-    required this.gradient,
-    required this.accentColor,
+    required this.color,
+    required this.iconColor,
   });
 }
 
 class _OfferCard extends StatelessWidget {
   final _OfferData offer;
 
-  const _OfferCard({super.key, required this.offer});
+  const _OfferCard({required this.offer});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: offer.gradient,
-        ),
-        borderRadius: BorderRadius.circular(20), // More rounded for modern look
-        border: Border.all(
-          color: Colors.white.withOpacity(0.08),
-          width: 1,
-        ),
+        color: offer.color,
+        borderRadius: BorderRadius.circular(14), // Slightly tighter radius for professional look
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: offer.gradient.first.withOpacity(0.2),
-            blurRadius: 17,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(15),
         child: Stack(
           children: [
-            // Decorative background icon
             Positioned(
-              right: -15,
-              bottom: -15,
+              right: -5,
+              bottom: -5,
               child: Icon(
                 offer.icon,
-                size: 80,
-                color: Colors.white.withOpacity(0.06),
+                size: 50,
+                color: Colors.white.withOpacity(0.03),
               ),
             ),
-
-            // Content
-            Container(
-              height: 53, // Slightly taller for better breathing room
-              padding: const EdgeInsets.symmetric(horizontal: 16), // More horizontal padding
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 children: [
+                  // Smaller Left Icon
                   Container(
-                    height: 36,
-                    width: 36,
+                    height: 30,
+                    width: 30,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(offer.icon, color: offer.accentColor, size: 18),
+                    child: Icon(offer.icon, color: offer.iconColor, size: 15),
                   ),
                   const SizedBox(width: 14),
+                  // Text Content
                   Expanded(
-                    child: Text(
-                      offer.title.toUpperCase(),
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 9, // Optimized size for premium feel
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.8,
-                        height: 1.2,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          offer.title.toUpperCase(),
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                            letterSpacing: 0.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                       
+                      ],
                     ),
                   ),
+             
                 ],
               ),
             ),

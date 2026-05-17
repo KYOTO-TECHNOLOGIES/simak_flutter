@@ -13,5 +13,5 @@ class Env {
   static const String userKey = 'user_data';
   
   /// Google Client ID for Android/Web authentication (Use Web Client ID for mobile idToken).
-  static const String googleClientId = '470304276733-kt1v78349g2kecepe4dpl1371jvdpb6k.apps.googleusercontent.com';
+  static const String googleClientId = '850588370229-jtaul330kpqmi0m239itt4jrodshko78.apps.googleusercontent.com';
 }

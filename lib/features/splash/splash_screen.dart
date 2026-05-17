@@ -16,7 +16,11 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _mainFadeController;
   late AnimationController _logoFloatController;
+  late AnimationController _introController;
+  late Animation<double> _logoScale;
+  late Animation<double> _logoOpacity;
   bool _isVisible = true;
+  bool _introComplete = false;
 
   @override
   void initState() {
@@ -25,12 +29,47 @@ class _SplashScreenState extends State<SplashScreen>
     _mainFadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
-    )..forward();
+    );
 
     _logoFloatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
-    )..repeat(reverse: true);
+    );
+
+    _introController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _logoScale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.5, end: 1.1).chain(
+          CurveTween(curve: Curves.easeOutCubic),
+        ),
+        weight: 60,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.1, end: 1.0).chain(
+          CurveTween(curve: Curves.easeInOutCubic),
+        ),
+        weight: 40,
+      ),
+    ]).animate(_introController);
+
+    _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _introController,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeIn),
+      ),
+    );
+
+    _introController.forward().then((_) {
+      if (mounted) {
+        setState(() => _introComplete = true);
+        _mainFadeController.forward();
+        _logoFloatController.repeat(reverse: true);
+      }
+    });
 
     _checkInitialization();
   }
@@ -78,13 +117,14 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _mainFadeController.dispose();
     _logoFloatController.dispose();
+    _introController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF040C1E).withOpacity(0.95),
+      backgroundColor: const Color(0xFF0D2E40), // Matches Native Splash Color
       body: AnimatedOpacity(
         opacity: _isVisible ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 600),
@@ -92,62 +132,85 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // ─── Floating Logo ─────────────────────────────
+              // ─── Floating & Scaling Logo ───────────────────
               AnimatedBuilder(
-                animation: _logoFloatController,
+                animation: Listenable.merge([
+                  _logoFloatController,
+                  _introController,
+                ]),
                 builder: (context, child) {
+                  final floatOffset =
+                      _introComplete
+                          ? -8 *
+                              math.sin(
+                                _logoFloatController.value * 2 * math.pi,
+                              )
+                          : 0.0;
                   return Transform.translate(
-                    offset: Offset(
-                      0,
-                      -8 * math.sin(_logoFloatController.value * 2 * math.pi),
+                    offset: Offset(0, floatOffset),
+                    child: Transform.scale(
+                      scale: _logoScale.value,
+                      child: Opacity(
+                        opacity: _logoOpacity.value,
+                        child: child,
+                      ),
                     ),
-                    child: child,
                   );
                 },
                 child: const Image(
                   image: AssetImage('assets/images/home_logo.png'),
-                  width: 60,
-                  height: 60,
+                  width: 80,
+                  height: 80,
                   fit: BoxFit.contain,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              // ─── Content that fades in after intro ──────────
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 800),
+                opacity: _introComplete ? 1.0 : 0.0,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 24),
 
-              // ─── Animated Language Text ─────────────────────
-              _LanguageAnimator(onComplete: _onAnimationComplete),
+                    // ─── Animated Language Text ─────────────────────
+                    if (_introComplete)
+                      _LanguageAnimator(onComplete: _onAnimationComplete),
 
-              const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-              // ─── Wave Divider ──────────────────────────────
-              const _WaveDivider(),
+                    // ─── Wave Divider ──────────────────────────────
+                    const _WaveDivider(),
 
-              const SizedBox(height: 12),
+                    const SizedBox(height: 12),
 
-              // ─── Bouncing Creatures ────────────────────────
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _BouncingCreature(
-                    image: 'assets/images/fish1.png',
-                    color: Color(0xFF04BCB1),
-                    delayMs: 0,
-                  ),
-                  SizedBox(width: 28),
-                  _BouncingCreature(
-                    image: 'assets/images/fish2.png',
-                    color: Color(0xFFF6DE37),
-                    delayMs: 460, // Exactly half phase (opposite)
-                  ),
-                  SizedBox(width: 28),
-                  _BouncingCreature(
-                    image: 'assets/images/fish3.png',
-                    color: Color(0xFFFF4D4D),
-                    delayMs: 0, // In sync with fish 1
-                  ),
-                ],
+                    // ─── Bouncing Creatures ────────────────────────
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _BouncingCreature(
+                          image: 'assets/images/fish1.png',
+                          color: Color(0xFF04BCB1),
+                          delayMs: 0,
+                        ),
+                        SizedBox(width: 28),
+                        _BouncingCreature(
+                          image: 'assets/images/fish2.png',
+                          color: Color(0xFFF6DE37),
+                          delayMs: 460, // Exactly half phase (opposite)
+                        ),
+                        SizedBox(width: 28),
+                        _BouncingCreature(
+                          image: 'assets/images/fish3.png',
+                          color: Color(0xFFFF4D4D),
+                          delayMs: 0, // In sync with fish 1
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

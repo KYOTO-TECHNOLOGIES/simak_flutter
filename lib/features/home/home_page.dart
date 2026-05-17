@@ -25,6 +25,8 @@ import 'package:uae_ecom_project/features/home/widgets/language_selection_icon.d
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import 'package:uae_ecom_project/features/home/widgets/trending_offers_section.dart';
 
 Widget _buildStyledText(
@@ -1409,9 +1411,56 @@ class _WhyChooseUs extends StatelessWidget {
   }
 }
 
-class _FeaturedRecipe extends StatelessWidget {
+class _FeaturedRecipe extends StatefulWidget {
   final VoidCallback onTap;
   const _FeaturedRecipe({required this.onTap});
+
+  @override
+  State<_FeaturedRecipe> createState() => _FeaturedRecipeState();
+}
+
+class _FeaturedRecipeState extends State<_FeaturedRecipe> {
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePlayer();
+  }
+
+  Future<void> _initializePlayer() async {
+    try {
+      _videoPlayerController = VideoPlayerController.asset('assets/gif/animation.gif.mp4');
+      await _videoPlayerController!.initialize();
+      
+      _chewieController = ChewieController(
+        videoPlayerController: _videoPlayerController!,
+        autoPlay: true,
+        looping: true,
+        showControls: false,
+        aspectRatio: _videoPlayerController!.value.aspectRatio,
+        autoInitialize: true,
+      );
+      
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint("Chewie Initialization Error: $e");
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1420,12 +1469,7 @@ class _FeaturedRecipe extends StatelessWidget {
       height: 180,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        image: DecorationImage(
-          image: CustomImage.provider(
-            'https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop',
-          ),
-          fit: BoxFit.cover,
-        ),
+        color: Colors.black,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -1434,64 +1478,90 @@ class _FeaturedRecipe extends StatelessWidget {
           ),
         ],
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            begin: Alignment.bottomRight,
-            colors: [
-              Colors.black.withOpacity(0.8),
-              Colors.black.withOpacity(0.1),
-            ],
-          ),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Text(
-              tr(context, 'live_seafood_from_sea_to_home'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Spacer(),
-                GestureDetector(
-                  onTap: onTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+            // Background Layer
+            if (_chewieController != null && _chewieController!.videoPlayerController.value.isInitialized)
+              Chewie(controller: _chewieController!)
+            else if (!_hasError)
+              const Center(child: CircularProgressIndicator(color: Colors.white24))
+            else
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: CustomImage.provider(
+                      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop',
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      tr(context, 'view_steps'),
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    fit: BoxFit.cover,
+                    opacity: 0.5,
                   ),
                 ),
-              ],
+              ),
+
+            // Gradient Overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomRight,
+                  colors: [
+                    Colors.black.withOpacity(0.8),
+                    Colors.black.withOpacity(0.1),
+                  ],
+                ),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    tr(context, 'live_seafood_from_sea_to_home'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: widget.onTap,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            tr(context, 'view_steps'),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
