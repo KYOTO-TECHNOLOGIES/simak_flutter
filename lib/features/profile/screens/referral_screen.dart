@@ -202,7 +202,7 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: referralCode));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Code copied!')),
+                            SnackBar(content: Text(tr(context, 'code_copied'))),
                           );
                         },
                       ),
@@ -254,7 +254,7 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
                       child: GestureDetector(
                         onTap: () {
                           if (referralCode == '---') return;
-                          final message = "Join Simak Fresh! Use my referral code $referralCode to get max 20% OFF on your first order. Download the app now!";
+                          final message = "Join Simak Fresh! Use my referral code $referralCode to get max 20% OFF (Upto 20 AED) on your first order. Download the app now!";
                           Clipboard.setData(ClipboardData(text: message));
                           SimakFeedback.showSuccess(context, tr(context, 'link_copied'));
                         },
@@ -300,8 +300,14 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
               _buildStepTile(
                 context,
                 '01',
-                tr(context, 'referral_step_1_title'),
-                tr(context, 'referral_step_1_sub'),
+                Text(
+                  tr(context, 'referral_step_1_title'),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  tr(context, 'referral_step_1_sub'),
+                  style: TextStyle(fontSize: 13, color: Colors.black.withOpacity(0.5), height: 1.4),
+                ),
                 Icons.person_add_outlined,
                 const Color(0xFFE1F5FE),
                 const Color(0xFF03A9F4),
@@ -310,8 +316,14 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
               _buildStepTile(
                 context,
                 '02',
-                tr(context, 'referral_step_2_title'),
-                tr(context, 'referral_step_2_sub'),
+                Text(
+                  tr(context, 'referral_step_2_title'),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  tr(context, 'referral_step_2_sub'),
+                  style: TextStyle(fontSize: 13, color: Colors.black.withOpacity(0.5), height: 1.4),
+                ),
                 Icons.shopping_bag_outlined,
                 const Color(0xFFF3E5F5),
                 const Color(0xFF9C27B0),
@@ -320,8 +332,48 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
               _buildStepTile(
                 context,
                 '03',
-                tr(context, 'referral_step_3_title'),
-                tr(context, 'referral_step_3_sub'),
+                Text.rich(
+                  TextSpan(
+                    text: tr(context, 'referral_step_3_title'),
+                    children: [
+                      TextSpan(
+                        text: ' ${tr(context, 'referral_step_3_title_suffix')}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                Text.rich(
+                  TextSpan(
+                    text: tr(context, 'referral_step_3_sub_1'),
+                    children: [
+                      TextSpan(
+                        text: ' ${tr(context, 'referral_step_3_title_suffix')}',
+                        style: const TextStyle(fontSize: 10, color: Colors.black45, fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: tr(context, 'referral_step_3_sub_2'),
+                      ),
+                      TextSpan(
+                        text: ' ${tr(context, 'referral_step_3_title_suffix')}',
+                        style: const TextStyle(fontSize: 10, color: Colors.black45, fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: tr(context, 'referral_step_3_sub_3'),
+                      ),
+                    ],
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.black.withOpacity(0.5),
+                    height: 1.4,
+                  ),
+                ),
                 Icons.celebration_outlined,
                 const Color(0xFFFFF3E0),
                 const Color(0xFFFF9800),
@@ -355,7 +407,7 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
               Text(couponController.error!, style: const TextStyle(color: Colors.red)),
               TextButton(
                 onPressed: () => couponController.fetchCoupons(),
-                child: const Text('Retry'),
+                child: Text(tr(context, 'retry')),
               ),
             ],
           ),
@@ -464,15 +516,15 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
   void _shareReferral(BuildContext context, String code) {
     if (code == '---') return;
     final message =
-        "Join Simak Fresh! Use my referral code $code to get max 20% OFF on your first order. Download the app now!";
+        "Join Simak Fresh! Use my referral code $code to get max 20% OFF (Upto 20 AED) on your first order. Download the app now!";
     Share.share(message, subject: "Simak Fresh Referral");
   }
 
   Widget _buildStepTile(
     BuildContext context,
     String number,
-    String title,
-    String subtitle,
+    Widget titleWidget,
+    Widget subtitleWidget,
     IconData icon,
     Color bgColor,
     Color accentColor,
@@ -521,25 +573,12 @@ class _ReferralScreenState extends State<ReferralScreen> with SingleTickerProvid
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: titleWidget,
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.black.withOpacity(0.5),
-                    height: 1.4,
-                  ),
-                ),
+                subtitleWidget,
               ],
             ),
           ),

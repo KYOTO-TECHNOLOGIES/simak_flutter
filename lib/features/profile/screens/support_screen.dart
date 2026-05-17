@@ -599,7 +599,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                   const Icon(Icons.headphones, color: Colors.grey, size: 16),
                   const SizedBox(width: 12),
                   Text(
-                    'AVERAGE RESPONSE: UNDER 2 HOURS',
+                    tr(context, 'support_average_response'),
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 10,
@@ -675,9 +675,9 @@ class _SupportWidgetState extends State<SupportWidget> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'CLOSE',
-                style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
+              child: Text(
+                tr(context, 'close'),
+                style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
               ),
             ),
           ),

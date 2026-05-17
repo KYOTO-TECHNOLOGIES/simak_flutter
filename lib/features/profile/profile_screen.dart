@@ -2025,7 +2025,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Icon(Icons.error_outline, color: Colors.red, size: 48),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading orders',
+                    tr(context, 'order_error_loading'),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -2049,7 +2049,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         controller.fetchMyOrders(userId: userId);
                       }
                     },
-                    child: const Text('Retry'),
+                    child: Text(tr(context, 'order_retry')),
                   ),
                 ],
               ),
@@ -2094,7 +2094,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Your order history will appear here',
+                    tr(context, 'order_history_empty'),
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
@@ -2114,7 +2114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }
                         },
                         icon: const Icon(Icons.refresh, size: 18),
-                        label: const Text('Refresh'),
+                        label: Text(tr(context, 'order_refresh')),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.actionBlue,
                           side: const BorderSide(color: AppColors.actionBlue),
@@ -2142,13 +2142,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Start Shopping'),
+                        child: Text(tr(context, 'start_shopping')),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Tip: Pull down to refresh your order list',
+                    tr(context, 'order_pull_refresh'),
                     style: TextStyle(
                       fontSize: 12,
                       color: theme.colorScheme.onSurface.withOpacity(0.3),
@@ -2225,7 +2225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Row(
                             children: [
                               Text(
-                                'ORDER #${order.id}',
+                                '${tr(context, 'order_hash')}${order.id}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 14,
@@ -2309,7 +2309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'TOTAL AMOUNT',
+                            tr(context, 'order_total_amount').toUpperCase(),
                             style: TextStyle(
                               color: theme.colorScheme.onSurface.withOpacity(
                                 0.4,
@@ -2369,8 +2369,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   label: Text(
                                     hasAnyReview
-                                        ? 'EDIT REVIEW'
-                                        : 'WRITE A REVIEW',
+                                        ? tr(context, 'order_edit_review').toUpperCase()
+                                        : tr(context, 'order_write_review').toUpperCase(),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 13,
@@ -2593,13 +2593,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Colors.grey.withOpacity(0.5),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'No Reviews Yet',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Text(
+                  tr(context, 'no_reviews_yet'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your reviews will appear here after you rate products from your orders.',
+                  tr(context, 'no_reviews_subtitle'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -2617,7 +2617,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'MY REVIEWS (${controller.userReviews.length})',
+                tr(context, 'my_reviews_count')
+                    .replaceAll('{count}', '${controller.userReviews.length}')
+                    .toUpperCase(),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -2643,21 +2645,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     final isDark = theme.brightness == Brightness.dark;
     final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'jan',
+      'feb',
+      'mar',
+      'apr',
+      'may',
+      'jun',
+      'jul',
+      'aug',
+      'sep',
+      'oct',
+      'nov',
+      'dec',
     ];
     final dateStr =
-        '${review.createdAt.day} ${months[review.createdAt.month - 1]} ${review.createdAt.year}';
+        '${review.createdAt.day} ${tr(context, 'month_${months[review.createdAt.month - 1]}')} ${review.createdAt.year}';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -2884,7 +2886,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'AED ${item.priceAtOrder.toStringAsFixed(2)} / unit',
+                  'AED ${item.priceAtOrder.toStringAsFixed(2)} / ${tr(context, 'unit')}',
                   style: TextStyle(
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
                     fontSize: 12,
@@ -2897,6 +2899,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  String _getLocalizedStatus(BuildContext context, String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return tr(context, 'order_status_pending');
+      case 'processing':
+        return tr(context, 'order_status_processing');
+      case 'shipped':
+        return tr(context, 'order_status_shipped');
+      case 'delivered':
+        return tr(context, 'order_status_delivered');
+      case 'cancelled':
+        return tr(context, 'order_status_cancelled');
+      default:
+        return status.toUpperCase();
+    }
   }
 
   Widget _buildStatusBadge(String status) {
@@ -2937,7 +2956,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
-            status.toUpperCase(),
+            _getLocalizedStatus(context, status),
             style: TextStyle(
               color: color,
               fontSize: 10,
@@ -3217,16 +3236,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (code == null || code.trim().isEmpty) return '—';
     switch (code.toUpperCase()) {
       case 'M':
-        return 'Male';
+        return tr(context, 'Male');
       case 'F':
-        return 'Female';
+        return tr(context, 'Female');
       case 'O':
-        return 'Other';
+        return tr(context, 'Other');
       default:
         // Handle case where server might already have full strings
-        if (code.toLowerCase() == 'male') return 'Male';
-        if (code.toLowerCase() == 'female') return 'Female';
-        if (code.toLowerCase() == 'other') return 'Other';
+        if (code.toLowerCase() == 'male') return tr(context, 'Male');
+        if (code.toLowerCase() == 'female') return tr(context, 'Female');
+        if (code.toLowerCase() == 'other') return tr(context, 'Other');
         return code;
     }
   }

@@ -1421,7 +1421,6 @@ class _FeaturedRecipe extends StatefulWidget {
 
 class _FeaturedRecipeState extends State<_FeaturedRecipe> {
   VideoPlayerController? _videoPlayerController;
-  ChewieController? _chewieController;
   bool _hasError = false;
 
   @override
@@ -1435,18 +1434,13 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
       _videoPlayerController = VideoPlayerController.asset('assets/gif/animation.gif.mp4');
       await _videoPlayerController!.initialize();
       
-      _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController!,
-        autoPlay: true,
-        looping: true,
-        showControls: false,
-        aspectRatio: _videoPlayerController!.value.aspectRatio,
-        autoInitialize: true,
-      );
+      _videoPlayerController!.setLooping(true);
+      _videoPlayerController!.setVolume(0.0);
+      _videoPlayerController!.play();
       
       if (mounted) setState(() {});
     } catch (e) {
-      debugPrint("Chewie Initialization Error: $e");
+      debugPrint("Video Initialization Error: $e");
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -1458,7 +1452,6 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
   @override
   void dispose() {
     _videoPlayerController?.dispose();
-    _chewieController?.dispose();
     super.dispose();
   }
 
@@ -1466,7 +1459,7 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 180,
+      height: 220,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         color: Colors.black,
@@ -1484,8 +1477,17 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
           fit: StackFit.expand,
           children: [
             // Background Layer
-            if (_chewieController != null && _chewieController!.videoPlayerController.value.isInitialized)
-              Chewie(controller: _chewieController!)
+            if (_videoPlayerController != null && _videoPlayerController!.value.isInitialized)
+              SizedBox.expand(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _videoPlayerController!.value.size.width,
+                    height: _videoPlayerController!.value.size.height,
+                    child: VideoPlayer(_videoPlayerController!),
+                  ),
+                ),
+              )
             else if (!_hasError)
               const Center(child: CircularProgressIndicator(color: Colors.white24))
             else
@@ -1524,6 +1526,15 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr(context, 'vannamei_shrimp'),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 16),

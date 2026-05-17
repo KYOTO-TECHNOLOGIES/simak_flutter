@@ -1372,23 +1372,13 @@ class _OrderPageState extends State<OrderPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'AED ${totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: AppColors.primary,
-                  ),
-                ),
-                Text(
-                  tr(context, 'checkout_price_inclusive'),
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-              ],
+            Text(
+              'AED ${totalPrice.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: AppColors.primary,
+              ),
             ),
             SizedBox(
               width: 160,

@@ -80,9 +80,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               return TextButton.icon(
                 onPressed: () => ctrl.markAllAsRead(),
                 icon: const Icon(Icons.done_all_rounded, size: 18),
-                label: const Text(
-                  'Mark all as read',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                label: Text(
+                  tr(context, 'mark_all_read'),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.actionBlue,
@@ -117,9 +117,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Widget _buildTabs(NotificationController ctrl) {
     final tabs = [
-      _TabData(Icons.notifications_outlined, 'All', ctrl.notifications.length),
-      _TabData(Icons.circle_outlined, 'Unread', ctrl.unreadCount),
-      _TabData(Icons.done_rounded, 'Read', ctrl.readCount),
+      _TabData(Icons.notifications_outlined, tr(context, 'notifications_all'), ctrl.notifications.length),
+      _TabData(Icons.circle_outlined, tr(context, 'notifications_unread'), ctrl.unreadCount),
+      _TabData(Icons.done_rounded, tr(context, 'notifications_read'), ctrl.readCount),
     ];
 
     return SingleChildScrollView(
@@ -254,11 +254,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
     IconData icon;
     switch (_selectedTab) {
       case 1:
-        message = 'No unread notifications';
+        message = tr(context, 'no_unread_notifications');
         icon = Icons.mark_email_read_outlined;
         break;
       case 2:
-        message = 'No read notifications';
+        message = tr(context, 'no_read_notifications');
         icon = Icons.markunread_mailbox_outlined;
         break;
       default:
@@ -292,7 +292,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
-              'We will notify you when something important happens.',
+              tr(context, 'notification_empty_hint'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: theme.colorScheme.onSurface.withOpacity(0.4),
@@ -469,7 +469,7 @@ class _NotificationCard extends StatelessWidget {
                       // Open button (navigates to order)
                       if (notification.orderId != null)
                         _ActionChip(
-                          label: 'Open',
+                          label: tr(context, 'open_action'),
                           icon: Icons.open_in_new_rounded,
                           color: AppColors.actionBlue,
                           onTap: onOpen,
@@ -480,7 +480,7 @@ class _NotificationCard extends StatelessWidget {
                       // Mark as read button
                       if (!notification.isRead)
                         _ActionChip(
-                          label: 'Mark as read',
+                          label: tr(context, 'mark_read'),
                           icon: Icons.done_rounded,
                           color: AppColors.success,
                           onTap: onMarkRead,

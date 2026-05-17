@@ -25,7 +25,14 @@ class ReviewBottomSheet {
         : [];
     bool isSubmitting = false;
 
-    const ratingLabels = ['', 'POOR', 'FAIR', 'GOOD', 'VERY GOOD', 'EXCELLENT'];
+    final ratingKeys = [
+      '',
+      'rating_poor',
+      'rating_fair',
+      'rating_good',
+      'rating_very_good',
+      'rating_excellent'
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -88,8 +95,8 @@ class ReviewBottomSheet {
                             children: [
                               Text(
                                 existingReview != null
-                                    ? 'EDIT YOUR REVIEW'
-                                    : 'WRITE YOUR REVIEW',
+                                    ? tr(context, 'order_edit_review').toUpperCase()
+                                    : tr(context, 'order_write_review').toUpperCase(),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -100,7 +107,7 @@ class ReviewBottomSheet {
                               const SizedBox(height: 4),
                               RichText(
                                 text: TextSpan(
-                                  text: 'Reviewing: ',
+                                  text: tr(context, 'review_reviewing'),
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
@@ -154,7 +161,7 @@ class ReviewBottomSheet {
                     if (selectedRating > 0) ...[
                       const SizedBox(height: 8),
                       Text(
-                        ratingLabels[selectedRating],
+                        tr(context, ratingKeys[selectedRating]).toUpperCase(),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
@@ -171,7 +178,7 @@ class ReviewBottomSheet {
                       maxLines: 4,
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'Share your experience with this product...',
+                        hintText: tr(context, 'review_share_hint'),
                         hintStyle: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 14,
@@ -202,8 +209,8 @@ class ReviewBottomSheet {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         existingReview != null
-                            ? 'ADD NEW PHOTOS (OPTIONAL)'
-                            : 'ADD MORE PHOTOS (OPTIONAL)',
+                            ? tr(context, 'review_add_new_photos').toUpperCase()
+                            : tr(context, 'review_add_more_photos').toUpperCase(),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
@@ -243,9 +250,9 @@ class ReviewBottomSheet {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
-                            'Choose files',
-                            style: TextStyle(
+                          child: Text(
+                            tr(context, 'review_choose_files'),
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -255,8 +262,9 @@ class ReviewBottomSheet {
                         Expanded(
                           child: Text(
                             selectedImages.isEmpty
-                                ? 'No file chosen'
-                                : '${selectedImages.length} files selected',
+                                ? tr(context, 'review_no_file_chosen')
+                                : tr(context, 'review_files_selected')
+                                    .replaceAll('{count}', '${selectedImages.length}'),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -312,9 +320,9 @@ class ReviewBottomSheet {
                                           bottomRight: Radius.circular(6),
                                         ),
                                       ),
-                                      child: const Text(
-                                        'NEW',
-                                        style: TextStyle(
+                                      child: Text(
+                                        tr(context, 'review_new_badge'),
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 9,
                                           fontWeight: FontWeight.w900,
@@ -372,7 +380,7 @@ class ReviewBottomSheet {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'EXISTING PHOTOS',
+                                  tr(context, 'review_existing_photos'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w900,
@@ -521,8 +529,8 @@ class ReviewBottomSheet {
                                               ),
                                               content: Text(
                                                 success
-                                                    ? 'Review submitted successfully!'
-                                                    : 'Failed to save review',
+                                                    ? tr(context, 'order_review_success')
+                                                    : tr(context, 'review_failed_save'),
                                               ),
                                             ),
                                           );
@@ -546,9 +554,9 @@ class ReviewBottomSheet {
                                       color: Colors.white,
                                     ),
                                   )
-                                  : const Text(
-                                    'Submit Review',
-                                    style: TextStyle(
+                                  : Text(
+                                    tr(context, 'order_submit_review'),
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
                                     ),
