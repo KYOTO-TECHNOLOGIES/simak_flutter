@@ -1931,6 +1931,7 @@ class _HighlightedTestimonial extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           tr(context, 'testimonial_author'),
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 14,
@@ -1940,6 +1941,7 @@ class _HighlightedTestimonial extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           tr(context, 'verified_purchase'),
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 10,
             color: Colors.black.withOpacity(0.4),

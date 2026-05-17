@@ -1549,7 +1549,7 @@ final Map<String, Map<String, String>> _translations = {
     'stat_average_rating': '平均\n评分',
     'stat_ontime_delivery': '准时\n送达',
     'testimonial_quote': '“虾非常新鲜——就像刚从船上下来一样！包装是冰冷的，送货也非常准时。”',
-    'testimonial_author': "— Zhakira, 阿布扎比",
+    'testimonial_author': "— 扎基拉，阿布扎比",
     'verified_purchase': "已验证购买",
 
     // -- Profile Labels --
@@ -2354,7 +2354,7 @@ final Map<String, Map<String, String>> _translations = {
     'stat_ontime_delivery': 'توصيل\nفي الموعد',
     'testimonial_quote':
         '"كان الروبيان طازجًا بشكل لا يصدق - تمامًا كما لو كان قد خرج للتو من القارب! كان التغليف مبردًا وكان التوصيل مثاليًا."',
-    'testimonial_author': "— Zhakira، أبو ظبي",
+    'testimonial_author': "— زاكيرا، أبو ظبي",
     'verified_purchase': "عملية شراء مؤكدة",
 
     // -- Profile Labels --
