@@ -12,6 +12,7 @@ class ProfileModel {
   final String? occupation;
   final String? businessName;
   final String? pincode;
+  final String? nationality;
   final String? createdAt;
   final String? updatedAt;
 
@@ -27,6 +28,7 @@ class ProfileModel {
     this.occupation,
     this.businessName,
     this.pincode,
+    this.nationality,
     this.createdAt,
     this.updatedAt,
   });
@@ -44,6 +46,7 @@ class ProfileModel {
       occupation: json['occupation'] as String? ?? existing.occupation,
       businessName: json['business_name'] as String? ?? existing.businessName,
       pincode: json['pincode'] as String? ?? existing.pincode,
+      nationality: json['nationality'] as String? ?? existing.nationality,
       createdAt: json['created_at'] as String? ?? existing.createdAt,
       updatedAt: json['updated_at'] as String? ?? existing.updatedAt,
     );
@@ -62,6 +65,7 @@ class ProfileModel {
       occupation: json['occupation'] as String?,
       businessName: json['business_name'] as String?,
       pincode: json['pincode'] as String?,
+      nationality: json['nationality'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
@@ -80,6 +84,7 @@ class ProfileModel {
       'occupation': occupation,
       'business_name': businessName,
       'pincode': pincode,
+      'nationality': nationality,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };

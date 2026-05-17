@@ -1094,18 +1094,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_showPreparationError)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Text(
-                        tr(context, 'please_select_preparation'),
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                   !_inStock
                       ? Container(
                           width: double.infinity,
@@ -1196,15 +1184,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         )) {
                                           // MANDATORY: Check if preparation is selected
                                           if (widget
-                                                  .product
-                                                  .preparationSpecifications
-                                                  .isNotEmpty &&
-                                              _selectedPreparation == null) {
-                                            setState(
-                                              () =>
-                                                  _showPreparationError = true,
-                                            );
-                                            return;
+                                              .product
+                                              .preparationSpecifications
+                                              .isNotEmpty) {
+                                            if (_selectedPreparation == null) {
+                                              _showPrepSelectionModal();
+                                              return;
+                                            } else {
+                                              // If already selected inline, proceed to add to cart and navigate to Cart page
+                                              if (!_canAddMoreToCart(_quantity))
+                                                return;
+
+                                              final cartController = context
+                                                  .read<CartController>();
+
+                                              final success = await cartController
+                                                  .addToCart(
+                                                    widget.product.id,
+                                                    _quantity,
+                                                    preparationSpecificationId:
+                                                        _selectedPreparation?.id,
+                                                    preparationInstructions:
+                                                        _specialInstructionsController
+                                                            .text,
+                                                  );
+                                              if (!mounted) return;
+                                              if (success) {
+                                                Navigator.pushNamed(
+                                                  context,
+                                                  '/cart',
+                                                );
+                                              } else {
+                                                SimakFeedback.showError(
+                                                  context,
+                                                  cartController.error ??
+                                                      'Failed to add to cart',
+                                                );
+                                              }
+                                              return;
+                                            }
                                           }
 
                                           // Block if adding would exceed stock

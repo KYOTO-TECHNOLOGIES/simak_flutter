@@ -47,6 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _selectedGender;
   DateTime? _selectedDob;
   String _preferredLanguageCode = 'en';
+  String? _selectedNationality;
 
   final ScrollController _tabsScrollController = ScrollController();
   bool _showTabsArrow = true;
@@ -59,6 +60,205 @@ class _ProfileScreenState extends State<ProfileScreen> {
   };
 
   static const List<String> _genderOptions = ['Male', 'Female', 'Other'];
+
+  static const Map<String, String> _nationalityMap = {
+    'AF': 'Afghan',
+    'AL': 'Albanian',
+    'DZ': 'Algerian',
+    'AD': 'Andorran',
+    'AO': 'Angolan',
+    'AG': 'Antiguan',
+    'AR': 'Argentine',
+    'AM': 'Armenian',
+    'AU': 'Australian',
+    'AT': 'Austrian',
+    'AZ': 'Azerbaijani',
+    'BS': 'Bahamian',
+    'BH': 'Bahraini',
+    'BD': 'Bangladeshi',
+    'BB': 'Barbadian',
+    'BY': 'Belarusian',
+    'BE': 'Belgian',
+    'BZ': 'Belizean',
+    'BJ': 'Beninese',
+    'BT': 'Bhutanese',
+    'BO': 'Bolivian',
+    'BA': 'Bosnian',
+    'BW': 'Botswanan',
+    'BR': 'Brazilian',
+    'BN': 'Bruneian',
+    'BG': 'Bulgarian',
+    'BF': 'Burkinabe',
+    'BI': 'Burundian',
+    'CV': 'Cape Verdean',
+    'KH': 'Cambodian',
+    'CM': 'Cameroonian',
+    'CA': 'Canadian',
+    'CF': 'Central African',
+    'TD': 'Chadian',
+    'CL': 'Chilean',
+    'CN': 'Chinese',
+    'CO': 'Colombian',
+    'KM': 'Comorian',
+    'CG': 'Congolese',
+    'CR': 'Costa Rican',
+    'HR': 'Croatian',
+    'CU': 'Cuban',
+    'CY': 'Cypriot',
+    'CZ': 'Czech',
+    'DK': 'Danish',
+    'DJ': 'Djiboutian',
+    'DM': 'Dominican',
+    'DO': 'Dominican (Republic)',
+    'EC': 'Ecuadorian',
+    'EG': 'Egyptian',
+    'SV': 'Salvadoran',
+    'GQ': 'Equatorial Guinean',
+    'ER': 'Eritrean',
+    'EE': 'Estonian',
+    'SZ': 'Eswatini',
+    'ET': 'Ethiopian',
+    'FJ': 'Fijian',
+    'FI': 'Finnish',
+    'FR': 'French',
+    'GA': 'Gabonese',
+    'GM': 'Gambian',
+    'GE': 'Georgian',
+    'DE': 'German',
+    'GH': 'Ghanaian',
+    'GR': 'Greek',
+    'GD': 'Grenadian',
+    'GT': 'Guatemalan',
+    'GN': 'Guinean',
+    'GW': 'Guinea-Bissauan',
+    'GY': 'Guyanese',
+    'HT': 'Haitian',
+    'HN': 'Honduran',
+    'HU': 'Hungarian',
+    'IS': 'Icelandic',
+    'IN': 'Indian',
+    'ID': 'Indonesian',
+    'IR': 'Iranian',
+    'IQ': 'Iraqi',
+    'IE': 'Irish',
+    'IL': 'Israeli',
+    'IT': 'Italian',
+    'JM': 'Jamaican',
+    'JP': 'Japanese',
+    'JO': 'Jordanian',
+    'KZ': 'Kazakhstani',
+    'KE': 'Kenyan',
+    'KI': 'Kiribati',
+    'KW': 'Kuwaiti',
+    'KG': 'Kyrgyz',
+    'LA': 'Laotian',
+    'LV': 'Latvian',
+    'LB': 'Lebanese',
+    'LS': 'Basotho',
+    'LR': 'Liberian',
+    'LY': 'Libyan',
+    'LI': 'Liechtensteiner',
+    'LT': 'Lithuanian',
+    'LU': 'Luxembourgish',
+    'MG': 'Malagasy',
+    'MW': 'Malawian',
+    'MY': 'Malaysian',
+    'MV': 'Maldivian',
+    'ML': 'Malian',
+    'MT': 'Maltese',
+    'MH': 'Marshallese',
+    'MR': 'Mauritanian',
+    'MU': 'Mauritian',
+    'MX': 'Mexican',
+    'FM': 'Micronesian',
+    'MD': 'Moldovan',
+    'MC': 'Monacan',
+    'MN': 'Mongolian',
+    'ME': 'Montenegrin',
+    'MA': 'Moroccan',
+    'MZ': 'Mozambican',
+    'MM': 'Myanmar',
+    'NA': 'Namibian',
+    'NR': 'Nauruan',
+    'NP': 'Nepali',
+    'NL': 'Dutch',
+    'NZ': 'New Zealander',
+    'NI': 'Nicaraguan',
+    'NE': 'Nigerien',
+    'NG': 'Nigerian',
+    'NO': 'Norwegian',
+    'OM': 'Omani',
+    'PK': 'Pakistani',
+    'PW': 'Palauan',
+    'PA': 'Panamanian',
+    'PG': 'Papua New Guinean',
+    'PY': 'Paraguayan',
+    'PE': 'Peruvian',
+    'PH': 'Filipino',
+    'PL': 'Polish',
+    'PT': 'Portuguese',
+    'QA': 'Qatari',
+    'RO': 'Romanian',
+    'RU': 'Russian',
+    'RW': 'Rwandan',
+    'KN': 'Kittitian',
+    'LC': 'Saint Lucian',
+    'VC': 'Vincentian',
+    'WS': 'Samoan',
+    'SM': 'Sammarinese',
+    'ST': 'Sao Tomean',
+    'SA': 'Saudi',
+    'SN': 'Senegalese',
+    'RS': 'Serbian',
+    'SC': 'Seychellois',
+    'SL': 'Sierra Leonean',
+    'SG': 'Singaporean',
+    'SK': 'Slovak',
+    'SI': 'Slovenian',
+    'SB': 'Solomon Islander',
+    'SO': 'Somali',
+    'ZA': 'South African',
+    'SS': 'South Sudanese',
+    'ES': 'Spanish',
+    'LK': 'Sri Lankan',
+    'SD': 'Sudanese',
+    'SR': 'Surinamese',
+    'SE': 'Swedish',
+    'CH': 'Swiss',
+    'SY': 'Syrian',
+    'TW': 'Taiwanese',
+    'TJ': 'Tajik',
+    'TZ': 'Tanzanian',
+    'TH': 'Thai',
+    'TL': 'Timorese',
+    'TG': 'Togolese',
+    'TO': 'Tongan',
+    'TT': 'Trinidadian',
+    'TN': 'Tunisian',
+    'TR': 'Turkish',
+    'TM': 'Turkmen',
+    'TV': 'Tuvaluan',
+    'UG': 'Ugandan',
+    'UA': 'Ukrainian',
+    'AE': 'Emirati',
+    'GB': 'British',
+    'US': 'American',
+    'UY': 'Uruguayan',
+    'UZ': 'Uzbek',
+    'VU': 'Vanuatuan',
+    'VE': 'Venezuelan',
+    'VN': 'Vietnamese',
+    'YE': 'Yemeni',
+    'ZM': 'Zambian',
+    'ZW': 'Zimbabwean',
+  };
+
+  String _nationalityDisplay(String? code) {
+    if (code == null || code.isEmpty) {
+      return '—';
+    }
+    return _nationalityMap[code.toUpperCase()] ?? code;
+  }
 
   static const Map<String, String> _editableLanguageLabels = {
     'en': 'English',
@@ -149,6 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _selectedDob = null;
     }
     _preferredLanguageCode = user.profile?.preferredLanguage ?? 'en';
+    _selectedNationality = user.profile?.nationality;
     setState(() => _isEditing = true);
   }
 
@@ -175,6 +376,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .first;
     }
     profileData['preferred_language'] = _preferredLanguageCode;
+    if (_selectedNationality != null) {
+      profileData['nationality'] = _selectedNationality;
+    }
 
     if (profileData.isNotEmpty) {
       data['profile'] = profileData;
@@ -880,6 +1084,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   theme,
                 ),
               ],
+              const SizedBox(height: 20),
+
+              // Nationality
+              if (_isEditing) ...[
+                _buildNationalityDropdown(context, theme),
+              ] else ...[
+                _buildInfoFieldWithIcon(
+                  context,
+                  tr(context, 'nationality_label'),
+                  _nationalityDisplay(profile?.nationality),
+                  Icons.flag_outlined,
+                  theme,
+                ),
+              ],
 
               // Save button in edit mode
               if (_isEditing) ...[
@@ -1198,6 +1416,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onChanged: (v) {
             if (v != null) setState(() => _preferredLanguageCode = v);
           },
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
+            filled: true,
+            fillColor: theme.scaffoldBackgroundColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: AppColors.actionBlue.withOpacity(0.5),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: AppColors.actionBlue.withOpacity(0.5),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: AppColors.actionBlue,
+                width: 1.5,
+              ),
+            ),
+          ),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNationalityDropdown(BuildContext context, ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          tr(context, 'nationality_label'),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppColors.actionBlue,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedNationality != null && _nationalityMap.containsKey(_selectedNationality!.toUpperCase())
+              ? _selectedNationality!.toUpperCase()
+              : null,
+          hint: Text(
+            tr(context, 'nationality_hint'),
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
+            ),
+          ),
+          items: (_nationalityMap.entries.toList()
+                ..sort((a, b) => a.value.compareTo(b.value)))
+              .map(
+                (e) => DropdownMenuItem(
+                  value: e.key,
+                  child: Text(e.value),
+                ),
+              )
+              .toList(),
+          onChanged: (v) => setState(() => _selectedNationality = v),
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,

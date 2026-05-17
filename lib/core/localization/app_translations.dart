@@ -887,6 +887,8 @@ final Map<String, Map<String, String>> _translations = {
     'confirm_selection': 'Confirm Selection',
     'confirm_add_to_cart': 'Confirm and Add to Cart',
     'confirm': 'Confirm',
+    'nationality_label': 'NATIONALITY',
+    'nationality_hint': 'Select Nationality',
     'live_seafood_from_sea_to_home': 'Live Seafood From Sea to Home',
   },
 
@@ -1615,6 +1617,8 @@ final Map<String, Map<String, String>> _translations = {
     'confirm_selection': '确认选择',
     'confirm_add_to_cart': '确认并加入购物车',
     'confirm': '确认',
+    'nationality_label': '国籍',
+    'nationality_hint': '选择国籍',
     'live_seafood_from_sea_to_home': '从海洋到家庭的活海鲜',
   },
 
@@ -2388,6 +2392,8 @@ final Map<String, Map<String, String>> _translations = {
     'confirm_selection': 'تأكيد الاختيار',
     'confirm_add_to_cart': 'تأكيد وإضافة إلى السلة',
     'confirm': 'تأكيد',
+    'nationality_label': 'الجنسية',
+    'nationality_hint': 'اختر الجنسية',
     'live_seafood_from_sea_to_home': 'مأكولات بحرية حية من البحر إلى المنزل',
   },
 };
