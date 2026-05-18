@@ -952,7 +952,7 @@ final Map<String, Map<String, String>> _translations = {
     'loading_products': '正在加载产品...',
     'no_products': '未找到产品。',
     'why_choose': '为什么选择 西马克生鲜？',
-    'benefit_delivery': '24小时送达',
+    'benefit_delivery': '2小时送达',
     'benefit_delivery_sub': '快速可靠',
     'benefit_premium': '优质品质',
     'benefit_premium_sub': '从海洋到家',

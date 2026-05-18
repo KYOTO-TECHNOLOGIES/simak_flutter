@@ -179,15 +179,6 @@ class HowItWorksSection extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            tr(context, 'free_delivery_threshold'),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.35),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
         ],
       ),
     );
