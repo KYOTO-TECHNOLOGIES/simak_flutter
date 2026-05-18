@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/marketing/model/marketing_model.dart';
 
@@ -72,7 +74,7 @@ class PromoPopupDialog extends StatelessWidget {
     // Data mapping based on which model is provided
     final imageUrl = product?.thumbnail ?? marketing?.image ?? '';
     final title = product != null ? trText(context, product!.name) : (marketing?.title ?? '');
-    final subtitle = marketing?.subtitle ?? (product != null ? product!.categoryName : '');
+    final subtitle = marketing?.subtitle ?? (product != null ? Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, product!.categoryName) : '');
     final ctaText = marketing?.ctaText ?? tr(context, 'shop_now');
     
     // Calculate discount percentage if available (only for products)

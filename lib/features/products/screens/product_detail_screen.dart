@@ -559,7 +559,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    widget.product.categoryName.toUpperCase(),
+                                    Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, widget.product.categoryName).toUpperCase(),
                                     style: TextStyle(
                                       color: theme.colorScheme.primary,
                                       fontSize: 11,

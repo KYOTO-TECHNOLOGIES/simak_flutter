@@ -472,7 +472,7 @@ class _HomePageState extends State<HomePage> {
                                   imageUrl:
                                       category.image ??
                                       AppConstants.kDefaultProductImage,
-                                  label: category.name,
+                                  label: category.getLocalizedName(context.watch<LanguageProvider>().locale),
                                   onTap: () {
                                     // Set selected category and navigate
                                     controller.selectCategory(category.name);

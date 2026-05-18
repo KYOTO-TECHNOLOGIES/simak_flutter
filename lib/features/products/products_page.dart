@@ -512,7 +512,7 @@ class _ProductsPageState extends State<ProductsPage>
                         : null,
                   ),
                   child: Text(
-                    cat == 'All' ? tr(context, 'All') : cat,
+                    controller.getLocalizedCategoryName(context, cat),
                     style: TextStyle(
                       color: isSelected
                           ? AppColors.white
@@ -1191,7 +1191,7 @@ class _OnSaleCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        product.categoryName.toUpperCase(),
+                        Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, product.categoryName).toUpperCase(),
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           fontSize: 9,
@@ -1338,7 +1338,7 @@ class _EnhancedProductCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          product.categoryName.toUpperCase(),
+                          Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, product.categoryName).toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 7,

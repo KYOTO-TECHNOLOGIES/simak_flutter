@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_constants.dart';
+import 'package:uae_ecom_project/core/localization/language_provider.dart';
+import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/model/category_model.dart';
 import 'package:uae_ecom_project/features/products/service/product_service.dart';
@@ -25,6 +28,25 @@ class ProductController extends ChangeNotifier {
 
   bool _isCategoriesLoading = false;
   bool get isCategoriesLoading => _isCategoriesLoading;
+
+  /// Returns the localized category name from the backend category models.
+  /// If the categoryName is 'All', it translates 'All'.
+  /// If not found in backend categories, returns the original categoryName.
+  String getLocalizedCategoryName(BuildContext context, String categoryName) {
+    if (categoryName.trim().isEmpty) return '';
+    if (categoryName == 'All') {
+      return tr(context, 'All');
+    }
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final locale = langProvider.locale;
+    
+    for (var cat in _backendCategories) {
+      if (cat.name.toLowerCase() == categoryName.toLowerCase()) {
+        return cat.getLocalizedName(locale);
+      }
+    }
+    return categoryName;
+  }
 
   // Selected product for detail view
   ProductModel? _selectedProduct;
