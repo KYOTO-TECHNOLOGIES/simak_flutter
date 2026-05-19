@@ -7,15 +7,11 @@ workflows:
 
     environment:
       flutter: stable
-
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.simakfresh.app
 
     scripts:
-      - name: Initialize keychain for private keys
-        script: keychain initialize
-      - name: Force create missing Apple Certificates and Profiles
-        script: app-store-connect fetch-signing-files "com.simakfresh.app" --type IOS_APP_STORE --create
-      - name: Save certificates to keychain
-        script: keychain add-certificates
       - name: Set up Xcode provisioning profiles
         script: xcode-project use-profiles
       - name: Get dependencies
