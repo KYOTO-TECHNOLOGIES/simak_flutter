@@ -14,6 +14,8 @@ workflows:
 
 
     scripts:
+      - name: Force create missing Apple Certificates and Profiles
+        script: app-store-connect fetch-signing-files "com.simakfresh.app" --type IOS_APP_STORE --create
       - name: Set up Xcode provisioning profiles
         script: xcode-project use-profiles
       - name: Get dependencies
