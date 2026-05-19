@@ -2,13 +2,15 @@ workflows:
   ios-workflow:
     name: iOS Workflow
 
+    integrations:
+      app_store_connect: Abhi_Codemagic
+
     environment:
       flutter: stable
 
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.simakfresh.app
-        app_store_connect_key_name: Abhi_Codemagic
 
 
     scripts:
