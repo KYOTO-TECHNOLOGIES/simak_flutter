@@ -8,6 +8,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.simakfresh.app
+        app_store_connect_key_name: Abhi_Codemagic
+
 
     scripts:
       - flutter pub get
