@@ -1,0 +1,57 @@
+[33m953f94a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Again Fix yaml
+[33m8caa1c0[m Fix yaml
+[33ma71161b[m Setup iOS publishing
+[33m9db99e2[m Fix codemagic config
+[33m421c0bf[m Add codemagic workflow
+[33m34e5a09[m[33m ([m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m)[m pubspec
+[33m206daa8[m update5
+[33m64aab4d[m update4
+[33m4a55b18[m update4
+[33m49144f7[m update3
+[33mf937ff1[m update3
+[33m935052a[m update2
+[33mef86abb[m update1
+[33mbbed3e8[m updated
+[33m082cd8f[m updated
+[33m38e353c[m ----
+[33m0c41f17[m some home changes
+[33mcc7c833[m detail
+[33m1e2f9c1[m home
+[33m20dfc38[m logout
+[33m83093e7[m --
+[33m72ccc6e[m --
+[33m82680fc[m --
+[33m04be53b[m updated proceesing
+[33m9ed7c08[m updated detail
+[33mb4d5ad2[m updated detail
+[33ma3e237e[m updated last
+[33m84f689d[m cart
+[33m4c73017[m category
+[33m45585be[m  modified2
+[33mf4166e5[m  modified
+[33mcae1613[m cart logic  and profile modified
+[33m5d185cb[m image
+[33m8dfe6a0[m image
+[33ma1e97dd[m aed in cart
+[33mabd306f[m coupon
+[33md5476a6[m changed
+[33md0ac260[m updated
+[33mf2faa7b[m updated
+[33mfab59a8[m updated the product order page
+[33mbd9033c[m updated the product order page
+[33m3d00d05[m updated the product detail page
+[33mc039b26[m updated the order page
+[33m678b68d[m updated
+[33m9a3dc78[m emirates based data showing
+[33m24f7142[m small changes in home
+[33m47ea3fa[m small changes in home
+[33mcf1eba7[m Referral page edited
+[33m3101d1e[m Changed smaller part in the profile
+[33m65d313d[m Changed smaller portion in cart
+[33m300b965[m Changed the UI and some functionality
+[33m09612a1[m Updated UI, added new features, and modified project files
+[33m20d9dad[m Updated notification permission logic and other changes
+[33m76bd907[m Updated project structure
+[33m04dcee8[m Reorganize project: Move Flutter code to root
+[33m287f42d[m Initial Flutter project upload
+[33m2af985c[m Initial commit

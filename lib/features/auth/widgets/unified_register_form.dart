@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -287,7 +286,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
         const SizedBox(height: 32),
         
         // ─── Auth Options Divider ─────────────────────────────────
-        Row(
+        /* Row(
           children: [
             Expanded(child: Divider(color: theme.dividerColor)),
             Padding(
@@ -338,7 +337,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
               ],
             ),
           ),
-        ),
+        ), */
       ],
     );
   }

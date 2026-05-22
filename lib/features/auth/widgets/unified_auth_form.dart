@@ -254,7 +254,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
         const SizedBox(height: 32),
         
         // ─── Auth Options Divider ─────────────────────────────────
-        Row(
+        /* Row(
           children: [
             Expanded(child: Divider(color: theme.dividerColor)),
             Padding(
@@ -316,7 +316,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
               ),
             );
           },
-        ),
+        ), */
       ],
     );
   }
