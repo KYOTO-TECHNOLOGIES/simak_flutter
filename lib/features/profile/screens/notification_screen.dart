@@ -226,7 +226,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: list.length + (ctrl.isLoadingMore ? 1 : 0),
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         if (index == list.length) {
           return const Padding(

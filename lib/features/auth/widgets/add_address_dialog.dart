@@ -30,7 +30,7 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
   final _streetController = TextEditingController();
   final _areaController = TextEditingController();
   final _cityController = TextEditingController();
-  String _emirate = 'Abu Dhabi';
+  String? _emirate;
   bool _isDefault = false;
   double? _lat;
   double? _lng;
@@ -219,6 +219,9 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                       );
                       if (validEmirate.isNotEmpty) {
                         _emirate = validEmirate;
+                      } else {
+                        // Don't auto-set an emirate if the geocoded result doesn't match
+                        _emirate = null;
                       }
                     }
                   });
@@ -271,6 +274,7 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                         _buildLabel(tr(context, 'address_emirate_label')),
                         _buildDropdown(
                           value: _emirate,
+                          hint: 'Select emirate',
                           items: _emirates,
                           disabledItems: _emirates.where((e) => e != 'Abu Dhabi').toList(),
                           onChanged: (v) {
@@ -294,8 +298,9 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                           hintText: tr(context, 'address_name_hint'),
                           validator: (v) {
                             if (v!.isEmpty) return tr(context, 'required');
-                            if (!_isNameValid)
+                            if (!_isNameValid) {
                               return tr(context, 'address_name_min_length');
+                            }
                             return null;
                           },
                         ),
@@ -412,11 +417,12 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
   }
 
   Widget _buildDropdown({
-    required String value,
+    required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
     String Function(String)? itemLabelBuilder,
     List<String> disabledItems = const [],
+    String? hint,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -429,6 +435,12 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
+          hint: hint != null
+              ? Text(
+                  hint,
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                )
+              : null,
           items: items
               .map(
                 (e) {
@@ -719,6 +731,16 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     setState(() {
       _showErrors = true;
     });
+
+    if (_emirate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select an emirate'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+      return;
+    }
 
     if (_formKey.currentState!.validate()) {
       // Split Full Name into First and Last

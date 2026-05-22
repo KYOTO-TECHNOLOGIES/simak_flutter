@@ -54,10 +54,10 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
   void initState() {
     super.initState();
     _currentPosition = LatLng(widget.defaultLat, widget.defaultLng);
-    _reverseGeocode(_currentPosition!);
+    _reverseGeocode(_currentPosition!, isInitial: true);
   }
 
-  Future<void> _reverseGeocode(LatLng position) async {
+  Future<void> _reverseGeocode(LatLng position, {bool isInitial = false}) async {
     setState(() => _isReverseGeocoding = true);
 
     widget.onSelect(
@@ -69,11 +69,11 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
       bool success = false;
 
       if (apiKey != null && apiKey.isNotEmpty) {
-        success = await _googleReverseGeocode(position, apiKey);
+        success = await _googleReverseGeocode(position, apiKey, isInitial);
       }
 
       if (!success) {
-        await _nativeReverseGeocode(position);
+        await _nativeReverseGeocode(position, isInitial);
       }
     } catch (e) {
       debugPrint('Geocoding entry error: $e');
@@ -84,7 +84,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
     }
   }
 
-  Future<bool> _googleReverseGeocode(LatLng position, String apiKey) async {
+  Future<bool> _googleReverseGeocode(LatLng position, String apiKey, bool isInitial) async {
     try {
       final url =
           'https://maps.googleapis.com/maps/api/geocode/json'
@@ -140,10 +140,10 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           MapPickerResult(
             lat: position.latitude,
             lng: position.longitude,
-            street: street,
-            area: area,
-            city: city,
-            emirate: emirate,
+            street: isInitial ? null : street,
+            area: isInitial ? null : area,
+            city: isInitial ? null : city,
+            emirate: isInitial ? null : emirate,
             fullAddress: fullAddress,
           ),
         );
@@ -155,7 +155,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
     return false;
   }
 
-  Future<void> _nativeReverseGeocode(LatLng position) async {
+  Future<void> _nativeReverseGeocode(LatLng position, bool isInitial) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
@@ -200,7 +200,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           if (area.isNotEmpty && !(place.street ?? '').contains(area)) area,
           if (city.isNotEmpty && city != area) city,
           place.administrativeArea,
-        ].where((p) => p != null && p!.isNotEmpty).toList();
+        ].where((p) => p != null && p.isNotEmpty).toList();
 
         // deduplicate consecutive identical parts
         final uniqueParts = <String>[];
@@ -220,15 +220,17 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
           MapPickerResult(
             lat: position.latitude,
             lng: position.longitude,
-            street: streetName,
-            area: area.isNotEmpty ? area : (place.subAdministrativeArea ?? ''),
-            city: city,
-            emirate: place.administrativeArea,
+            street: isInitial ? null : streetName,
+            area: isInitial ? null : (area.isNotEmpty ? area : (place.subAdministrativeArea ?? '')),
+            city: isInitial ? null : city,
+            emirate: isInitial ? null : place.administrativeArea,
             fullAddress: fullAddress,
           ),
         );
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('MapPickerResult Error: $e');
+    }
   }
 
   Future<void> _handleUseLocation() async {
@@ -378,6 +380,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
       }
     } catch (e) {
       debugPrint('Manual Search Error: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(

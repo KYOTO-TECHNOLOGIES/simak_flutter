@@ -63,8 +63,8 @@ class QuickAddToCartButton extends StatelessWidget {
                         );
 
                         if (success) {
-                          if (Navigator.canPop(context)) Navigator.pop(context);
                           if (context.mounted) {
+                            if (Navigator.canPop(context)) Navigator.pop(context);
                             SimakFeedback.showSuccess(
                               context,
                               trStatic(context, 'added_to_cart'),

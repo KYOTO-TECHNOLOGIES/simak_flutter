@@ -12,7 +12,6 @@ class CouponCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final status = _getStatus();
     final statusColor = _getStatusColor(status);
     final statusText = _getStatusText(context, status);

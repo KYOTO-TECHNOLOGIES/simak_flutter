@@ -90,8 +90,11 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
     
     if (!isInputValid) {
       setState(() {
-        if (_isPhoneMode) _showPhoneError = true;
-        else _showEmailError = true;
+        if (_isPhoneMode) {
+          _showPhoneError = true;
+        } else {
+          _showEmailError = true;
+        }
       });
       return;
     }
@@ -280,7 +283,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
               child: OutlinedButton(
                 onPressed: auth.isLoading ? null : () async {
                   final success = await auth.signInWithGoogle();
-                  if (success && mounted) {
+                  if (success && context.mounted) {
                     Navigator.of(context).pushReplacementNamed('/home');
                   }
                 },

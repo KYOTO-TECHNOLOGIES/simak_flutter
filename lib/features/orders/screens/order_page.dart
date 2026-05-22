@@ -12,7 +12,7 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/widgets/otp_verification_dialog.dart';
 import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
 import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
-import 'package:uae_ecom_project/service/cache_service.dart';
+
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 
 class OrderPage extends StatefulWidget {
@@ -322,7 +322,7 @@ class _OrderPageState extends State<OrderPage> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            '${selectedAddr.label?.toUpperCase() ?? 'HOME'}',
+                            selectedAddr.label?.toUpperCase() ?? 'HOME',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.primary,
@@ -710,8 +710,9 @@ class _OrderPageState extends State<OrderPage> {
                             const Duration(days: selectableDays),
                           ),
                         );
-                        if (date != null)
+                        if (date != null) {
                           checkout.setDeliveryPreferences(date: date);
+                        }
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -1455,75 +1456,74 @@ class _OrderPageState extends State<OrderPage> {
         quantity: quantity,
       );
       if (orderData != null) {
-        if (mounted) {
-          // If payment was triggered, show integrated WebView
-          if (orderData.containsKey('payment_url') &&
-              orderData['payment_url'] != null) {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PaymentWebViewScreen(
-                  url: orderData['payment_url'],
-                  title: tr(context, 'secure_payment'),
-                  orderId: orderData['order_id'],
-                ),
-              ),
-            );
-
-            // PaymentWebViewScreen uses pop(result) which resolves the await above
-            if (!mounted) return;
-
-            // Route based on WebView response natively in OrderPage
-            final orderIdStr = orderData['order_id'].toString();
-            if (result == 'success') {
-              checkout.reset();
-              context.read<CartController>().clearCart();
-              final auth = context.read<AuthController>();
-              if (auth.currentUser?.id != null) {
-                context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
-              }
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/payment-success',
-                (route) => route.isFirst,
-                arguments: orderIdStr,
-              );
-              return;
-            } else if (result == 'failed') {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/payment-failed',
-                (route) => route.isFirst,
-                arguments: orderIdStr,
-              );
-              return;
-            } else if (result == 'pending') {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/order-pending',
-                (route) => route.isFirst,
-                arguments: orderIdStr,
-              );
-              return;
-            }
-          }
-
-          // After payment is complete (COD/Direct cases ONLY)
-          checkout.startPaymentStatusPolling();
-
-          // Refresh orders list
-          final auth = context.read<AuthController>();
-          if (auth.currentUser?.id != null) {
-            context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
-          }
-
-          // Clear local state
-          checkout.reset();
-          context.read<CartController>().clearCart();
-
-          Navigator.of(
+        if (!context.mounted) return;
+        // If payment was triggered, show integrated WebView
+        if (orderData.containsKey('payment_url') &&
+            orderData['payment_url'] != null) {
+          final result = await Navigator.push(
             context,
-          ).pushNamedAndRemoveUntil('/home', (route) => false);
+            MaterialPageRoute(
+              builder: (_) => PaymentWebViewScreen(
+                url: orderData['payment_url'],
+                title: tr(context, 'secure_payment'),
+                orderId: orderData['order_id'],
+              ),
+            ),
+          );
+
+          // PaymentWebViewScreen uses pop(result) which resolves the await above
+          if (!context.mounted) return;
+
+          // Route based on WebView response natively in OrderPage
+          final orderIdStr = orderData['order_id'].toString();
+          if (result == 'success') {
+            checkout.reset();
+            context.read<CartController>().clearCart();
+            final auth = context.read<AuthController>();
+            if (auth.currentUser?.id != null) {
+              context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+            }
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/payment-success',
+              (route) => route.isFirst,
+              arguments: orderIdStr,
+            );
+            return;
+          } else if (result == 'failed') {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/payment-failed',
+              (route) => route.isFirst,
+              arguments: orderIdStr,
+            );
+            return;
+          } else if (result == 'pending') {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/order-pending',
+              (route) => route.isFirst,
+              arguments: orderIdStr,
+            );
+            return;
+          }
         }
+
+        // After payment is complete (COD/Direct cases ONLY)
+        checkout.startPaymentStatusPolling();
+
+        // Refresh orders list
+        final auth = context.read<AuthController>();
+        if (auth.currentUser?.id != null) {
+          context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+        }
+
+        // Clear local state
+        checkout.reset();
+        context.read<CartController>().clearCart();
+
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/home', (route) => false);
       } else {
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(checkout.error ?? 'Failed to place order'),

@@ -329,8 +329,9 @@ class _ProductsPageState extends State<ProductsPage>
                           const SizedBox(width: 10),
                           Consumer<AuthController>(
                             builder: (context, auth, _) {
-                              if (!auth.isLoggedIn)
+                              if (!auth.isLoggedIn) {
                                 return const SizedBox.shrink();
+                              }
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.pushNamed(context, '/cart');
@@ -360,8 +361,9 @@ class _ProductsPageState extends State<ProductsPage>
                                     // Small Badge showing actual cart count
                                     Consumer<CartController>(
                                       builder: (context, controller, child) {
-                                        if (controller.uniqueItemCount == 0)
+                                        if (controller.uniqueItemCount == 0) {
                                           return const SizedBox.shrink();
+                                        }
                                         return Positioned(
                                           top: -4,
                                           right: -4,
@@ -802,8 +804,10 @@ class _ProductsPageState extends State<ProductsPage>
           );
 
           if (success) {
-            if (Navigator.canPop(context)) Navigator.pop(context);
-            if (context.mounted) Navigator.pushNamed(context, '/cart');
+            if (context.mounted) {
+              if (Navigator.canPop(context)) Navigator.pop(context);
+              Navigator.pushNamed(context, '/cart');
+            }
           } else {
             if (context.mounted) {
               SimakFeedback.showError(
@@ -1059,16 +1063,6 @@ class _TrendingCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _placeholder(ThemeData theme, String fallbackUrl) {
-    return CustomImage(
-      fallbackUrl,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      padding: const EdgeInsets.all(24.0),
     );
   }
 }
@@ -1467,16 +1461,6 @@ class _EnhancedProductCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _placeholder(ThemeData theme, String fallbackUrl) {
-    return CustomImage(
-      fallbackUrl,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      padding: const EdgeInsets.all(32.0),
     );
   }
 }

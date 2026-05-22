@@ -21,8 +21,8 @@ class DeliveryService {
     final response = await _dio.get(
       'orders/available_orders/',
       queryParameters: {
-        if (limit != null) 'limit': limit,
-        if (offset != null) 'offset': offset,
+        'limit': ?limit,
+        'offset': ?offset,
       },
     );
     
@@ -40,7 +40,7 @@ class DeliveryService {
   Future<Map<String, dynamic>> claimOrder(int orderId, {String? notes}) async {
     final response = await _dio.post(
       'orders/$orderId/claim_order/',
-      data: {if (notes != null) 'notes': notes},
+      data: {'notes': ?notes},
     );
     return response.data;
   }
@@ -60,20 +60,20 @@ class DeliveryService {
       data = FormData.fromMap({
         'status': status,
         'proof_image': await MultipartFile.fromFile(proofImage.path),
-        if (signatureName != null) 'signature_name': signatureName,
-        if (proofNotes != null) 'proof_notes': proofNotes,
-        if (notes != null) 'notes': notes,
+        'signature_name': ?signatureName,
+        'proof_notes': ?proofNotes,
+        'notes': ?notes,
       });
     } else if (status == 'CANCELLED') {
       data = {
         'status': status,
         'reason': cancelReason ?? 'No reason provided',
-        if (notes != null) 'notes': notes,
+        'notes': ?notes,
       };
     } else {
       data = {
         'status': status,
-        if (notes != null) 'notes': notes,
+        'notes': ?notes,
       };
     }
 

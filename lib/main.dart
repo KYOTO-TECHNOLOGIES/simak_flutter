@@ -273,7 +273,7 @@ class _MyAppState extends State<MyApp> {
                   final hasCachedProducts = CacheService().hasCache('products');
                   return Stack(
                     children: [
-                      if (child != null) child,
+                      ?child,
                       if (!connectivity.isOnline && !hasCachedProducts)
                         const PremiumNoInternetScreen(),
                     ],

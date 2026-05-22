@@ -4,7 +4,7 @@ import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/orders/service/order_service.dart';
 import 'package:uae_ecom_project/features/orders/service/review_service.dart';
-import 'package:uae_ecom_project/features/products/model/product_model.dart';
+
 import 'package:uae_ecom_project/features/products/service/product_service.dart';
 
 class OrderController extends ChangeNotifier {
@@ -39,13 +39,8 @@ class OrderController extends ChangeNotifier {
   Future<void> fetchDeliverySettings() async {
     try {
       final rawData = await _orderService.getDeliveryChargeSettings();
-      Map<String, dynamic> data;
-
-      if (rawData is Map<String, dynamic>) {
-        data = rawData;
-      } else {
-        return;
-      }
+      if (rawData.isEmpty) return;
+      final data = rawData;
 
       // Look for keys based on admin headers
       final threshold =

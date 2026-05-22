@@ -176,7 +176,7 @@ class _CartScreenState extends State<CartScreen> {
                     shrinkWrap: true,
                     itemCount: unavailableItems.length,
                     separatorBuilder:
-                        (_, __) => Divider(height: 24, color: Colors.grey.shade100),
+                        (context, idx) => Divider(height: 24, color: Colors.grey.shade100),
                     itemBuilder:
                         (_, index) =>
                             _buildUnavailableItemTile(unavailableItems[index]),
@@ -615,7 +615,7 @@ class _CartScreenState extends State<CartScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : Text(
-                    '${displayQuantity}',
+                    '$displayQuantity',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -779,8 +779,9 @@ class _CartScreenState extends State<CartScreen> {
                     }
                   : () {
                       if (controller.cart == null ||
-                          controller.cart!.items.isEmpty)
+                          controller.cart!.items.isEmpty) {
                         return;
+                      }
 
                       String msg = trStatic(context, 'adjust_to_checkout');
                       if (!controller.hasInStockItems) {

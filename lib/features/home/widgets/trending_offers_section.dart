@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uae_ecom_project/core/config/app_colors.dart';
+
 import 'package:uae_ecom_project/features/marketing/model/delivery_offer_model.dart';
 import 'package:uae_ecom_project/core/localization/language_provider.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';

@@ -288,7 +288,6 @@ class MyOrderCard extends StatelessWidget {
     }
 
     final statusColor = getStatusColor();
-    final statusBg = statusColor.withOpacity(0.08);
 
     // Date formatting
     String displayDate = '';

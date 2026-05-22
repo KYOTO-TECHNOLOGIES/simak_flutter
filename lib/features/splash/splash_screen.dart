@@ -20,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _logoScale;
   late Animation<double> _logoOpacity;
   bool _isVisible = true;
-  bool _introComplete = false;
 
   @override
   void initState() {
@@ -28,28 +27,28 @@ class _SplashScreenState extends State<SplashScreen>
 
     _mainFadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 500),
     );
 
     _logoFloatController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 3),
     );
 
     _introController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 800),
     );
 
     _logoScale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.5, end: 1.1).chain(
+        tween: Tween<double>(begin: 0.75, end: 1.05).chain(
           CurveTween(curve: Curves.easeOutCubic),
         ),
         weight: 60,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.1, end: 1.0).chain(
+        tween: Tween<double>(begin: 1.05, end: 1.0).chain(
           CurveTween(curve: Curves.easeInOutCubic),
         ),
         weight: 40,
@@ -59,24 +58,25 @@ class _SplashScreenState extends State<SplashScreen>
     _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _introController,
-        curve: const Interval(0.0, 0.7, curve: Curves.easeIn),
+        curve: Curves.easeOut,
       ),
     );
 
+    // Start intro scale and fade-in immediately
     _introController.forward().then((_) {
       if (mounted) {
-        setState(() => _introComplete = true);
         _mainFadeController.forward();
-        _logoFloatController.repeat(reverse: true);
       }
     });
+
+    // Start floating immediately
+    _logoFloatController.repeat(reverse: true);
 
     _checkInitialization();
   }
 
   Future<void> _checkInitialization() async {
     final langProvider = context.read<LanguageProvider>();
-    // Wait for language provider to initialize if it's not already
     while (!langProvider.isInitialized) {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
@@ -91,8 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateToNext() async {
-    // Add a small delay for the exit animation if needed
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
 
     final auth = context.read<AuthController>();
@@ -124,58 +123,44 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D2E40), // Matches Native Splash Color
+      backgroundColor: const Color(0xFF0D2E40),
       body: AnimatedOpacity(
         opacity: _isVisible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 500),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // ─── Floating & Scaling Logo ───────────────────
-              AnimatedBuilder(
-                animation: Listenable.merge([
-                  _logoFloatController,
-                  _introController,
-                ]),
-                builder: (context, child) {
-                  final floatOffset =
-                      _introComplete
-                          ? -8 *
-                              math.sin(
-                                _logoFloatController.value * 2 * math.pi,
-                              )
-                          : 0.0;
-                  return Transform.translate(
-                    offset: Offset(0, floatOffset),
-                    child: Transform.scale(
-                      scale: _logoScale.value,
-                      child: Opacity(
-                        opacity: _logoOpacity.value,
-                        child: child,
+          child: AnimatedBuilder(
+            animation: Listenable.merge([
+              _logoFloatController,
+              _introController,
+            ]),
+            builder: (context, child) {
+              final floatOffset = -6 *
+                  math.sin(
+                    _logoFloatController.value * 2 * math.pi,
+                  );
+              return Opacity(
+                opacity: _logoOpacity.value,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // ─── Floating & Scaling Logo ───────────────────
+                    Transform.translate(
+                      offset: Offset(0, floatOffset),
+                      child: Transform.scale(
+                        scale: _logoScale.value,
+                        child: const Image(
+                          image: AssetImage('assets/images/home_logo.png'),
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
-                  );
-                },
-                child: const Image(
-                  image: AssetImage('assets/images/home_logo.png'),
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.contain,
-                ),
-              ),
 
-              // ─── Content that fades in after intro ──────────
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 800),
-                opacity: _introComplete ? 1.0 : 0.0,
-                child: Column(
-                  children: [
                     const SizedBox(height: 24),
 
                     // ─── Animated Language Text ─────────────────────
-                    if (_introComplete)
-                      _LanguageAnimator(onComplete: _onAnimationComplete),
+                    _LanguageAnimator(onComplete: _onAnimationComplete),
 
                     const SizedBox(height: 20),
 
@@ -199,20 +184,20 @@ class _SplashScreenState extends State<SplashScreen>
                         _BouncingCreature(
                           image: 'assets/images/fish2.png',
                           color: Color(0xFFF6DE37),
-                          delayMs: 460, // Exactly half phase (opposite)
+                          delayMs: 175,
                         ),
                         SizedBox(width: 28),
                         _BouncingCreature(
                           image: 'assets/images/fish3.png',
                           color: Color(0xFFFF4D4D),
-                          delayMs: 0, // In sync with fish 1
+                          delayMs: 0,
                         ),
                       ],
                     ),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -245,17 +230,21 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
   }
 
   void _startSequence() async {
-    // Initial delay for Logo to be seen
-    await Future.delayed(const Duration(milliseconds: 1400));
+    // English is shown first. Keep it visible for enough time.
+    await Future.delayed(const Duration(milliseconds: 700));
 
-    for (int i = 0; i < _languages.length - 1; i++) {
-      if (!mounted) return;
-      setState(() => _currentIndex = i + 1);
-      await Future.delayed(const Duration(milliseconds: 900));
-    }
+    // Transition to Arabic
+    if (!mounted) return;
+    setState(() => _currentIndex = 1);
+    await Future.delayed(const Duration(milliseconds: 600));
 
-    // Final pause
-    await Future.delayed(const Duration(milliseconds: 1000));
+    // Transition to Chinese
+    if (!mounted) return;
+    setState(() => _currentIndex = 2);
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    // Final pause before transition completion
+    await Future.delayed(const Duration(milliseconds: 100));
     if (mounted) widget.onComplete();
   }
 
@@ -264,13 +253,13 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
     final lang = _languages[_currentIndex];
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       layoutBuilder: (currentChild, previousChildren) {
         return Stack(
           alignment: Alignment.center,
           children: <Widget>[
             ...previousChildren,
-            if (currentChild != null) currentChild,
+            ?currentChild,
           ],
         );
       },
@@ -322,7 +311,7 @@ class _ShimmerTextState extends State<_ShimmerText>
     super.initState();
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
     )..repeat();
   }
 
@@ -392,7 +381,7 @@ class _SlidingGradientTransform extends GradientTransform {
       bounds.width * (slidePercent * 2 - 1),
       0.0,
       0.0,
-    );
+      );
   }
 }
 
@@ -422,7 +411,7 @@ class _BouncingCreatureState extends State<_BouncingCreature>
     super.initState();
     _bounceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 460),
+      duration: const Duration(milliseconds: 350),
     );
 
     _yAnimation = Tween<double>(begin: 0, end: -30).animate(

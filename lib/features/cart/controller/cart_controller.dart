@@ -13,12 +13,12 @@ class CartController extends ChangeNotifier {
   final Map<int, int> _optimisticQuantities = {};
 
   bool isItemRemoving(int productId, {int? preparationId, int? cartItemId}) {
-    final key = cartItemId ?? (preparationId != null ? '$productId\_$preparationId'.hashCode : productId);
+    final key = cartItemId ?? (preparationId != null ? '${productId}_$preparationId'.hashCode : productId);
     return _removingItemIds.contains(key);
   }
 
   bool isItemUpdatingQuantity(int productId, {int? preparationId, int? cartItemId}) {
-    final key = cartItemId ?? (preparationId != null ? '$productId\_$preparationId'.hashCode : productId);
+    final key = cartItemId ?? (preparationId != null ? '${productId}_$preparationId'.hashCode : productId);
     return _updatingQuantityIds.contains(key);
   }
 
@@ -102,7 +102,7 @@ class CartController extends ChangeNotifier {
     if (quantity < 1) return;
     
     final itemKey = cartItemId ?? (preparationSpecificationId != null 
-        ? '$productId\_$preparationSpecificationId'.hashCode 
+        ? '${productId}_$preparationSpecificationId'.hashCode 
         : productId);
     
     // Optimistic update
@@ -138,7 +138,7 @@ class CartController extends ChangeNotifier {
 
    Future<bool> removeItem(int productId, {int? preparationSpecificationId, int? cartItemId}) async {
     final itemKey = cartItemId ?? (preparationSpecificationId != null 
-        ? '$productId\_$preparationSpecificationId'.hashCode 
+        ? '${productId}_$preparationSpecificationId'.hashCode 
         : productId);
         
     _removingItemIds.add(itemKey);

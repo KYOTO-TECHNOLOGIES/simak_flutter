@@ -26,7 +26,7 @@ import 'package:uae_ecom_project/features/orders/controller/order_controller.dar
 import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/emirate/controller/emirate_controller.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
+
 import 'package:uae_ecom_project/features/home/widgets/trending_offers_section.dart';
 
 Widget _buildStyledText(
@@ -1011,12 +1011,12 @@ class _BannerSliderState extends State<_BannerSlider>
 
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
-    _autoPlayTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+    _autoPlayTimer = Timer.periodic(const Duration(milliseconds: 2500), (_) {
       if (!mounted) return;
 
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOutCubic,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
       );
     });
   }

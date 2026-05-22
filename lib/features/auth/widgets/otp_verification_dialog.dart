@@ -429,8 +429,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                               );
                             }).toList(),
                             onChanged: (v) {
-                              if (v != null)
+                              if (v != null) {
                                 setState(() => _selectedCountry = v);
+                              }
                             },
                           ),
                         ),

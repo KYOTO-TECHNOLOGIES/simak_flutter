@@ -29,12 +29,12 @@ class OrderService {
         'preferred_delivery_slot': deliverySlotId,
         'delivery_notes': deliveryNotes,
         'tip_amount': tipAmount,
-        if (couponCode != null) 'coupon_code': couponCode,
-        if (productId != null) 'product_id': productId,
-        if (quantity != null) 'quantity': quantity,
-        if (successUrl != null) 'success_url': successUrl,
-        if (cancelUrl != null) 'cancel_url': cancelUrl,
-        if (pendingUrl != null) 'pending_url': pendingUrl,
+        'coupon_code': ?couponCode,
+        'product_id': ?productId,
+        'quantity': ?quantity,
+        'success_url': ?successUrl,
+        'cancel_url': ?cancelUrl,
+        'pending_url': ?pendingUrl,
       },
     );
     return response.data;
@@ -64,9 +64,9 @@ class OrderService {
         'device': 'mobile',
         'address_id': addressId,
         'tip_amount': tipAmount,
-        if (couponCode != null) 'coupon_code': couponCode,
-        if (productId != null) 'product_id': productId,
-        if (quantity != null) 'quantity': quantity,
+        'coupon_code': ?couponCode,
+        'product_id': ?productId,
+        'quantity': ?quantity,
       },
     );
     return response.data;
@@ -169,9 +169,9 @@ class OrderService {
     final response = await _dio.get(
       'orders/estimate_delivery/',
       queryParameters: {
-        if (addressId != null) 'address': addressId,
-        if (productId != null) 'product_id': productId,
-        if (quantity != null) 'quantity': quantity,
+        'address': ?addressId,
+        'product_id': ?productId,
+        'quantity': ?quantity,
       },
     );
     return response.data;

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
@@ -11,11 +11,10 @@ import 'package:uae_ecom_project/features/orders/controller/order_controller.dar
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 import 'package:uae_ecom_project/features/orders/service/order_service.dart';
 import 'package:uae_ecom_project/features/payment/screens/payment_webview_screen.dart';
-import 'package:uae_ecom_project/features/products/model/product_model.dart';
-import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
+
 import 'package:uae_ecom_project/features/orders/widgets/review_bottom_sheet.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:flutter/services.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -112,8 +111,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               orElse: () => null,
             );
             if (match != null) {
-              if (match['name'] != null && !labels.contains(match['name']))
+              if (match['name'] != null && !labels.contains(match['name'])) {
                 labels.add(match['name']);
+              }
               final range =
                   '${match['start_time_display']} - ${match['end_time_display']}';
               if (!ranges.contains(range)) ranges.add(range);
@@ -430,12 +430,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          ...order.items
-              .map(
+          ...order.items.map(
                 (item) =>
                     _buildItemRow(context, item, order.status, theme, isDark),
-              )
-              .toList(),
+              ),
         ],
       ),
     );
@@ -453,7 +451,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       );
     }
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     final existingReview = controller.getReviewForProduct(item.product.id);
     ReviewBottomSheet.show(
@@ -640,7 +638,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const Row(
             children: [
               Icon(Icons.history, size: 18, color: AppColors.actionBlue),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
                 'Timeline',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -890,7 +888,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final tmpDir = Directory.systemTemp;
       final ext = type == 'receipt_image' ? 'jpg' : 'pdf';
-      final fileName = 'receipt_${orderId}.$ext';
+      final fileName = 'receipt_$orderId.$ext';
       final savePath = '${tmpDir.path}/$fileName';
 
       final endpoint = 'orders/$orderId/$type/';
@@ -1158,10 +1156,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     } catch (e) {
                       debugPrint('Error fetching retry url: $e');
                     }
-                    if (mounted) Navigator.pop(context); // close loader
+                    if (context.mounted) Navigator.pop(context); // close loader
                   }
                   if (url.isEmpty) {
-                    if (mounted) {
+                    if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -1172,6 +1170,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     }
                     return;
                   }
+                  if (!context.mounted) return;
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -1182,7 +1181,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                   );
-                  if (mounted) {
+                  if (context.mounted) {
                     final orderIdStr = order.id.toString();
                     if (result == 'success') {
                       Navigator.of(context).pushNamedAndRemoveUntil(

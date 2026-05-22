@@ -107,7 +107,6 @@ class _SupportWidgetState extends State<SupportWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final auth = context.watch<AuthController>();
     final user = auth.currentUser;
     final bool isEmailVerified = user?.isEmailVerified ?? false;

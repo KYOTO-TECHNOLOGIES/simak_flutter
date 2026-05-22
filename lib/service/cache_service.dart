@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -113,8 +114,8 @@ class CacheService {
   }
 
   /// ─── Helper: Recursive Cast ──────────────────────────────────
-  /// Hive stores maps as Map<dynamic, dynamic>. This helper
-  /// recursively converts them to Map<String, dynamic>.
+  /// Hive stores maps as `Map<dynamic, dynamic>`. This helper
+  /// recursively converts them to `Map<String, dynamic>`.
   dynamic _recursiveCast(dynamic value) {
     if (value is Map) {
       return value.map((key, val) => MapEntry(key.toString(), _recursiveCast(val)));
@@ -142,7 +143,7 @@ class CacheService {
       
     } catch (e) {
       // Silent fail or log
-      print('Error clearing cache: $e');
+      debugPrint('Error clearing cache: $e');
     }
   }
 

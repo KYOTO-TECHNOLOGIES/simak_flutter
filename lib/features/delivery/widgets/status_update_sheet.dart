@@ -197,11 +197,13 @@ class _StatusUpdateSheetState extends State<StatusUpdateSheet> {
                           notes: _notesController.text,
                         );
 
-                        if (!mounted) return;
-                        
+                        final errorMsg = controller.error;
+
+                        if (!context.mounted) return;
+
                         if (success) {
                           Navigator.pop(context);
-                          
+
                           String message = 'Status updated successfully!';
                           if (_selectedStatus == 'CANCELLED') message = 'Cancellation request submitted';
                           if (_selectedStatus == 'SHIPPED') message = 'Order marked as Shipped';
@@ -216,8 +218,8 @@ class _StatusUpdateSheetState extends State<StatusUpdateSheet> {
                             context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
                           }
                         } else {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: ${controller.error}')),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $errorMsg')),
                           );
                         }
                       },

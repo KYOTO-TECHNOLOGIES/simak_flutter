@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/features/orders/service/order_service.dart';
 import 'package:uae_ecom_project/features/payment/service/payment_service.dart';
-import 'package:uae_ecom_project/features/payment/model/payment_model.dart';
+
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/orders/model/coupon_model.dart';
 import 'package:uae_ecom_project/features/orders/model/delivery_slot_model.dart';
@@ -141,7 +141,7 @@ class CheckoutController extends ChangeNotifier {
   
   bool get hasSummary => _summaryData != null;
 
-  get deliverySlot => null;
+  Null get deliverySlot => null;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();

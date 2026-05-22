@@ -42,7 +42,7 @@ class CartService {
           'preparation_specification': preparationSpecificationId,
           'preparation_option_id': preparationSpecificationId,
         },
-        if (preparationInstructions != null) 'preparation_instructions': preparationInstructions,
+        'preparation_instructions': ?preparationInstructions,
       };
       debugPrint('POST Request to: $url');
       debugPrint('Payload: $data');
@@ -59,7 +59,7 @@ class CartService {
         'product': productId,
         'product_id': productId,
         'quantity': quantity,
-        if (cartItemId != null) 'cart_item_id': cartItemId,
+        'cart_item_id': ?cartItemId,
         if (preparationSpecificationId != null) ...{
           'preparation_specification': preparationSpecificationId,
           'preparation_option_id': preparationSpecificationId,
@@ -75,7 +75,7 @@ class CartService {
       await _dio.post('cart/remove_item/', data: {
         'product': productId,
         'product_id': productId,
-        if (cartItemId != null) 'cart_item_id': cartItemId,
+        'cart_item_id': ?cartItemId,
         if (preparationSpecificationId != null) ...{
           'preparation_specification': preparationSpecificationId,
           'preparation_option_id': preparationSpecificationId,

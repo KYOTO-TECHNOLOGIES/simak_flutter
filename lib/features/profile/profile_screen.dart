@@ -27,7 +27,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import 'package:uae_ecom_project/features/profile/controller/notification_controller.dart';
-import 'package:uae_ecom_project/service/cache_service.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   final int initialSection;
@@ -59,7 +59,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     'ar': 'Arabic',
   };
 
-  static const List<String> _genderOptions = ['Male', 'Female', 'Other'];
 
   static const Map<String, String> _nationalityMap = {
     'AF': 'Afghan',
@@ -330,14 +329,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Normalize gender to codes (M/F/O)
     final gender = user.profile?.gender;
     if (gender != null) {
-      if (gender.toLowerCase().startsWith('m'))
+      if (gender.toLowerCase().startsWith('m')) {
         _selectedGender = 'M';
-      else if (gender.toLowerCase().startsWith('f'))
+      } else if (gender.toLowerCase().startsWith('f')) {
         _selectedGender = 'F';
-      else if (gender.toLowerCase().startsWith('o'))
+      } else if (gender.toLowerCase().startsWith('o')) {
         _selectedGender = 'O';
-      else
+      } else {
         _selectedGender = gender;
+      }
     } else {
       _selectedGender = null;
     }
@@ -412,6 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
+    if (!mounted) return;
 
     final auth = context.read<AuthController>();
     final success = await auth.uploadProfilePicture(File(pickedFile.path));
@@ -581,7 +582,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     UserModel user,
     ThemeData theme,
   ) {
-    const isDark = false;
+    final isDark = theme.brightness == Brightness.dark;
     final initials = _getInitials(user);
     final displayName = user.fullName.trim().isNotEmpty
         ? user.fullName
@@ -738,9 +739,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user.firstName.isNotEmpty && user.lastName.isNotEmpty) {
       return '${user.firstName[0]}${user.lastName[0]}'.toUpperCase();
     }
-    if (user.firstName.isNotEmpty)
+    if (user.firstName.isNotEmpty) {
       return user.firstName.substring(0, 1).toUpperCase();
-    if (user.email.isNotEmpty) return user.email.substring(0, 1).toUpperCase();
+    }
+    if (user.email.isNotEmpty) {
+      return user.email.substring(0, 1).toUpperCase();
+    }
     return 'AM';
   }
 
@@ -906,10 +910,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     UserModel user,
     ThemeData theme,
   ) {
-    const isDark = false;
+    final isDark = theme.brightness == Brightness.dark;
     final profile = user.profile;
-    final hasEmail = user.email.trim().isNotEmpty;
-    final hasPhone = (user.phoneNumber ?? '').trim().isNotEmpty;
     final dobDisplay =
         profile?.dateOfBirth != null && profile!.dateOfBirth!.isNotEmpty
         ? _formatDate(profile.dateOfBirth!)
@@ -1449,7 +1451,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showNationalityPicker(BuildContext context, ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _NationalityPickerSheet(
+        theme: theme,
+        initialValue: _selectedNationality,
+        onSelected: (val) {
+          setState(() => _selectedNationality = val);
+        },
+      ),
+    );
+  }
+
   Widget _buildNationalityDropdown(BuildContext context, ThemeData theme) {
+    final displayValue = _selectedNationality != null && _nationalityMap.containsKey(_selectedNationality!.toUpperCase())
+        ? _nationalityMap[_selectedNationality!.toUpperCase()]
+        : tr(context, 'nationality_hint');
+    final hasValue = _selectedNationality != null && _nationalityMap.containsKey(_selectedNationality!.toUpperCase());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1463,54 +1485,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: _selectedNationality != null && _nationalityMap.containsKey(_selectedNationality!.toUpperCase())
-              ? _selectedNationality!.toUpperCase()
-              : null,
-          hint: Text(
-            tr(context, 'nationality_hint'),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+        InkWell(
+          onTap: () => _showNationalityPicker(context, theme),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.actionBlue.withOpacity(0.5)),
             ),
-          ),
-          items: (_nationalityMap.entries.toList()
-                ..sort((a, b) => a.value.compareTo(b.value)))
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e.key,
-                  child: Text(e.value),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayValue ?? '',
+                    style: TextStyle(
+                      color: hasValue ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.4),
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
-              )
-              .toList(),
-          onChanged: (v) => setState(() => _selectedNationality = v),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 14,
-            ),
-            filled: true,
-            fillColor: theme.scaffoldBackgroundColor,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: AppColors.actionBlue.withOpacity(0.5),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: AppColors.actionBlue.withOpacity(0.5),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: AppColors.actionBlue,
-                width: 1.5,
-              ),
+                const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+              ],
             ),
           ),
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
         ),
       ],
     );
@@ -2467,7 +2467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shrinkWrap: true,
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                   itemCount: order.items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
                   itemBuilder: (ctx, index) {
                     final item = order.items[index];
                     return InkWell(
@@ -2742,7 +2742,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Refresh review data via the correct detail endpoint before showing
                   await controller.fetchReviewDetails(review.id);
 
-                  if (!mounted) return;
+                  if (!context.mounted) return;
 
                   final freshReview =
                       controller.getReviewForProduct(review.product) ?? review;
@@ -2797,7 +2797,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: review.images.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, i) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -3252,11 +3252,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showAccountDeletionWorkflow(BuildContext context) async {
     final auth = context.read<AuthController>();
-    final theme = Theme.of(context);
+
 
     // Step 1: Fetch Deletion Info
     final deletionInfo = await auth.fetchDeletionInfo();
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     if (deletionInfo == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -3271,7 +3271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     // Step 2: Show Info Modal
-    if (!mounted) return;
+    if (!context.mounted) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -3282,11 +3282,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onConfirm: () async {
             final auth = context.read<AuthController>();
             final success = await auth.deleteAccount();
-            if (success && mounted) {
+            if (success && context.mounted) {
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil('/login', (route) => false);
-            } else if (mounted) {
+            } else if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -3547,6 +3547,131 @@ class _DeletionInfoSheetState extends State<_DeletionInfoSheet> {
           ),
           const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+}
+
+class _NationalityPickerSheet extends StatefulWidget {
+  final ThemeData theme;
+  final String? initialValue;
+  final ValueChanged<String> onSelected;
+
+  const _NationalityPickerSheet({
+    required this.theme,
+    required this.initialValue,
+    required this.onSelected,
+  });
+
+  @override
+  State<_NationalityPickerSheet> createState() => _NationalityPickerSheetState();
+}
+
+class _NationalityPickerSheetState extends State<_NationalityPickerSheet> {
+  String _searchQuery = '';
+  late List<MapEntry<String, String>> _filteredNationalities;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredNationalities = _ProfileScreenState._nationalityMap.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+  }
+
+  void _filter(String query) {
+    setState(() {
+      _searchQuery = query;
+      _filteredNationalities = _ProfileScreenState._nationalityMap.entries
+          .where((e) => e.value.toLowerCase().contains(query.toLowerCase()))
+          .toList()
+        ..sort((a, b) => a.value.compareTo(b.value));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.theme.brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        tr(context, 'nationality_label'),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: widget.theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search nationality...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: widget.theme.scaffoldBackgroundColor,
+                  ),
+                  onChanged: _filter,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: _filteredNationalities.length,
+                  itemBuilder: (context, index) {
+                    final item = _filteredNationalities[index];
+                    final isSelected = widget.initialValue?.toUpperCase() == item.key;
+                    return ListTile(
+                      title: Text(
+                        item.value,
+                        style: TextStyle(
+                          color: widget.theme.colorScheme.onSurface,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(Icons.check, color: AppColors.actionBlue)
+                          : null,
+                      onTap: () {
+                        widget.onSelected(item.key);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

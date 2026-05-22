@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+4
+version: 1.0.2+5
 
 environment:
   sdk: ^3.10.1
@@ -61,6 +61,8 @@ dependencies:
   http_parser: ^4.1.2
   mime: ^2.0.0
   cached_network_image: ^3.3.1
+  flutter_cache_manager: ^3.3.1
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -78,17 +80,15 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/flutter_logo.png"
+  image_path: "assets/images/logo.jpg"
   min_sdk_android: 21
   adaptive_icon_background: "#0D2E40"
-  adaptive_icon_foreground: "assets/images/flutter_logo.png"
+  adaptive_icon_foreground: "assets/images/logo.jpg"
   remove_alpha_ios: true
 
 flutter_native_splash:
   color: "#0D2E40"
-  image: "assets/images/flutter_logo.png"
   android_12:
-    image: "assets/images/flutter_logo.png"
     color: "#0D2E40"
   fullscreen: true
 
@@ -107,7 +107,7 @@ flutter:
   assets:
     - assets/images/no_internet_fish.png
     - assets/images/home_logo.png
-    - assets/images/flutter_logo.png
+    - assets/images/logo.jpg
     - assets/images/fish1.png
     - assets/images/fish2.png
     - assets/images/fish3.png

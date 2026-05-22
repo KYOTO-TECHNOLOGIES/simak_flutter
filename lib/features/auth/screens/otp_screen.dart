@@ -401,8 +401,9 @@ class _OtpScreenState extends State<OtpScreen> {
                           // Error message if any
                           Consumer<AuthController>(
                             builder: (context, auth, _) {
-                              if (auth.errorMessage == null)
+                              if (auth.errorMessage == null) {
                                 return const SizedBox.shrink();
+                              }
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16),
                                 child: Text(

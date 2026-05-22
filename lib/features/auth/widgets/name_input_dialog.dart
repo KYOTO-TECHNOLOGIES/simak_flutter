@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
+import 'package:uae_ecom_project/core/widgets/nationality_picker_sheet.dart';
+import 'package:uae_ecom_project/core/constants/nationalities.dart';
 
 class NameInputDialog extends StatefulWidget {
   const NameInputDialog({super.key});
@@ -16,6 +18,7 @@ class _NameInputDialogState extends State<NameInputDialog> {
   final _lastNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  String? _selectedNationality;
 
   @override
   void dispose() {
@@ -31,10 +34,19 @@ class _NameInputDialogState extends State<NameInputDialog> {
 
     try {
       final auth = context.read<AuthController>();
-      final success = await auth.updateProfile({
+      
+      final Map<String, dynamic> data = {
         'first_name': _firstNameController.text.trim(),
         'last_name': _lastNameController.text.trim(),
-      });
+      };
+      
+      if (_selectedNationality != null) {
+        data['profile'] = {
+          'nationality': _selectedNationality,
+        };
+      }
+
+      final success = await auth.updateProfile(data);
 
       if (success && mounted) {
         Navigator.of(context).pop();
@@ -156,63 +168,42 @@ class _NameInputDialogState extends State<NameInputDialog> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 8),
-
-                        // Subtitle (updated – no language text)
-                        Text(
-                          'Please let us know your name to personalize your experience.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(
-                              0.65,
-                            ),
-                            fontSize: 14,
-                            height: 1.4,
-                          ),
-                        ),
                         const SizedBox(height: 20),
 
                         // Form
                         Form(
                           key: _formKey,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final isWide = constraints.maxWidth > 380;
-
-                              Widget firstNameField = _buildNameField(
-                                context: context,
-                                controller: _firstNameController,
-                                label: 'FIRST NAME',
-                                hint: 'First name',
-                                validatorMessageEmpty: 'First name is required',
-                              );
-
-                              Widget lastNameField = _buildNameField(
-                                context: context,
-                                controller: _lastNameController,
-                                label: 'LAST NAME',
-                                hint: 'Last name',
-                                validatorMessageEmpty: 'Last name is required',
-                              );
-
-                              if (isWide) {
-                                return Row(
-                                  children: [
-                                    Expanded(child: firstNameField),
-                                    const SizedBox(width: 16),
-                                    Expanded(child: lastNameField),
-                                  ],
-                                );
-                              }
-
-                              return Column(
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  firstNameField,
-                                  const SizedBox(height: 12),
-                                  lastNameField,
+                                  Expanded(
+                                    child: _buildNameField(
+                                      context: context,
+                                      controller: _firstNameController,
+                                      label: 'FIRST NAME',
+                                      hint: 'First name',
+                                      validatorMessageEmpty: 'First name is required',
+                                      isRequired: true,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: _buildNameField(
+                                      context: context,
+                                      controller: _lastNameController,
+                                      label: 'LAST NAME',
+                                      hint: 'Last name',
+                                      validatorMessageEmpty: 'Last name is required',
+                                      isRequired: false,
+                                    ),
+                                  ),
                                 ],
-                              );
-                            },
+                              ),
+                              const SizedBox(height: 16),
+                              _buildNationalityField(theme),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -267,6 +258,7 @@ class _NameInputDialogState extends State<NameInputDialog> {
     required String label,
     required String hint,
     required String validatorMessageEmpty,
+    bool isRequired = true,
   }) {
     final theme = Theme.of(context);
 
@@ -274,7 +266,7 @@ class _NameInputDialogState extends State<NameInputDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '$label *',
+          isRequired ? '$label *' : label,
           style: TextStyle(
             color: theme.colorScheme.onSurface.withOpacity(0.8),
             fontSize: 12,
@@ -317,16 +309,107 @@ class _NameInputDialogState extends State<NameInputDialog> {
           ),
           style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 14),
           validator: (value) {
-            if (value == null || value.trim().isEmpty) {
+            if (isRequired && (value == null || value.trim().isEmpty)) {
               return validatorMessageEmpty;
             }
-            if (value.trim().length < 2) {
+            if (value != null && value.trim().isNotEmpty && value.trim().length < 2) {
               return 'Name must be at least 2 characters';
             }
             return null;
           },
         ),
       ],
+    );
+  }
+
+  void _showNationalityPicker(ThemeData theme, FormFieldState<String>? fieldState) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => NationalityPickerSheet(
+        theme: theme,
+        initialValue: _selectedNationality,
+        onSelected: (val) {
+          setState(() => _selectedNationality = val);
+          fieldState?.didChange(val);
+        },
+      ),
+    );
+  }
+
+  Widget _buildNationalityField(ThemeData theme) {
+    return FormField<String>(
+      validator: (value) {
+        if (_selectedNationality == null) {
+          return 'Nationality is required';
+        }
+        return null;
+      },
+      builder: (FormFieldState<String> state) {
+        final displayValue = _selectedNationality != null && kNationalityMap.containsKey(_selectedNationality!.toUpperCase())
+            ? kNationalityMap[_selectedNationality!.toUpperCase()]
+            : tr(context, 'nationality_hint');
+        final hasValue = _selectedNationality != null && kNationalityMap.containsKey(_selectedNationality!.toUpperCase());
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${tr(context, 'nationality_label')} *',
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withOpacity(0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => _showNationalityPicker(theme, state),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: state.hasError 
+                        ? theme.colorScheme.error 
+                        : theme.dividerColor.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        displayValue ?? '',
+                        style: TextStyle(
+                          color: hasValue ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.35),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+            if (state.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, left: 14),
+                child: Text(
+                  state.errorText!,
+                  style: TextStyle(
+                    color: theme.colorScheme.error,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

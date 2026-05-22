@@ -79,7 +79,7 @@ class _LanguagePickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.read<LanguageProvider>();
+    context.read<LanguageProvider>();
     
     return Directionality(
       textDirection: TextDirection.ltr,

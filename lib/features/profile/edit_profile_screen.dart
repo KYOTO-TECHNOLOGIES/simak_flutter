@@ -33,7 +33,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with SingleTicker
   DateTime? _selectedDob;
   String _preferredLanguageCode = 'en';
 
-  final List<String> _genders = ['Male', 'Female', 'Other'];
+
   final List<String> _occupations = ['Student', 'Professional', 'Business Owner', 'Other'];
 
   File? _imageFile;
@@ -97,9 +97,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with SingleTicker
         'phone_number': _phoneController.text,
         'profile': {
           'gender': _selectedGender,
-          'date_of_birth': _selectedDob != null
-              ? _selectedDob!.toIso8601String().split('T').first
-              : null,
+          'date_of_birth': _selectedDob?.toIso8601String().split('T').first,
           'preferred_language': _preferredLanguageCode,
         }
       };

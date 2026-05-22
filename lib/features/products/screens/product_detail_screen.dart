@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
@@ -40,8 +40,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   PreparationSpecification? _selectedPreparation;
   final TextEditingController _specialInstructionsController =
       TextEditingController();
-  bool _showPreparationError = false;
-  bool _showFloatingCart = true;
+  // bool _showPreparationError = false;
+  final bool _showFloatingCart = true;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _prepSectionKey = GlobalKey();
 
@@ -155,9 +155,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             preparationInstructions: instructions,
           );
 
+          if (!context.mounted) return;
           if (success) {
             if (Navigator.canPop(context)) Navigator.pop(context);
-            if (context.mounted) Navigator.pushNamed(context, '/cart');
+            Navigator.pushNamed(context, '/cart');
           } else {
             if (context.mounted) {
               SimakFeedback.showError(
@@ -219,11 +220,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Consumer<ProductController>(
       builder: (context, productController, _) {
-        // Use full details from backend if ID matches
-        final fullProduct =
-            (productController.selectedProduct?.id == widget.product.id)
-            ? productController.selectedProduct!
-            : widget.product;
 
         return Scaffold(
           body: Container(
@@ -1132,7 +1128,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 widget.product.id,
                               );
 
-                              if (mounted) {
+                              if (context.mounted) {
                                 if (success) {
                                   SimakFeedback.showSuccess(
                                     context,
@@ -1192,8 +1188,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                               return;
                                             } else {
                                               // If already selected inline, proceed to add to cart and navigate to Cart page
-                                              if (!_canAddMoreToCart(_quantity))
+                                              if (!_canAddMoreToCart(_quantity)) {
                                                 return;
+                                              }
 
                                               final cartController = context
                                                   .read<CartController>();
@@ -1208,7 +1205,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                         _specialInstructionsController
                                                             .text,
                                                   );
-                                              if (!mounted) return;
+                                              if (!context.mounted) return;
                                               if (success) {
                                                 Navigator.pushNamed(
                                                   context,
@@ -1226,8 +1223,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           }
 
                                           // Block if adding would exceed stock
-                                          if (!_canAddMoreToCart(_quantity))
+                                          if (!_canAddMoreToCart(_quantity)) {
                                             return;
+                                          }
 
                                           final cartController = context
                                               .read<CartController>();
@@ -1242,7 +1240,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                     _specialInstructionsController
                                                         .text,
                                               );
-                                          if (!mounted) return;
+                                          if (!context.mounted) return;
                                           if (success) {
                                             // Visibility is now persistent
                                           } else {
@@ -1361,7 +1359,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                           .text,
                                                 );
 
-                                            if (!mounted) return;
+                                            if (!context.mounted) return;
 
                                             if (success) {
                                               // setState(() => _showFloatingCart = true);
@@ -1485,7 +1483,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   onTap: () {
                     setState(() {
                       _selectedPreparation = spec;
-                      _showPreparationError = false;
                     });
                   },
                   child: AnimatedContainer(
@@ -1847,7 +1844,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: review.images.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, i) {
                   return GestureDetector(
                     onTap: () {
@@ -1940,104 +1937,7 @@ class _QtyButton extends StatelessWidget {
   }
 }
 
-class _ServiceChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final ThemeData theme;
 
-  const _ServiceChip({
-    required this.icon,
-    required this.label,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: AppColors.primary, size: 20),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
-            fontSize: 10,
-            height: 1.3,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Divider extends StatelessWidget {
-  final ThemeData theme;
-  const _Divider({required this.theme});
-
-  @override
-  Widget build(BuildContext context) =>
-      Container(width: 1, height: 36, color: theme.dividerColor);
-}
-
-class _BuildTip extends StatelessWidget {
-  final String title;
-  final String desc;
-  final ThemeData theme;
-
-  const _BuildTip({
-    required this.title,
-    required this.desc,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.tips_and_updates_rounded,
-                color: AppColors.primary,
-                size: 14,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.only(left: 28),
-          child: Text(
-            desc,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.65),
-              fontSize: 13,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _SectionTitle extends StatelessWidget {
   final String title;
@@ -2130,59 +2030,6 @@ class _ExpandableTextState extends State<_ExpandableText> {
   }
 }
 
-class _HighlightRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final ThemeData theme;
-
-  const _HighlightRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(icon, color: AppColors.primary, size: 17),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            label,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.55),
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ─── Models ───────────────────────────────────────────────────────────
 enum _MediaType { image, video }
@@ -2205,13 +2052,11 @@ class _HeaderButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final ThemeData theme;
-  final Color? color;
 
   const _HeaderButton({
     required this.icon,
     required this.onTap,
     required this.theme,
-    this.color,
   });
 
   @override
@@ -2235,7 +2080,7 @@ class _HeaderButton extends StatelessWidget {
         ),
         child: Icon(
           icon,
-          color: color ?? theme.colorScheme.onSurface.withOpacity(0.8),
+          color: theme.colorScheme.onSurface.withOpacity(0.8),
           size: 20,
         ),
       ),

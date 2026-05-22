@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
-import 'package:flutter/services.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
@@ -367,9 +367,9 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                                       style: GoogleFonts.outfit(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w900,
-                                        color: (order.paymentInfo?.status?.toUpperCase() == 'PENDING')
+                                        color: (order.paymentInfo?.status.toUpperCase() == 'PENDING')
                                             ? const Color(0xFFF39C12)
-                                            : (order.paymentInfo?.status?.toUpperCase() == 'FAILED')
+                                            : (order.paymentInfo?.status.toUpperCase() == 'FAILED')
                                                 ? const Color(0xFFD63031)
                                                 : const Color(0xFF00B894),
                                       ),
@@ -1094,26 +1094,12 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     }
   }
 
-  Future<void> _launchCaller(String? phone) async {
-    if (phone == null) return;
-    final url = 'tel:$phone';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    }
-  }
 
   String _formatStatus(String status) {
     if (status.isEmpty) return 'N/A';
     return status.replaceAll('_', ' ').toUpperCase();
   }
 
-  void _copyToClipboard(BuildContext context, String? text) {
-    if (text == null) return;
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Copied to clipboard')),
-    );
-  }
 
   Future<void> _launchMap(String? address) async {
     if (address == null) return;
@@ -1129,88 +1115,6 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatusUpdateSheet(order: order, initialStatus: status),
-    );
-  }
-
-  void _showConfirmationDialog(BuildContext context, String status, String message, OrderModel order) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Wait a moment',
-                style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF2D3436),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: GoogleFonts.outfit(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showUpdateStatusSheet(context, status, order);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B1B2F),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text(
-                    'PROCEED',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade100),
-                    ),
-                  ),
-                  child: Text(
-                    'NOT NOW',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.grey.shade400,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

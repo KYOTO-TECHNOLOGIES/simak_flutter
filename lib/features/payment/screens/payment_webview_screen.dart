@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/payment/service/payment_service.dart';
-import 'package:uae_ecom_project/features/payment/model/payment_model.dart';
+
 
 class PaymentWebViewScreen extends StatefulWidget {
   final String url;
@@ -98,7 +98,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         while (retries > 0) {
           try {
             verifyData = await _paymentService.verifyPayment(orderId);
-            if (verifyData != null) {
+            if (verifyData.isNotEmpty) {
               status =
                   verifyData['status']?.toString().toUpperCase() ?? 'PENDING';
 

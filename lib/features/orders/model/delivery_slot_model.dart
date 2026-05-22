@@ -34,5 +34,4 @@ class DeliverySlotModel {
 
   String get displayRange => '$startTimeDisplay - $endTimeDisplay';
 
-  get end_time_display => null;
 }
