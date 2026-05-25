@@ -66,18 +66,36 @@ class ProductController extends ChangeNotifier {
     
     // 1. Add categories from backend
     for (var cat in _backendCategories) {
-      if (cat.name.isNotEmpty) allCats.add(cat.name);
+      if (cat.name.isNotEmpty && cat.name != 'All') allCats.add(cat.name);
     }
     
     // 2. Add categories from products (as fallback or for uncategorized ones)
     for (var p in products) {
-      if (p.categoryName.isNotEmpty) allCats.add(p.categoryName);
+      if (p.categoryName.isNotEmpty && p.categoryName != 'All') allCats.add(p.categoryName);
     }
     
     final list = allCats.toList();
-    list.sort();
     
-    // Ensure 'All' is at the beginning
+    // Custom sort order requested by business
+    const customOrder = ['Live Fish', 'Fresh Fish', 'Frozen Fish', 'Dry Fish'];
+    
+    list.sort((a, b) {
+      final indexA = customOrder.indexOf(a);
+      final indexB = customOrder.indexOf(b);
+      
+      if (indexA != -1 && indexB != -1) {
+        return indexA.compareTo(indexB);
+      } else if (indexA != -1) {
+        return -1; // a is in custom list, b is not -> a comes first
+      } else if (indexB != -1) {
+        return 1; // b is in custom list, a is not -> b comes first
+      } else {
+        // Fallback to alphabetical for any other categories
+        return a.compareTo(b);
+      }
+    });
+    
+    // Ensure 'All' is always at the very beginning
     return ['All', ...list];
   }
 

@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:uae_ecom_project/core/network/api_client.dart';
 
 import 'package:provider/provider.dart';
@@ -524,7 +527,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        'Qty: ${item.quantity}',
+                        item.unit != null && item.unit!.isNotEmpty ? '${item.quantity} ${item.unit}' : 'Qty: ${item.quantity}',
                         style: const TextStyle(
                           fontSize: 10,
                           color: AppColors.actionBlue,
@@ -878,7 +881,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Future<void> _downloadReceipt(int orderId, String type) async {
+  Future<void> _downloadReceipt(int orderId) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -886,23 +889,53 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
 
     try {
-      final tmpDir = Directory.systemTemp;
-      final ext = type == 'receipt_image' ? 'jpg' : 'pdf';
-      final fileName = 'receipt_$orderId.$ext';
+      final tmpDir = await getApplicationDocumentsDirectory();
+      final fileName = 'receipt_$orderId.pdf';
       final savePath = '${tmpDir.path}/$fileName';
 
-      final endpoint = 'orders/$orderId/$type/';
+      // Ensure we use the exact endpoint that the backend provides
+      final endpoint = 'orders/$orderId/receipt_pdf/';
+      
       final dio = ApiClient().dio;
 
-      await dio.download(endpoint, savePath);
+      // Download using the authenticated Dio instance (handles both absolute and relative correctly)
+      final response = await dio.download(
+        endpoint, 
+        savePath,
+        options: Options(
+          validateStatus: (status) => status != null && status < 400,
+        ),
+      );
 
       if (mounted) {
         Navigator.pop(context); // close loader
-        await Share.shareXFiles([XFile(savePath)], text: 'Order $orderId Receipt');
+      }
+
+      final file = File(savePath);
+      if (!await file.exists() || await file.length() == 0) {
+        throw Exception('Downloaded file is missing or empty.');
+      }
+
+      // Check content type to ensure it's actually a PDF or document, not JSON error response
+      final contentType = response.headers.value('content-type') ?? '';
+      if (contentType.contains('application/json')) {
+        throw Exception('Received JSON instead of a file. Receipt might not be generated.');
+      }
+
+      if (mounted) {
+        final result = await OpenFilex.open(savePath);
+        
+        if (result.type != ResultType.done && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No PDF viewer found on device. Sharing instead...')),
+          );
+          await Share.shareXFiles([XFile(savePath)], text: 'Order $orderId Receipt');
+        }
       }
     } catch (e) {
+      debugPrint('PDF Download Error: $e');
       if (mounted) {
-        Navigator.pop(context); // close loader
+        Navigator.pop(context); // close loader if it wasn't closed
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to download receipt.')),
         );
@@ -1111,7 +1144,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => _downloadReceipt(order.id, 'receipt_pdf'),
+                onPressed: () => _downloadReceipt(order.id),
                 icon: const Icon(Icons.file_download_outlined, size: 18),
                 label: const Text(
                   'Download PDF',

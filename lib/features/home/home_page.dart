@@ -986,37 +986,27 @@ class _BannerSlider extends StatefulWidget {
   State<_BannerSlider> createState() => _BannerSliderState();
 }
 
-class _BannerSliderState extends State<_BannerSlider>
-    with TickerProviderStateMixin {
+class _BannerSliderState extends State<_BannerSlider> {
   static const int _infiniteCount = 10000;
   late final PageController _pageController;
   int _currentPage = 0;
   Timer? _autoPlayTimer;
   bool _initialized = false;
 
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnim;
-
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
-    _fadeController.forward();
     _pageController = PageController();
   }
 
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
-    _autoPlayTimer = Timer.periodic(const Duration(milliseconds: 2500), (_) {
+    _autoPlayTimer = Timer.periodic(const Duration(milliseconds: 3500), (_) {
       if (!mounted) return;
 
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
       );
     });
   }
@@ -1025,7 +1015,6 @@ class _BannerSliderState extends State<_BannerSlider>
   void dispose() {
     _autoPlayTimer?.cancel();
     _pageController.dispose();
-    _fadeController.dispose();
     super.dispose();
   }
 
@@ -1076,15 +1065,12 @@ class _BannerSliderState extends State<_BannerSlider>
                       setState(
                         () => _currentPage = i % controller.banners.length,
                       );
-                      _fadeController
-                        ..reset()
-                        ..forward();
                     },
                     itemBuilder: (context, index) {
                       final banners = controller.banners;
                       if (banners.isEmpty) return const SizedBox.shrink();
                       final slide = banners[index % banners.length];
-                      return _BannerSlide(slide: slide, fadeAnim: _fadeAnim);
+                      return _BannerSlide(slide: slide);
                     },
                   ),
                 ),
@@ -1121,9 +1107,8 @@ class _BannerSliderState extends State<_BannerSlider>
 
 class _BannerSlide extends StatelessWidget {
   final MarketingModel slide;
-  final Animation<double> fadeAnim;
 
-  const _BannerSlide({required this.slide, required this.fadeAnim});
+  const _BannerSlide({required this.slide});
 
   @override
   Widget build(BuildContext context) {
@@ -1163,15 +1148,13 @@ class _BannerSlide extends StatelessWidget {
               ),
             ),
 
-            // Content with fade animation
-            FadeTransition(
-              opacity: fadeAnim,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 20, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+            // Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                     // ── Tags row ─────────────────────────────
                     if ((slide.tag != null && slide.tag!.isNotEmpty) ||
                         (slide.type != null && slide.type!.isNotEmpty)) ...[
@@ -1272,12 +1255,12 @@ class _BannerSlide extends StatelessWidget {
                       ),
                   ],
                 ),
-              ),
-            ),
-          ],
+          )],
+            )
+          
         ),
-      ),
-    );
+      );
+  
   }
 
   Widget _buildPillTag(String text, Color color) {

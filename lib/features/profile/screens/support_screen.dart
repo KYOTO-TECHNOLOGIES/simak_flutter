@@ -89,16 +89,28 @@ class _SupportWidgetState extends State<SupportWidget> {
     }
   }
 
-  Future<void> _launchCaller(String phoneNumber) async {
-    final Uri url = Uri.parse('tel:${phoneNumber.replaceAll(' ', '')}');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
+  Future<void> _launchWhatsApp(String phoneNumber) async {
+    // Strip everything except digits for the URL
+    final cleaned = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Try native WhatsApp app first (works even without internet)
+    final Uri nativeUri = Uri.parse('whatsapp://send?phone=$cleaned');
+    // Fallback: open wa.me in browser (works if WhatsApp is installed on device)
+    final Uri webUri = Uri.parse('https://wa.me/$cleaned');
+
+    try {
+      if (await canLaunchUrl(nativeUri)) {
+        await launchUrl(nativeUri, mode: LaunchMode.externalApplication);
+      } else {
+        // Directly try the web URL without canLaunchUrl — it's more reliable
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(trStatic(context, 'support_failed')),
-            backgroundColor: AppColors.error,
+          const SnackBar(
+            content: Text('Could not open WhatsApp. Please try again.'),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -180,6 +192,8 @@ class _SupportWidgetState extends State<SupportWidget> {
           _buildCallSupportCard(context),
           const SizedBox(height: 24),
           _buildUrgentHelpCard(context),
+          const SizedBox(height: 24),
+          _buildAboutUsCard(context),
         ],
       ),
     );
@@ -434,6 +448,10 @@ class _SupportWidgetState extends State<SupportWidget> {
   }
 
   Widget _buildCallSupportCard(BuildContext context) {
+    const whatsappGreen = Color(0xFF25D366);
+    const supportNumber = '+971545446111';
+    const displayNumber = '+971 54 54 46 111';
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -452,18 +470,24 @@ class _SupportWidgetState extends State<SupportWidget> {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.phone_in_talk_outlined,
-                color: AppColors.actionBlue,
-                size: 20,
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: whatsappGreen.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: _WhatsAppIcon(size: 20),
+                ),
               ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    tr(context, 'support_call_title'),
-                    style: const TextStyle(
+                  const Text(
+                    'WhatsApp Support',
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -480,25 +504,34 @@ class _SupportWidgetState extends State<SupportWidget> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           InkWell(
-            onTap: () => _launchCaller('+971 54 54 46 111'),
-            borderRadius: BorderRadius.circular(12),
+            onTap: () => _launchWhatsApp(supportNumber),
+            borderRadius: BorderRadius.circular(14),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(
-                  0xFF009688,
-                ), // Teal/Green button color as in screenshot
-                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF25D366), Color(0xFF128C7E)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: whatsappGreen.withOpacity(0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.phone, color: Colors.white, size: 18),
+                  _WhatsAppIcon(size: 22, color: Colors.white),
                   SizedBox(width: 12),
                   Text(
-                    '+971 54 54 46 111',
+                    displayNumber,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -562,6 +595,82 @@ class _SupportWidgetState extends State<SupportWidget> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAboutUsCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: () async {
+        final Uri url = Uri.parse('https://simakfresh.ae/about');
+        try {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        } catch (_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Could not open the page. Please try again.'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.actionBlue.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.actionBlue,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'About Us',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Learn more about Simak Fresh',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -682,6 +791,23 @@ class _SupportWidgetState extends State<SupportWidget> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// A hand-drawn WhatsApp logo using CustomPaint to avoid needing any icon asset.
+class _WhatsAppIcon extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _WhatsAppIcon({this.size = 24, this.color = const Color(0xFF25D366)});
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.chat_rounded,
+      size: size,
+      color: color,
     );
   }
 }

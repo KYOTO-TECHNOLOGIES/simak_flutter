@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/delivery_common_widgets.dart';
-import 'package:uae_ecom_project/features/delivery/widgets/status_update_sheet.dart';
+import 'package:uae_ecom_project/features/delivery/screens/delivery_status_update_screen.dart';
 
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/features/delivery/controller/delivery_controller.dart';
@@ -14,8 +14,13 @@ import 'package:uae_ecom_project/features/orders/controller/order_controller.dar
 
 class DeliveryOrderDetailScreen extends StatefulWidget {
   final OrderModel order;
+  final bool isAvailableOrder;
 
-  const DeliveryOrderDetailScreen({super.key, required this.order});
+  const DeliveryOrderDetailScreen({
+    super.key, 
+    required this.order,
+    this.isAvailableOrder = false,
+  });
 
   @override
   State<DeliveryOrderDetailScreen> createState() => _DeliveryOrderDetailScreenState();
@@ -99,10 +104,13 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     children: [
                       _buildSummaryItem('CREATED', _formatDate(order.createdAt)),
                       _buildSummaryItem('SETTLEMENT', 'AED ${order.totalPrice.toStringAsFixed(2)}'),
-                      _buildSummaryItem('SCHEDULED WINDOW', 
-                        '${_formatDateString(order.preferredDeliveryDate)}${order.preferredDeliverySlotName != null && order.preferredDeliverySlotName!.isNotEmpty ? " - ${order.preferredDeliverySlotName}" : ""}'),
                     ],
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // ─── Scheduled Delivery Card ──────────────────────────
+                  _buildScheduledDeliveryCard(order),
 
                   const SizedBox(height: 40),
                   const Divider(color: Color(0xFFF1F2F6), thickness: 1),
@@ -207,7 +215,16 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                       // ],
                     ),
                     const SizedBox(height: 2),
-                    _buildActionButton('MAP NAVIGATION', Icons.map_outlined, () => _launchMap(order.shippingAddressDetails?.line1), isFullWidth: true),
+                    _buildActionButton(
+                      'MAP NAVIGATION',
+                      Icons.map_outlined,
+                      () => _launchMapWithCoords(
+                        latitude: order.shippingAddressDetails?.latitude,
+                        longitude: order.shippingAddressDetails?.longitude,
+                        fallbackAddress: order.shippingAddressDetails?.line1,
+                      ),
+                      isFullWidth: true,
+                    ),
                   ],
 
                   const SizedBox(height: 48),
@@ -342,7 +359,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    _formatStatus(order.paymentMethod),
+                                    _formatPaymentMethod(order.paymentMethod),
                                     style: GoogleFonts.outfit(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w900,
@@ -420,6 +437,10 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                   _buildIntelligenceItem(_formatStatus('ASSIGNED'), order.deliveryAssignedAt),
                   const SizedBox(height: 16),
                   _buildIntelligenceItem(_formatStatus('ACCEPTED'), order.deliveryAcceptedAt),
+                  if (order.deliveryDeliveredAt != null) ...[
+                    const SizedBox(height: 16),
+                    _buildIntelligenceItem(_formatStatus('COMPLETED'), order.deliveryDeliveredAt),
+                  ],
 
                   const SizedBox(height: 48),
                   const DashedDivider(),
@@ -441,7 +462,63 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                   const SizedBox(height: 60),
 
                   // ─── Footer Buttons ──────────────────────────────────
-                  if (order.status == 'DELIVERED' || 
+                  if (widget.isAvailableOrder)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: context.watch<DeliveryController>().isActionLoading 
+                          ? null 
+                          : () async {
+                              final success = await context.read<DeliveryController>().claimOrder(order.id);
+                              if (success) {
+                                if (!context.mounted) return;
+                                Navigator.pop(context); // Go back to available orders
+                                // Refresh My Orders so the new order appears
+                                final auth = context.read<AuthController>();
+                                if (auth.currentUser?.id != null) {
+                                  context.read<OrderController>().fetchMyOrders(userId: auth.currentUser!.id!);
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Order Claimed Successfully',
+                                      style: GoogleFonts.outfit(fontWeight: FontWeight.w600, color: Colors.white),
+                                    ),
+                                    backgroundColor: const Color(0xFF00B894),
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: const EdgeInsets.all(20),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                );
+                              } else {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to claim order: ${context.read<DeliveryController>().error}')),
+                                );
+                              }
+                            },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                        ),
+                        child: context.watch<DeliveryController>().isActionLoading
+                          ? const SizedBox(
+                              height: 24, width: 24,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : Text(
+                              'CLAIM ORDER',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                      ),
+                    )
+                  else if (order.status == 'DELIVERED' || 
                       order.status == 'CANCELLED' || 
                       order.deliveryCancelRequest?.status == 'APPROVED' || 
                       order.deliveryCancelRequest?.status == 'REJECTED')
@@ -451,7 +528,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () => _showUpdateStatusSheet(context, null, order),
+                        onPressed: () => _navigateToUpdateStatusScreen(context, null, order),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
@@ -472,7 +549,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () => _showUpdateStatusSheet(context, 'DELIVERED', order),
+                        onPressed: () => _navigateToUpdateStatusScreen(context, 'DELIVERED', order),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
@@ -624,6 +701,25 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     color: Colors.grey.shade400,
                   ),
                 ),
+                const SizedBox(height: 4),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.preparationSpecification != null && item.preparationSpecification!.isNotEmpty 
+                            ? 'PREP SPECIFICATION: ${item.preparationSpecification!.toUpperCase()}'
+                            : 'PREP SPECIFICATION: NO',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFE67E22),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -631,7 +727,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'QTY ${item.quantity}',
+                item.unit != null && item.unit!.isNotEmpty ? '${item.quantity} ${item.unit}' : 'QTY ${item.quantity}',
                 style: GoogleFonts.outfit(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
@@ -664,23 +760,21 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'TIP FOR DELIVERY PARTNER',
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF2D3436),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'TIP FOR DELIVERY PARTNER',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF16A34A),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'GRATUITY',
-                  style: GoogleFonts.outfit(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
+         
               ],
             ),
           ),
@@ -690,9 +784,9 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
               Text(
                 'AED ${amount.toStringAsFixed(2)}',
                 style: GoogleFonts.outfit(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF2D3436),
+                  color: const Color(0xFF16A34A),
                 ),
               ),
             ],
@@ -933,6 +1027,105 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     );
   }
 
+  Widget _buildScheduledDeliveryCard(OrderModel order) {
+    final slotDetails = order.preferredDeliverySlotDetails;
+    final startTime = slotDetails?['start_time_display']?.toString();
+    final endTime = slotDetails?['end_time_display']?.toString();
+
+    final dateStr = _formatDateString(order.preferredDeliveryDate);
+    final String? timeRange = (startTime != null &&
+            startTime.isNotEmpty &&
+            endTime != null &&
+            endTime.isNotEmpty)
+        ? '$startTime – $endTime'
+        : (order.preferredDeliverySlotName != null &&
+                order.preferredDeliverySlotName!.isNotEmpty
+            ? order.preferredDeliverySlotName
+            : null);
+
+    if (order.preferredDeliveryDate == null && timeRange == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8F9FB),
+        borderRadius: BorderRadius.all(Radius.circular(4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ── Calendar icon box ──
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFFECEFF1)),
+            ),
+            child: const Icon(
+              Icons.calendar_today_outlined,
+              size: 18,
+              color: Color(0xFF2D3436),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // ── Date + time range ──
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'SCHEDULED DELIVERY',
+                  style: GoogleFonts.outfit(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade400,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  dateStr,
+                  style: GoogleFonts.outfit(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF2D3436),
+                  ),
+                ),
+                if (timeRange != null) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF2D3436),
+                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                    ),
+                    child: Text(
+                      timeRange,
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionButton(String label, IconData icon, VoidCallback onTap, {bool isFullWidth = false}) {
     return SizedBox(
       width: isFullWidth ? double.infinity : null,
@@ -1100,21 +1293,61 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     return status.replaceAll('_', ' ').toUpperCase();
   }
 
+  /// Maps raw backend gateway/payment-method values to user-friendly labels.
+  String _formatPaymentMethod(String method) {
+    if (method.isEmpty) return 'Card';
+    final m = method.toUpperCase().trim();
+    if (m == 'COD' || m.contains('CASH')) return 'Cash on Delivery';
+    if (m == 'ZIINA' ||
+        m == 'TELR' ||
+        m.contains('ONLINE') ||
+        m.contains('CARD') ||
+        m.contains('PAY')) {
+      return 'Card';
+    }
+    // Fallback: title-case the raw value
+    return method
+        .split('_')
+        .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}')
+        .join(' ');
+  }
 
-  Future<void> _launchMap(String? address) async {
-    if (address == null) return;
-    final url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+
+  Future<void> _launchMapWithCoords({
+    double? latitude,
+    double? longitude,
+    String? fallbackAddress,
+  }) async {
+    Uri uri;
+
+    if (latitude != null && longitude != null) {
+      // Use exact coordinates — pinpoints the precise location
+      uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+      );
+    } else if (fallbackAddress != null && fallbackAddress.isNotEmpty) {
+      // Fall back to address text search if no coordinates available
+      uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(fallbackAddress)}',
+      );
+    } else {
+      return; // Nothing to navigate to
+    }
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
-  void _showUpdateStatusSheet(BuildContext context, String? status, OrderModel order) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatusUpdateSheet(order: order, initialStatus: status),
+  void _navigateToUpdateStatusScreen(BuildContext context, String? status, OrderModel order) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DeliveryStatusUpdateScreen(
+          order: order,
+          initialStatus: status,
+        ),
+      ),
     );
   }
 

@@ -32,6 +32,7 @@ class OrderModel {
   final DateTime? deliveryDeliveredAt;
   final DeliveryCancelRequest? deliveryCancelRequest;
   final String? profileMobileNumber;
+  final Map<String, dynamic>? preferredDeliverySlotDetails;
 
   OrderModel({
     required this.id,
@@ -64,6 +65,7 @@ class OrderModel {
     this.deliveryDeliveredAt,
     this.deliveryCancelRequest,
     this.profileMobileNumber,
+    this.preferredDeliverySlotDetails,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -136,11 +138,14 @@ class OrderModel {
           : null,
       deliveryDeliveredAt: json['delivery_assignment']?['delivered_at'] != null 
           ? DateTime.parse(json['delivery_assignment']['delivered_at']) 
-          : null,
+          : (json['delivered_at'] != null ? DateTime.parse(json['delivered_at']) : null),
       deliveryCancelRequest: json['delivery_cancel_request'] != null
           ? DeliveryCancelRequest.fromJson(json['delivery_cancel_request'])
           : null,
       profileMobileNumber: json['profile_mobile_number']?.toString(),
+      preferredDeliverySlotDetails: json['preferred_delivery_slot_details'] is Map
+          ? Map<String, dynamic>.from(json['preferred_delivery_slot_details'])
+          : null,
     );
   }
 }
@@ -181,6 +186,8 @@ class OrderItem {
   final int quantity;
   final double priceAtOrder;
   final double subtotal;
+  final String? unit;
+  final String? preparationSpecification;
 
   OrderItem({
     required this.id,
@@ -188,6 +195,8 @@ class OrderItem {
     required this.quantity,
     required this.priceAtOrder,
     required this.subtotal,
+    this.unit,
+    this.preparationSpecification,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -214,6 +223,8 @@ class OrderItem {
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       priceAtOrder: double.tryParse(json['price']?.toString() ?? json['unit_price']?.toString() ?? '0') ?? 0.0,
       subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
+      unit: json['unit']?.toString(),
+      preparationSpecification: json['preparation_specification']?.toString(),
     );
   }
 }

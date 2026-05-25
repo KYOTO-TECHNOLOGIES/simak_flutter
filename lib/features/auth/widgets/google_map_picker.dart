@@ -49,12 +49,22 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
   String _address = '';
   bool _isLocating = false;
   bool _isReverseGeocoding = false;
+  bool _isAutoLocating = true;
 
   @override
   void initState() {
     super.initState();
     _currentPosition = LatLng(widget.defaultLat, widget.defaultLng);
-    _reverseGeocode(_currentPosition!, isInitial: true);
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleUseLocation(isInitialLoad: true).then((_) {
+        // Wait for camera animations to fully settle before allowing 
+        // onCameraIdle to auto-populate the form
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted) setState(() => _isAutoLocating = false);
+        });
+      });
+    });
   }
 
   Future<void> _reverseGeocode(LatLng position, {bool isInitial = false}) async {
@@ -233,7 +243,7 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
     }
   }
 
-  Future<void> _handleUseLocation() async {
+  Future<void> _handleUseLocation({bool isInitialLoad = false}) async {
     setState(() => _isLocating = true);
     try {
       bool serviceEnabled;
@@ -241,37 +251,54 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
 
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw 'Location services are disabled.';
+        if (!isInitialLoad) throw 'Location services are disabled.';
+        else {
+          await _reverseGeocode(_currentPosition!, isInitial: true);
+          return;
+        }
       }
 
       permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw 'Location permissions are denied';
+          if (!isInitialLoad) throw 'Location permissions are denied';
+          else {
+            await _reverseGeocode(_currentPosition!, isInitial: true);
+            return;
+          }
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        throw 'Location permissions are permanently denied.';
+        if (!isInitialLoad) throw 'Location permissions are permanently denied.';
+        else {
+          await _reverseGeocode(_currentPosition!, isInitial: true);
+          return;
+        }
       }
 
-      Position position = await Geolocator.getCurrentPosition();
+      Position position = await Geolocator.getCurrentPosition(
+        timeLimit: const Duration(seconds: 8),
+      );
       LatLng newPos = LatLng(position.latitude, position.longitude);
 
-      setState(() {
-        _currentPosition = newPos;
-      });
+      if (mounted) {
+        setState(() {
+          _currentPosition = newPos;
+        });
+      }
 
-      _mapController?.animateCamera(CameraUpdate.newLatLng(newPos));
-      await _reverseGeocode(newPos);
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(newPos, 16));
+      await _reverseGeocode(newPos, isInitial: isInitialLoad);
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (isInitialLoad && mounted) {
+        await _reverseGeocode(_currentPosition!, isInitial: true);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
-      setState(() => _isLocating = false);
+      if (mounted) setState(() => _isLocating = false);
     }
   }
 
@@ -552,6 +579,9 @@ class _GoogleMapPickerState extends State<GoogleMapPicker> {
                   });
                 },
                 onCameraIdle: () {
+                  if (_isAutoLocating) {
+                    return;
+                  }
                   if (_currentPosition != null) {
                     _reverseGeocode(_currentPosition!);
                   }

@@ -7,7 +7,6 @@ import 'package:uae_ecom_project/features/orders/controller/order_controller.dar
 import 'package:uae_ecom_project/features/orders/model/order_model.dart';
 import 'package:uae_ecom_project/features/delivery/screens/delivery_order_detail_screen.dart';
 import 'package:uae_ecom_project/features/delivery/widgets/delivery_common_widgets.dart';
-import 'package:uae_ecom_project/features/delivery/widgets/status_update_sheet.dart';
 
 class MyOrdersView extends StatefulWidget {
   const MyOrdersView({super.key});
@@ -511,21 +510,6 @@ class MyOrderCard extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      if (order.status.toUpperCase() != 'DELIVERED' && 
-                          order.status.toUpperCase() != 'CANCELLED' && 
-                          order.deliveryCancelRequest?.status != 'PENDING')
-                        TextButton(
-                          onPressed: () => _showUpdateStatusSheet(context, order),
-                          child: Text(
-                            'UPDATE STATUS',
-                            style: GoogleFonts.outfit(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.actionBlue,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
                       Container(
                         height: 32,
                         width: 32,
@@ -548,18 +532,11 @@ class MyOrderCard extends StatelessWidget {
   }
 
 
-  void _showUpdateStatusSheet(BuildContext context, OrderModel order) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatusUpdateSheet(order: order),
-    );
-  }
-
   String _formatStatus(String status) {
     if (status.isEmpty) return 'N/A';
-    return status.replaceAll('_', ' ').toUpperCase();
+    final formatted = status.replaceAll('_', ' ').toUpperCase();
+    if (formatted == 'PAID') return 'PROCESSING';
+    return formatted;
   }
 }
 

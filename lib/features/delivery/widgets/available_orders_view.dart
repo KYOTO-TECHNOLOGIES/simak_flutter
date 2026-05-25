@@ -159,7 +159,10 @@ class AvailableOrderCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DeliveryOrderDetailScreen(order: order),
+            builder: (context) => DeliveryOrderDetailScreen(
+              order: order,
+              isAvailableOrder: true,
+            ),
           ),
         );
       },

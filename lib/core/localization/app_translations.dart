@@ -582,7 +582,7 @@ final Map<String, Map<String, String>> _translations = {
     'support_call_title': 'Call Support',
     'support_call_sub': 'SPEAK TO OUR TEAM',
     'support_working_hours': 'WORKING HOURS',
-    'support_working_hours_val': 'Sat - Thu: 9 AM - 9 PM',
+    'support_working_hours_val': 'Mon - Sun: 8 AM - 5 PM',
     'support_email_us': 'EMAIL US',
     'support_urgent_help_title': 'Need urgent help?',
     'support_urgent_help_subtitle':
@@ -819,7 +819,7 @@ final Map<String, Map<String, String>> _translations = {
     // ── Referrals & Coupons ──────────────────────────────────────────
     'referrals_coupons_title': 'Referrals & Coupons',
     'coupons_tab': 'Coupons',
-    'referrals_tab': 'Referrals & Coupons',
+    'referrals_tab': 'Referrals ',
     'status_active': 'ACTIVE',
     'status_expired': 'EXPIRED',
     'status_inactive': 'INACTIVE',
