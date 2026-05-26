@@ -60,43 +60,29 @@ class ProductController extends ChangeNotifier {
   String _selectedCategory = 'All';
   String get selectedCategory => _selectedCategory;
 
-  /// Unique category names extracted from backend and loaded products.
+  /// Category names in the same order as the Home page "Shop by Category" section.
+  /// Uses the backend order from [backendCategories] as the source of truth.
+  /// Falls back to adding any product categories not in the backend list at the end.
   List<String> get categories {
-    final Set<String> allCats = {};
-    
-    // 1. Add categories from backend
+    // Start with backend categories in their exact backend-returned order
+    final List<String> ordered = [];
     for (var cat in _backendCategories) {
-      if (cat.name.isNotEmpty && cat.name != 'All') allCats.add(cat.name);
-    }
-    
-    // 2. Add categories from products (as fallback or for uncategorized ones)
-    for (var p in products) {
-      if (p.categoryName.isNotEmpty && p.categoryName != 'All') allCats.add(p.categoryName);
-    }
-    
-    final list = allCats.toList();
-    
-    // Custom sort order requested by business
-    const customOrder = ['Live Fish', 'Fresh Fish', 'Frozen Fish', 'Dry Fish'];
-    
-    list.sort((a, b) {
-      final indexA = customOrder.indexOf(a);
-      final indexB = customOrder.indexOf(b);
-      
-      if (indexA != -1 && indexB != -1) {
-        return indexA.compareTo(indexB);
-      } else if (indexA != -1) {
-        return -1; // a is in custom list, b is not -> a comes first
-      } else if (indexB != -1) {
-        return 1; // b is in custom list, a is not -> b comes first
-      } else {
-        // Fallback to alphabetical for any other categories
-        return a.compareTo(b);
+      if (cat.name.isNotEmpty && cat.name != 'All') {
+        ordered.add(cat.name);
       }
-    });
-    
-    // Ensure 'All' is always at the very beginning
-    return ['All', ...list];
+    }
+
+    // Append any product categories not already covered by backend (fallback)
+    for (var p in products) {
+      if (p.categoryName.isNotEmpty &&
+          p.categoryName != 'All' &&
+          !ordered.contains(p.categoryName)) {
+        ordered.add(p.categoryName);
+      }
+    }
+
+    // 'All' is always the first tab
+    return ['All', ...ordered];
   }
 
   void selectCategory(String category) {

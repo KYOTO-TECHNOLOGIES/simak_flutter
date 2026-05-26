@@ -439,7 +439,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
-                        height: 110,
+                        height: 111,
                         child: Consumer<ProductController>(
                           builder: (context, controller, child) {
                             if (controller.isCategoriesLoading &&
@@ -495,7 +495,7 @@ class _HomePageState extends State<HomePage> {
 
               // ─── Product Grid Title ──────────────────────────────
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                 sliver: SliverToBoxAdapter(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -762,7 +762,7 @@ class _CategoryCardState extends State<_CategoryCard>
         );
       },
       child: Padding(
-        padding: const EdgeInsets.only(right: 18),
+        padding: const EdgeInsets.only(right: 10),
         child: GestureDetector(
           onTapDown: (_) => setState(() => _isPressed = true),
           onTapUp: (_) => setState(() => _isPressed = false),
@@ -782,11 +782,11 @@ class _CategoryCardState extends State<_CategoryCard>
                     );
                   },
                   child: Container(
-                    height: 72,
-                    width: 72,
+                    height: 64,
+                    width: 64,
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: theme.dividerColor.withOpacity(0.5),
                       ),
@@ -799,17 +799,17 @@ class _CategoryCardState extends State<_CategoryCard>
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                       child: CustomImage(widget.imageUrl, fit: BoxFit.cover),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Text(
                   widget.label,
                   style: TextStyle(
                     color: theme.colorScheme.onSurface,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

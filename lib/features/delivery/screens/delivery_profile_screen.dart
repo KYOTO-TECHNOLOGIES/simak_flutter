@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/delivery/controller/delivery_controller.dart';
 import 'package:uae_ecom_project/features/delivery/model/delivery_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 
 class DeliveryProfileScreen extends StatelessWidget {
   const DeliveryProfileScreen({super.key});
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.trim().isEmpty) return 'Not set';
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('dd MMM yyyy').format(date);
+    } catch (_) {
+      return dateStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +57,12 @@ class DeliveryProfileScreen extends StatelessWidget {
         child: Column(
           children: [
             // ─── Profile Summary Card ──────────────────────────────
-            _buildProfileSummaryCard(user, profile),
+            _buildProfileSummaryCard(context, user, profile),
 
             const SizedBox(height: 16),
 
             // ─── Achievement Stats ───────────────────────────────
-            _buildAchievementStats(data),
+      
 
             const SizedBox(height: 32),
 
@@ -94,16 +108,13 @@ class DeliveryProfileScreen extends StatelessWidget {
                 _InfoItem(
                   icon: Icons.calendar_today_outlined,
                   label: 'DATE OF BIRTH',
-                  value: user?.profile?.dateOfBirth ?? 'Not set',
+                  value: _formatDate(user?.profile?.dateOfBirth),
                   onTap: () => _selectDateOfBirth(context),
                 ),
                 _InfoItem(
                   icon: Icons.history_outlined,
                   label: 'JOINED SIMAK',
-                  value: user?.createdAt != null
-                      ? user!
-                            .createdAt! // It's a string, so just use it or parse
-                      : 'N/A',
+                  value: _formatDate(user?.createdAt),
                 ),
               ],
             ),
@@ -118,7 +129,7 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSummaryCard(dynamic user, DeliveryProfile? profile) {
+  Widget _buildProfileSummaryCard(BuildContext context, dynamic user, DeliveryProfile? profile) {
     final isAvailable = profile?.isAvailable ?? false;
 
     return Container(
@@ -180,66 +191,92 @@ class DeliveryProfileScreen extends StatelessWidget {
           Column(
             children: [
               // Avatar with Edit Button
-              Stack(
-                children: [
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF007AFF), AppColors.actionBlue],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.actionBlue.withOpacity(0.2),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(3),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+              GestureDetector(
+                onTap: () => _pickAndUploadProfileImage(context),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF007AFF), AppColors.actionBlue],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.actionBlue.withOpacity(0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.person,
-                          size: 50,
+                      padding: const EdgeInsets.all(3),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        clipBehavior: Clip.hardEdge,
+                        child: user?.profile?.profilePicture != null
+                            ? CustomImage(
+                                user!.profile!.profilePicture!,
+                                fit: BoxFit.cover,
+                                width: 90,
+                                height: 90,
+                              )
+                            : const Center(
+                                child: Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: AppColors.actionBlue,
+                                ),
+                              ),
+                      ),
+                    ),
+                    if (context.watch<AuthController>().isLoading)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        height: 28,
+                        width: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFF1F2F6)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 14,
                           color: AppColors.actionBlue,
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      height: 28,
-                      width: 28,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFF1F2F6)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        size: 14,
-                        color: AppColors.actionBlue,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               // Name
@@ -293,35 +330,6 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAchievementStats(DeliveryDashboardData? data) {
-    return Row(
-      children: [
-        _StatCard(
-          label: 'RATING',
-          value: '${data?.profile.rating ?? 0.0}',
-          icon: Icons.star_rounded,
-          color: Color(0xFFFFA800),
-          bgColor: Color(0xFFFFF9EB),
-        ),
-        const SizedBox(width: 12),
-        _StatCard(
-          label: 'TOTAL ORDERS',
-          value: '${data?.completedTotal ?? 0}',
-          icon: Icons.shopping_bag_outlined,
-          color: AppColors.actionBlue,
-          bgColor: Color(0xFFF1FBFF),
-        ),
-        const SizedBox(width: 12),
-        _StatCard(
-          label: 'EARNINGS',
-          value: 'AED ${(data?.profile.earningsTotal ?? 0).toStringAsFixed(0)}',
-          icon: Icons.account_balance_wallet_outlined,
-          color: Color(0xFF43D152),
-          bgColor: Color(0xFFEBFAED),
-        ),
-      ],
-    );
-  }
 
   Widget _buildInfoSection({
     required String title,
@@ -567,6 +575,34 @@ class DeliveryProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _pickAndUploadProfileImage(BuildContext context) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    if (!context.mounted) return;
+
+    final auth = context.read<AuthController>();
+    final success = await auth.uploadProfilePicture(File(pickedFile.path));
+
+    if (!context.mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile picture updated successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.errorMessage ?? 'Failed to update profile picture.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
 

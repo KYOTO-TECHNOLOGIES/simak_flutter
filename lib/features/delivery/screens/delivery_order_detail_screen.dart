@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -267,6 +268,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     ...order.items.map((item) => _buildManifestItem(item)),
                     if (order.tipAmount > 0)
                       _buildTipManifestItem(order.tipAmount),
+                    _buildOrderPrepSpec(order.items),
                   ],
 
                   const SizedBox(height: 48),
@@ -674,6 +676,19 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
     );
   }
 
+  String _formatPrepSpec(String? spec) {
+    if (spec == null || spec.trim().isEmpty) return 'NO';
+    String s = spec.trim().toUpperCase();
+    s = s.replaceAll('PREPARATION SPECIFICATION:', '')
+         .replaceAll('PREPARATION SPECIFICATION', '')
+         .replaceAll('PREP SPECIFICATION:', '')
+         .replaceAll('PREP SPECIFICATION', '')
+         .trim();
+    if (s.startsWith(':')) s = s.substring(1).trim();
+    if (s.isEmpty) return 'YES';
+    return s;
+  }
+
   Widget _buildManifestItem(OrderItem item) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
@@ -701,25 +716,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                     color: Colors.grey.shade400,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        item.preparationSpecification != null && item.preparationSpecification!.isNotEmpty 
-                            ? 'PREP SPECIFICATION: ${item.preparationSpecification!.toUpperCase()}'
-                            : 'PREP SPECIFICATION: NO',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFFE67E22),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 18),
               ],
             ),
           ),
@@ -752,7 +749,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
 
   Widget _buildTipManifestItem(double amount) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -768,7 +765,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
-                          color: const Color(0xFF16A34A),
+                          color: const Color.fromARGB(255, 14, 7, 64),
                         ),
                       ),
                     ),
@@ -791,6 +788,83 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderPrepSpec(List<OrderItem> items) {
+    final specs = items
+        .map((e) => e.preparationSpecification)
+        .where((s) => s != null && s.trim().isNotEmpty)
+        .map((s) => s!.trim())
+        .toSet()
+        .toList();
+        
+    String prepText = specs.isEmpty ? '' : specs.join(', ');
+
+    final instructions = items
+        .map((e) => e.preparationInstructions)
+        .where((s) => s != null && s.trim().isNotEmpty)
+        .map((s) => s!.trim())
+        .toSet()
+        .toList();
+        
+    String instructionsText = instructions.isEmpty ? '' : instructions.join('\n');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  'PREP SPECIFICATION',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF2D3436),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  _formatPrepSpec(prepText),
+                  textAlign: TextAlign.right,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFFE67E22),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (instructionsText.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Text(
+              'PREPARATION INSTRUCTIONS',
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: const Color.fromARGB(255, 156, 154, 154),
+                letterSpacing: 1.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              instructionsText,
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2D3436),
+                height: 1.4,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1029,21 +1103,29 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
 
   Widget _buildScheduledDeliveryCard(OrderModel order) {
     final slotDetails = order.preferredDeliverySlotDetails;
+    final slotName = slotDetails?['name']?.toString() ?? order.preferredDeliverySlotName;
     final startTime = slotDetails?['start_time_display']?.toString();
     final endTime = slotDetails?['end_time_display']?.toString();
 
     final dateStr = _formatDateString(order.preferredDeliveryDate);
+    
     final String? timeRange = (startTime != null &&
             startTime.isNotEmpty &&
             endTime != null &&
             endTime.isNotEmpty)
-        ? '$startTime – $endTime'
-        : (order.preferredDeliverySlotName != null &&
-                order.preferredDeliverySlotName!.isNotEmpty
-            ? order.preferredDeliverySlotName
-            : null);
+        ? '$startTime - $endTime'
+        : null;
 
-    if (order.preferredDeliveryDate == null && timeRange == null) {
+    String? fullSlotDisplay;
+    if (slotName != null && slotName.isNotEmpty && timeRange != null) {
+      fullSlotDisplay = '$slotName • $timeRange';
+    } else if (slotName != null && slotName.isNotEmpty) {
+      fullSlotDisplay = slotName;
+    } else if (timeRange != null) {
+      fullSlotDisplay = timeRange;
+    }
+
+    if (order.preferredDeliveryDate == null && fullSlotDisplay == null) {
       return const SizedBox.shrink();
     }
 
@@ -1073,7 +1155,7 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          // ── Date + time range ──
+          // ── Slot details + Date ──
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1081,43 +1163,32 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
                 Text(
                   'SCHEDULED DELIVERY',
                   style: GoogleFonts.outfit(
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade400,
+                    color: const Color.fromARGB(255, 139, 134, 134),
                     letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  dateStr,
-                  style: GoogleFonts.outfit(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF2D3436),
-                  ),
-                ),
-                if (timeRange != null) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2D3436),
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
-                    ),
-                    child: Text(
-                      timeRange,
-                      style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: 0.4,
-                      ),
+                if (fullSlotDisplay != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    fullSlotDisplay,
+                    style: GoogleFonts.outfit(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF2D3436),
                     ),
                   ),
                 ],
+                const SizedBox(height: 4),
+                Text(
+                  dateStr,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color.fromARGB(255, 79, 78, 78),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1268,13 +1339,11 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
   }
 
   String _formatDate(DateTime date) {
-    final localDate = date.toLocal();
-    return '${localDate.day.toString().padLeft(2, '0')}/${localDate.month.toString().padLeft(2, '0')}/${localDate.year}';
+    return DateFormat('MMM dd, yyyy').format(date.toLocal());
   }
 
   String _formatDateTime(DateTime date) {
-    final localDate = date.toLocal();
-    return '${_formatDate(localDate)}, ${localDate.hour.toString().padLeft(2, '0')}:${localDate.minute.toString().padLeft(2, '0')}:${localDate.second.toString().padLeft(2, '0')}';
+    return DateFormat('MMM dd, yyyy • hh:mm a').format(date.toLocal());
   }
 
   String _formatDateString(String? dateStr) {

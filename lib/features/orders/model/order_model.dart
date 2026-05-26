@@ -188,6 +188,7 @@ class OrderItem {
   final double subtotal;
   final String? unit;
   final String? preparationSpecification;
+  final String? preparationInstructions;
 
   OrderItem({
     required this.id,
@@ -197,6 +198,7 @@ class OrderItem {
     required this.subtotal,
     this.unit,
     this.preparationSpecification,
+    this.preparationInstructions,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -223,8 +225,9 @@ class OrderItem {
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       priceAtOrder: double.tryParse(json['price']?.toString() ?? json['unit_price']?.toString() ?? '0') ?? 0.0,
       subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
-      unit: json['unit']?.toString(),
-      preparationSpecification: json['preparation_specification']?.toString(),
+      unit: json['product_unit_display']?.toString() ?? json['unit']?.toString(),
+      preparationSpecification: json['preparation_specification_name']?.toString() ?? json['preparation_specification']?.toString(),
+      preparationInstructions: json['preparation_instructions']?.toString(),
     );
   }
 }

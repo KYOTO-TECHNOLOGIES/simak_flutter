@@ -48,24 +48,6 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
       'pattern': r'^(50|52|54|55|56|58)\d{7}$',
       'key': 'uae',
     },
-    {
-      'name': 'India',
-      'code': '+91',
-      'flag': '🇮🇳',
-      'hint': 'phone_hint_india',
-      'maxLength': 10,
-      'pattern': r'^[6-9]\d{9}$',
-      'key': 'india',
-    },
-    {
-      'name': 'China',
-      'code': '+86',
-      'flag': '🇨🇳',
-      'hint': 'phone_hint_china',
-      'maxLength': 11,
-      'pattern': r'^(13|14|15|16|17|18|19)\d{9}$',
-      'key': 'china',
-    },
   ];
 
   final List<String> _emirates = [
@@ -569,66 +551,21 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
           ),
           prefix: Container(
             margin: const EdgeInsets.only(right: 0),
-            child: PopupMenuButton<Map<String, dynamic>>(
-              enabled: !isLocked,
-              offset: const Offset(0, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              onSelected: (country) {
-                setState(() {
-                  _selectedCountryCode = country['code']!;
-                  _selectedCountryName = country['name']!;
-                  // Clear phone text if it exceeds the new country's max length
-                  final newMaxLength = country['maxLength'] as int;
-                  if (_phoneController.text.length > newMaxLength) {
-                    _phoneController.text = _phoneController.text.substring(
-                      0,
-                      newMaxLength,
-                    );
-                  }
-                });
-              },
-              itemBuilder: (context) => _countries
-                  .map(
-                    (c) => PopupMenuItem<Map<String, dynamic>>(
-                      value: c,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _getFlagIcon(c['name']!),
-                          const SizedBox(width: 8),
-                          Text(
-                            c['code']!,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 6, right: 2),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _getFlagIcon(_selectedCountryName),
-                    const Icon(
-                      Icons.arrow_drop_down,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      width: 1,
-                      height: 16,
-                      color: Colors.grey.shade300,
-                    ),
-                  ],
-                ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12, right: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _getFlagIcon('UAE'),
+                  const SizedBox(width: 6),
+                  const Text('+971', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87)),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 1,
+                    height: 16,
+                    color: Colors.grey.shade300,
+                  ),
+                ],
               ),
             ),
           ),

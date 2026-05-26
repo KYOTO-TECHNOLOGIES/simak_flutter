@@ -29,8 +29,6 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
 
   final List<Map<String, dynamic>> _countries = [
     {'name': 'UAE', 'code': '+971', 'flag': '🇦🇪', 'hint': 'phone_hint_uae', 'maxLength': 9, 'pattern': r'^(50|52|54|55|56|58)\d{7}$', 'key': 'uae'},
-    {'name': 'India', 'code': '+91', 'flag': '🇮🇳', 'hint': 'phone_hint_india', 'maxLength': 10, 'pattern': r'^[6-9]\d{9}$', 'key': 'india'},
-    {'name': 'China', 'code': '+86', 'flag': '🇨🇳', 'hint': 'phone_hint_china', 'maxLength': 11, 'pattern': r'^(13|14|15|16|17|18|19)\d{9}$', 'key': 'china'},
   ];
 
   @override
@@ -254,7 +252,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
         const SizedBox(height: 32),
         
         // ─── Auth Options Divider ─────────────────────────────────
-        /* Row(
+        Row(
           children: [
             Expanded(child: Divider(color: theme.dividerColor)),
             Padding(
@@ -316,7 +314,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
               ),
             );
           },
-        ), */
+        ),
       ],
     );
   }
@@ -381,42 +379,13 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.actionBlue.withOpacity(0.3)),
             ),
-            child: PopupMenuButton<Map<String, dynamic>>(
-              offset: const Offset(0, 44),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              color: theme.cardColor,
-              elevation: 8,
-              onSelected: (country) {
-                setState(() {
-                  _selectedCountryCode = country['code']!;
-                });
-              },
-              itemBuilder: (context) => _countries.map((c) => PopupMenuItem(
-                value: c,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                height: 40,
-                child: Row(
-                  children: [
-                    Text(c['flag'] as String, style: const TextStyle(fontSize: 18)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        trStatic(context, c['key'] as String), 
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.actionBlue, fontSize: 13)
-                      ),
-                    ),
-                    Text(c['code'] as String, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 12)),
-                  ],
-                ),
-              )).toList(),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(currentCountry['flag'] as String, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.keyboard_arrow_down, size: 16),
-                ],
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(currentCountry['flag'] as String, style: const TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                Text(currentCountry['code'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              ],
             ),
           ),
           const SizedBox(width: 12),

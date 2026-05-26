@@ -8,6 +8,7 @@ import 'package:uae_ecom_project/features/products/products_page.dart';
 import 'package:uae_ecom_project/features/profile/profile_screen.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
+import 'package:uae_ecom_project/core/widgets/floating_contact_button.dart';
 
 /// Shell widget that holds the three main tabs with an animated bottom nav bar.
 class HomeShell extends StatefulWidget {
@@ -89,20 +90,31 @@ class _HomeShellState extends State<HomeShell> {
         return true;
       },
       child: Scaffold(
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: KeyedSubtree(
-            key: ValueKey<int>(_currentIndex),
-            child: _pages[_currentIndex],
-          ),
+        body: Stack(
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey<int>(_currentIndex),
+                child: _pages[_currentIndex],
+              ),
+            ),
+            // ─── Floating Contact Us FAB (Home tab only) ─────────────
+            if (_currentIndex == 0)
+              const Positioned(
+                right: 16,
+                bottom: 100,
+                child: FloatingContactButton(),
+              ),
+          ],
         ),
         extendBody: true,
         bottomNavigationBar: _buildBottomBar(),
