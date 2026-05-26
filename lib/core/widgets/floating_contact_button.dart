@@ -51,13 +51,7 @@ class _FloatingContactButtonState extends State<FloatingContactButton>
       url: 'https://facebook.com',
       iconType: _IconType.facebook,
     ),
-    _SocialData(
-      label: 'X (Twitter)',
-      color: Color(0xFF14171A),
-      shadowColor: Color(0xFF657786),
-      url: 'https://x.com',
-      iconType: _IconType.twitter,
-    ),
+
     _SocialData(
       label: 'TikTok',
       color: Color(0xFF010101),
