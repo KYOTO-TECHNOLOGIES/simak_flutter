@@ -1693,7 +1693,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      hasPhone ? 'EDIT' : 'ADD',
+                      hasPhone ? (isVerified ? 'EDIT' : 'VERIFY') : 'ADD',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -1706,7 +1706,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
+        if (!isVerified) _buildVerificationWarning(context, user, theme),
       ],
+    );
+  }
+
+  Widget _buildVerificationWarning(BuildContext context, UserModel user, ThemeData theme) {
+    if (user.isPhoneVerified) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Phone Verification Required',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.red.shade900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Please verify your phone number to enable checkout and save addresses.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.red.shade800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

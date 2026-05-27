@@ -126,9 +126,8 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     final auth = context.watch<AuthController>();
     final user = auth.currentUser;
     final isPhoneVerified = user?.isPhoneVerified ?? false;
-    // Addresses can have their own contact number, so we don't lock this field
-    // even if the account's primary phone is verified.
-    final isLocked = false;
+    // The field is locked until the user's primary phone number is verified.
+    final isLocked = !isPhoneVerified;
 
     return Container(
       padding: EdgeInsets.only(
@@ -609,14 +608,13 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      tr(context, 'checkout_verify_primary'),
+                      'Verify your phone number to add an alternative number.',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: AppColors.actionBlue,
                         fontWeight: FontWeight.w600,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+                      overflow: TextOverflow.visible,
                     ),
                   ),
                 ],
@@ -665,6 +663,20 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
   }
 
   void _submit() async {
+    final auth = context.read<AuthController>();
+    final user = auth.currentUser;
+    final isPhoneVerified = user?.isPhoneVerified ?? false;
+
+    if (!isPhoneVerified) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr(context, 'checkout_verify_primary')),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _showErrors = true;
     });

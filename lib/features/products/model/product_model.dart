@@ -184,12 +184,14 @@ class PreparationSpecification {
   final String name;
   final String? description;
   final String? image;
+  final double extraPrice;
 
   PreparationSpecification({
     required this.id,
     required this.name,
     this.description,
     this.image,
+    this.extraPrice = 0.0,
   });
 
   factory PreparationSpecification.fromJson(Map<String, dynamic> json) {
@@ -200,6 +202,7 @@ class PreparationSpecification {
       image: json['image'] != null
           ? ProductModel.getAbsoluteUrl(json['image'].toString())
           : null,
+      extraPrice: double.tryParse(json['extra_price']?.toString() ?? '0') ?? 0.0,
     );
   }
 }

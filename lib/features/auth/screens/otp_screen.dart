@@ -148,17 +148,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
     if (success && mounted) {
       final auth = context.read<AuthController>();
-      if (auth.isDeliveryUser) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/delivery_dashboard',
-          (route) => false,
-        );
-      } else {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/home',
-          (route) => false,
-        );
-      }
+      auth.handleAuthNavigation(context);
     }
   }
 

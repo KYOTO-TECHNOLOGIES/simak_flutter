@@ -35,7 +35,7 @@ class AuthController extends ChangeNotifier {
   bool get isLoggedIn => _currentUser != null;
   bool get isOtpSent => _isOtpSent;
   String? get otpPlatform => _otpPlatform;
-  bool get isDeliveryUser => _currentUser?.email == 'delivery.abudhabi@demo.com';
+  bool get isDeliveryUser => _currentUser?.role == 'delivery_boy';
 
   // ─── State Helpers ──────────────────────────────────────────
   void _setLoading(bool value) {
@@ -51,6 +51,15 @@ class AuthController extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // ─── Navigation Helper ──────────────────────────────────────
+  void handleAuthNavigation(BuildContext context) {
+    if (isDeliveryUser) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/delivery_dashboard', (route) => false);
+    } else {
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    }
   }
 
   // ─── Handle Auth Response ───────────────────────────────────

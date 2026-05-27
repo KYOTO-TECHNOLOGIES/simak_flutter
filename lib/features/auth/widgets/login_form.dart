@@ -34,7 +34,7 @@ class _LoginFormState extends State<LoginForm> {
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      authController.handleAuthNavigation(context);
     }
   }
 

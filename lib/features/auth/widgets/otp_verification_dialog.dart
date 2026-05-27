@@ -33,22 +33,6 @@ const List<CountryCode> supportedCountries = [
     maxLength: 9,
     pattern: r'^(50|52|54|55|56|58)\d{7}$',
   ),
-  CountryCode(
-    name: 'India',
-    code: '+91',
-    flag: '🇮🇳',
-    hint: '10 digits',
-    maxLength: 10,
-    pattern: r'^[6-9]\d{9}$',
-  ),
-  CountryCode(
-    name: 'China',
-    code: '+86',
-    flag: '🇨🇳',
-    hint: '11 digits',
-    maxLength: 11,
-    pattern: r'^(13|14|15|16|17|18|19)\d{9}$',
-  ),
 ];
 
 class OtpVerificationDialog extends StatefulWidget {
@@ -383,7 +367,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                     children: [
                       Container(
                         height: 50,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
                           color: isDark ? Colors.white10 : Colors.grey.shade50,
                           borderRadius: BorderRadius.circular(10),
@@ -393,47 +377,25 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                                 : Colors.grey.shade300,
                           ),
                         ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<CountryCode>(
-                            value: _selectedCountry,
-                            dropdownColor: isDark
-                                ? const Color(0xFF2C2C2C)
-                                : Colors.white,
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down,
-                              size: 16,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _selectedCountry.flag,
+                              style: const TextStyle(fontSize: 18),
                             ),
-                            items: supportedCountries.map((c) {
-                              return DropdownMenuItem(
-                                value: c,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      c.flag,
-                                      style: const TextStyle(fontSize: 18),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      c.code,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (v) {
-                              if (v != null) {
-                                setState(() => _selectedCountry = v);
-                              }
-                            },
-                          ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _selectedCountry.code,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 8),

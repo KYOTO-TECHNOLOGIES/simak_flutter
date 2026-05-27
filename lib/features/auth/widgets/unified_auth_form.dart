@@ -282,7 +282,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
                 onPressed: auth.isLoading ? null : () async {
                   final success = await auth.signInWithGoogle();
                   if (success && context.mounted) {
-                    Navigator.of(context).pushReplacementNamed('/home');
+                    auth.handleAuthNavigation(context);
                   }
                 },
                 style: OutlinedButton.styleFrom(

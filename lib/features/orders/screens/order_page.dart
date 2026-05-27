@@ -264,6 +264,14 @@ class _OrderPageState extends State<OrderPage> {
             ),
             const SizedBox(height: 24),
             _buildDeliveryPreferences(context, checkout, theme),
+            const SizedBox(height: 24),
+            _buildVerificationWarning(
+              context,
+              displayProduct,
+              displayQuantity,
+              isCartMode,
+              theme,
+            ),
           ],
         );
       case CheckoutStep.summary:
@@ -441,55 +449,63 @@ class _OrderPageState extends State<OrderPage> {
             const SizedBox(height: 24),
 
             // Price Details Block
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+            Builder(
+              builder: (context) {
+                final orderController = context.watch<OrderController>();
+                final double baseTotal = isCartMode ? cart.totalPrice : displayProduct.finalPrice * displayQuantity;
+                final double initialShipping = baseTotal >= orderController.freeDeliveryThreshold ? 0.0 : orderController.deliveryCharge;
+                
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildDetailRow(
-                    context,
-                    tr(context, 'subtotal'),
-                    'AED ${checkout.hasSummary ? checkout.summarySubtotal.toStringAsFixed(2) : (isCartMode ? cart.totalPrice : displayProduct.finalPrice * displayQuantity).toStringAsFixed(2)}',
+                  child: Column(
+                    children: [
+                      _buildDetailRow(
+                        context,
+                        tr(context, 'subtotal'),
+                        'AED ${checkout.hasSummary ? checkout.summarySubtotal.toStringAsFixed(2) : baseTotal.toStringAsFixed(2)}',
+                      ),
+                      _buildDetailRow(
+                        context,
+                        tr(context, 'discount'),
+                        'AED ${checkout.hasSummary ? checkout.summaryDiscount.toStringAsFixed(2) : '0.00'}',
+                        valueColor: Colors.green,
+                      ),
+                      _buildDetailRow(
+                        context,
+                        tr(context, 'shipping'),
+                        'AED ${checkout.hasSummary ? checkout.summaryDeliveryCharge.toStringAsFixed(2) : initialShipping.toStringAsFixed(2)}',
+                      ),
+                      _buildDetailRow(
+                        context,
+                        tr(context, 'tip'),
+                        'AED ${(checkout.hasSummary ? checkout.summaryTip : checkout.tipAmount).toStringAsFixed(2)}',
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1),
+                      ),
+                      _buildDetailRow(
+                        context,
+                        tr(context, 'total'),
+                        'AED ${checkout.hasSummary ? checkout.summaryTotal.toStringAsFixed(2) : (baseTotal + initialShipping + checkout.tipAmount).toStringAsFixed(2)}',
+                        isTotal: true,
+                      ),
+                    ],
                   ),
-                  _buildDetailRow(
-                    context,
-                    tr(context, 'discount'),
-                    'AED ${checkout.hasSummary ? checkout.summaryDiscount.toStringAsFixed(2) : '0.00'}',
-                    valueColor: Colors.green,
-                  ),
-                  _buildDetailRow(
-                    context,
-                    tr(context, 'shipping'),
-                    'AED ${checkout.hasSummary ? checkout.summaryDeliveryCharge.toStringAsFixed(2) : '0.00'}',
-                  ),
-                  _buildDetailRow(
-                    context,
-                    tr(context, 'tip'),
-                    'AED ${(checkout.hasSummary ? checkout.summaryTip : checkout.tipAmount).toStringAsFixed(2)}',
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Divider(height: 1),
-                  ),
-                  _buildDetailRow(
-                    context,
-                    tr(context, 'total'),
-                    'AED ${checkout.hasSummary ? checkout.summaryTotal.toStringAsFixed(2) : ((isCartMode ? cart.totalPrice : displayProduct.finalPrice * displayQuantity) + checkout.tipAmount).toStringAsFixed(2)}',
-                    isTotal: true,
-                  ),
-                ],
-              ),
+                );
+              }
             ),
           ],
         );
@@ -1340,21 +1356,25 @@ class _OrderPageState extends State<OrderPage> {
     int? quantity,
     ThemeData theme,
   ) {
-    final checkout = context.read<CheckoutController>();
+    final checkoutCtrl = context.read<CheckoutController>();
     final auth = context.watch<AuthController>();
     final cart = context.watch<CartController>();
+    final orderController = context.watch<OrderController>();
     final isVerified = auth.currentUser?.isPhoneVerified ?? false;
 
-    final totalPrice = checkout.hasSummary
-        ? checkout.summaryTotal
-        : (product != null && quantity != null
-                  ? product.finalPrice * quantity
-                  : cart.totalPrice) +
-              checkout.tipAmount;
+    final double baseTotal = (product != null && quantity != null)
+        ? product.finalPrice * quantity
+        : cart.totalPrice;
+        
+    final double initialShipping = baseTotal >= orderController.freeDeliveryThreshold
+        ? 0.0
+        : orderController.deliveryCharge;
 
-    final bool canContinue =
-        !checkout.isLoading &&
-        (checkout.currentStep != CheckoutStep.summary || isVerified);
+    final totalPrice = checkoutCtrl.hasSummary
+        ? checkoutCtrl.summaryTotal
+        : baseTotal + initialShipping + checkoutCtrl.tipAmount;
+
+    final bool canContinue = !checkoutCtrl.isLoading && isVerified;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),

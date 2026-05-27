@@ -47,7 +47,7 @@ class _RegisterFormState extends State<RegisterForm> {
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      authController.handleAuthNavigation(context);
     }
   }
 
