@@ -431,7 +431,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                       'AED ${widget.product.finalPrice}\n\n'
                                                       '${widget.product.description}\n\n'
                                                       '${trStatic(context, 'check_this_out')} https://simakfresh.ae/product/${widget.product.id}\n'
-                                                      'Download the app: [Link Placeholder]';
+                                                      'Download the app: https://play.google.com/store/apps/details?id=com.simakfresh.app';
 
                                                   if (widget
                                                               .product

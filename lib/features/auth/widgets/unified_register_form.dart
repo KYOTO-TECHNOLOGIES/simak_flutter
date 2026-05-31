@@ -22,9 +22,12 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _referralController = TextEditingController();
+  final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
   bool _agreedToTerms = false;
   String _selectedCountryCode = '+971';
   bool _showErrors = false;
+  bool _viaWhatsApp = false;
 
   final List<Map<String, dynamic>> _countries = [
     {'name': 'UAE', 'code': '+971', 'flag': '🇦🇪', 'hint': 'phone_hint_uae', 'maxLength': 9, 'pattern': r'^(50|52|54|55|56|58)\d{7}$', 'key': 'uae'},
@@ -37,6 +40,8 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
     _phoneController.dispose();
     _emailController.dispose();
     _referralController.dispose();
+    _phoneFocusNode.dispose();
+    _emailFocusNode.dispose();
     super.dispose();
   }
 
@@ -107,7 +112,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
 
     // 3. Request OTP for login
     if (shouldProceedToOtp && mounted) {
-      final otpSuccess = await authController.requestOtp(identifier: identifier);
+      final otpSuccess = await authController.requestOtp(identifier: identifier, viaWhatsApp: _isPhoneMode ? _viaWhatsApp : false);
       if (otpSuccess && mounted) {
          Navigator.of(context).pushNamed('/otp', arguments: identifier);
       }
@@ -142,8 +147,30 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
           ),
           child: Row(
             children: [
-              Expanded(child: _buildTab(context, 'phone', _isPhoneMode, () => setState(() { _isPhoneMode = true; _showErrors = false; }))),
-              Expanded(child: _buildTab(context, 'email', !_isPhoneMode, () => setState(() { _isPhoneMode = false; _showErrors = false; }))),
+              Expanded(child: _buildTab(context, 'phone', _isPhoneMode, () {
+                final hasFocus = _emailFocusNode.hasFocus;
+                if (hasFocus) FocusScope.of(context).unfocus();
+                setState(() { _isPhoneMode = true; _showErrors = false; });
+                if (hasFocus) {
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted) _phoneFocusNode.requestFocus();
+                  });
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              })),
+              Expanded(child: _buildTab(context, 'email', !_isPhoneMode, () {
+                final hasFocus = _phoneFocusNode.hasFocus;
+                if (hasFocus) FocusScope.of(context).unfocus();
+                setState(() { _isPhoneMode = false; _showErrors = false; });
+                if (hasFocus) {
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted) _emailFocusNode.requestFocus();
+                  });
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              })),
             ],
           ),
         ),
@@ -176,11 +203,39 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        if (_isPhoneMode)
-          _buildPhoneField(theme)
-        else
+        if (_isPhoneMode) ...[
+          _buildPhoneField(theme),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Checkbox(
+                  value: _viaWhatsApp,
+                  onChanged: (val) {
+                    setState(() {
+                      _viaWhatsApp = val ?? false;
+                    });
+                  },
+                  activeColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Send OTP via WhatsApp',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                ),
+              ),
+            ],
+          ),
+        ] else ...[
           _buildEmailField(theme),
+        ],
 
         // ─── Validation & Server Error Message ─────────────────────────────
         _buildErrorDisplay(context, theme),
@@ -455,6 +510,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
           Expanded(
             child: TextField(
               controller: _phoneController,
+              focusNode: _phoneFocusNode,
               keyboardType: TextInputType.phone,
               maxLength: currentCountry['maxLength'] as int,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -489,6 +545,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
           Expanded(
             child: TextField(
                controller: _emailController,
+               focusNode: _emailFocusNode,
                keyboardType: TextInputType.emailAddress,
                onChanged: (_) => setState(() {}),
                decoration: InputDecoration(

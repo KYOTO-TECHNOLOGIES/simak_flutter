@@ -36,7 +36,6 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
   double? _lng;
 
   String _selectedCountryCode = '+971';
-  String _selectedCountryName = 'UAE';
 
   final List<Map<String, dynamic>> _countries = [
     {
@@ -50,13 +49,42 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     },
   ];
 
-  final List<String> _emirates = [
-    'Abu Dhabi',
-    'Dubai',
-    'Sharjah',
-    'Ajman',
-    'Umm Al Quwain'
+  // Emirates defined with slug values (matching React implementation)
+  static const List<Map<String, dynamic>> _emiratesData = [
+    {'value': 'abu_dhabi', 'label': 'Abu Dhabi', 'available': true},
+    {'value': 'dubai', 'label': 'Dubai', 'available': false},
+    {'value': 'sharjah', 'label': 'Sharjah', 'available': false},
+    {'value': 'ajman', 'label': 'Ajman', 'available': false},
+    {'value': 'umm_al_quwain', 'label': 'Umm Al Quwain', 'available': false},
+    {'value': 'ras_al_khaimah', 'label': 'Ras Al Khaimah', 'available': false},
+    {'value': 'fujairah', 'label': 'Fujairah', 'available': false},
   ];
+
+  /// Normalizes a raw geocoded emirate string to a slug.
+  /// Mirrors the React logic: toLowerCase → replace non-alpha with '_' → trim '_'
+  static String _normalizeEmirate(String raw) {
+    return raw
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+  }
+
+  /// Tries to match a normalized slug against known emirate entries.
+  /// Returns the slug if matched, or null.
+  static String? _matchEmirate(String rawEmirate) {
+    final normalized = _normalizeEmirate(rawEmirate);
+    for (final e in _emiratesData) {
+      final slug = e['value'] as String;
+      final label = e['label'] as String;
+      // Direct slug match
+      if (normalized == slug) return slug;
+      // Match against normalized label (e.g. 'abu_dhabi' == 'abu_dhabi')
+      if (normalized == _normalizeEmirate(label)) return slug;
+      // Partial containment (e.g. 'abu_dhabi_emirate' contains 'abu_dhabi')
+      if (normalized.contains(slug) || slug.contains(normalized)) return slug;
+    }
+    return null;
+  }
 
   bool _showErrors = false;
 
@@ -95,7 +123,6 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
       if (fullPhone.startsWith(code)) {
         setState(() {
           _selectedCountryCode = code;
-          _selectedCountryName = country['name']!;
           _phoneController.text = fullPhone.substring(code.length);
         });
         return;
@@ -187,23 +214,10 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                       _cityController.text = result.city!;
                     }
 
-                    // Only update emirate if it's in our allowed list to avoid Dropdown errors
-                    if (result.emirate != null) {
-                      final suggestedEmirate = result.emirate!;
-                      final validEmirate = _emirates.firstWhere(
-                        (e) =>
-                            e.toLowerCase() == suggestedEmirate.toLowerCase() ||
-                            suggestedEmirate.toLowerCase().contains(
-                              e.toLowerCase(),
-                            ),
-                        orElse: () => '',
-                      );
-                      if (validEmirate.isNotEmpty) {
-                        _emirate = validEmirate;
-                      } else {
-                        // Don't auto-set an emirate if the geocoded result doesn't match
-                        _emirate = null;
-                      }
+                    // Normalize the geocoded emirate to a slug and match
+                    if (result.emirate != null && result.emirate!.isNotEmpty) {
+                      final matched = _matchEmirate(result.emirate!);
+                      _emirate = matched; // may be null if completely unrecognized
                     }
                   });
                 },
@@ -256,10 +270,28 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
                         _buildDropdown(
                           value: _emirate,
                           hint: 'Select emirate',
-                          items: _emirates,
-                          disabledItems: _emirates.where((e) => e != 'Abu Dhabi').toList(),
+                          items: _emiratesData.map((e) => e['value'] as String).toList(),
+                          itemLabelBuilder: (v) {
+                            final entry = _emiratesData.firstWhere(
+                              (e) => e['value'] == v,
+                              orElse: () => {'label': v},
+                            );
+                            return entry['label'] as String;
+                          },
+                          disabledItems: _emiratesData
+                              .where((e) => e['available'] != true)
+                              .map((e) => e['value'] as String)
+                              .toList(),
+                          errorText: _showErrors
+                              ? (_emirate == null
+                                  ? 'Please select an emirate'
+                                  : (_emirate != 'abu_dhabi'
+                                      ? 'Delivery is currently available only in Abu Dhabi.'
+                                      : null))
+                              : null,
                           onChanged: (v) {
-                            if (v == 'Abu Dhabi') {
+                            // Only allow selecting Abu Dhabi
+                            if (v == 'abu_dhabi') {
                               setState(() => _emirate = v!);
                             }
                           },
@@ -404,46 +436,62 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
     String Function(String)? itemLabelBuilder,
     List<String> disabledItems = const [],
     String? hint,
+    String? errorText,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          hint: hint != null
-              ? Text(
-                  hint,
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                )
-              : null,
-          items: items
-              .map(
-                (e) {
-                  final isDisabled = disabledItems.contains(e);
-                  return DropdownMenuItem(
-                    value: e,
-                    enabled: !isDisabled,
-                    child: Text(
-                      itemLabelBuilder != null ? itemLabelBuilder(e) : e,
-                      style: TextStyle(
-                        color: isDisabled ? Colors.grey.shade400 : Colors.black87,
-                        fontWeight: e == 'Abu Dhabi' ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  );
-                },
-              )
-              .toList(),
-          onChanged: onChanged,
-          style: const TextStyle(color: Colors.black87, fontSize: 14),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: errorText != null ? Colors.red : Colors.grey.shade200,
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              hint: hint != null
+                  ? Text(
+                      hint,
+                      style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                    )
+                  : null,
+              items: items
+                  .map(
+                    (e) {
+                      final isDisabled = disabledItems.contains(e);
+                      return DropdownMenuItem(
+                        value: e,
+                        enabled: !isDisabled,
+                        child: Text(
+                          itemLabelBuilder != null ? itemLabelBuilder(e) : e,
+                          style: TextStyle(
+                            color: isDisabled ? Colors.grey.shade400 : Colors.black87,
+                            fontWeight: e == 'Abu Dhabi' ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                  .toList(),
+              onChanged: onChanged,
+              style: const TextStyle(color: Colors.black87, fontSize: 14),
+            ),
+          ),
         ),
-      ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 16),
+            child: Text(
+              errorText,
+              style: const TextStyle(fontSize: 10, color: Colors.red),
+            ),
+          ),
+      ],
     );
   }
 
@@ -681,13 +729,7 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
       _showErrors = true;
     });
 
-    if (_emirate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select an emirate'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
+    if (_emirate == null || _emirate != 'abu_dhabi') {
       return;
     }
 
@@ -715,7 +757,7 @@ class _AddAddressDialogState extends State<AddAddressDialog> {
         line1: line1,
         line2: _areaController.text,
         city: _cityController.text,
-        state: _emirate,
+        state: _emirate == 'abu_dhabi' ? 'Abu Dhabi' : (_emirate ?? ''),
         postalCode: '00000',
         country: 'UAE',
         isDefault: _isDefault,

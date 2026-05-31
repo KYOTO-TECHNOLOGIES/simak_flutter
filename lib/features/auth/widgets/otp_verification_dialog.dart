@@ -60,6 +60,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
   bool _otpSent = false;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _viaWhatsApp = false;
 
   late CountryCode _selectedCountry;
 
@@ -172,7 +173,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
     });
 
     final auth = context.read<AuthController>();
-    final success = await auth.requestOtp(identifier: _fullIdentifier);
+    final success = await auth.requestOtp(identifier: _fullIdentifier, viaWhatsApp: _viaWhatsApp);
 
     if (!mounted) return;
 
@@ -418,6 +419,36 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                       ),
                     ],
                   ),
+                if (!_isEmail) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _viaWhatsApp,
+                          onChanged: (val) {
+                            setState(() {
+                              _viaWhatsApp = val ?? false;
+                            });
+                          },
+                          activeColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Send OTP via WhatsApp',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

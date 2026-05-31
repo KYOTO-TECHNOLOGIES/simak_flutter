@@ -2,8 +2,9 @@
 class OtpRequestModel {
   final String identifier;
   final String otpType;
+  final bool viaWhatsApp;
 
-  OtpRequestModel({required this.identifier})
+  OtpRequestModel({required this.identifier, this.viaWhatsApp = false})
       : otpType = identifier.contains('@') ? 'email' : 'phone';
 
   Map<String, dynamic> toJson() {
@@ -12,6 +13,9 @@ class OtpRequestModel {
       map['email'] = identifier;
     } else {
       map['phone_number'] = identifier;
+      if (viaWhatsApp) {
+        map['via_whatsapp'] = true;
+      }
     }
     return map;
   }

@@ -26,6 +26,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
   String _selectedCountryCode = '+971';
   bool _showPhoneError = false;
   bool _showEmailError = false;
+  bool _viaWhatsApp = false;
 
   final List<Map<String, dynamic>> _countries = [
     {'name': 'UAE', 'code': '+971', 'flag': '🇦🇪', 'hint': 'phone_hint_uae', 'maxLength': 9, 'pattern': r'^(50|52|54|55|56|58)\d{7}$', 'key': 'uae'},
@@ -106,7 +107,7 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
         ? (_selectedCountryCode.startsWith('+') ? '$_selectedCountryCode$text' : '+$_selectedCountryCode$text')
         : text;
 
-    final success = await authController.requestOtp(identifier: identifier);
+    final success = await authController.requestOtp(identifier: identifier, viaWhatsApp: _isPhoneMode ? _viaWhatsApp : false);
     
     if (success && mounted) {
       // Navigate to OTP verification screen passing the identifier
@@ -142,18 +143,69 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
           ),
           child: Row(
             children: [
-              Expanded(child: _buildTab(context, 'phone', _isPhoneMode, () => setState(() { _isPhoneMode = true; }))),
-              Expanded(child: _buildTab(context, 'email', !_isPhoneMode, () => setState(() { _isPhoneMode = false; }))),
+              Expanded(child: _buildTab(context, 'phone', _isPhoneMode, () {
+                final hasFocus = _emailFocusNode.hasFocus;
+                if (hasFocus) FocusScope.of(context).unfocus();
+                setState(() { _isPhoneMode = true; });
+                if (hasFocus) {
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted) _phoneFocusNode.requestFocus();
+                  });
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              })),
+              Expanded(child: _buildTab(context, 'email', !_isPhoneMode, () {
+                final hasFocus = _phoneFocusNode.hasFocus;
+                if (hasFocus) FocusScope.of(context).unfocus();
+                setState(() { _isPhoneMode = false; });
+                if (hasFocus) {
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted) _emailFocusNode.requestFocus();
+                  });
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              })),
             ],
           ),
         ),
         const SizedBox(height: 24),
 
         // ─── Input Field ──────────────────────────────────────────
-        if (_isPhoneMode)
-          _buildPhoneField(theme)
-        else
+        if (_isPhoneMode) ...[
+          _buildPhoneField(theme),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Checkbox(
+                  value: _viaWhatsApp,
+                  onChanged: (val) {
+                    setState(() {
+                      _viaWhatsApp = val ?? false;
+                    });
+                  },
+                  activeColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Send OTP via WhatsApp',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                ),
+              ),
+            ],
+          ),
+        ] else ...[
           _buildEmailField(theme),
+        ],
 
         // ─── Validation & Server Error Message ─────────────────────────────
         _buildErrorDisplay(context, theme),

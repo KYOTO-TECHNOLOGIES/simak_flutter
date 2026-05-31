@@ -208,7 +208,7 @@ class AuthController extends ChangeNotifier {
   }
 
   // ─── Request OTP ────────────────────────────────────────────
-  Future<bool> requestOtp({required String identifier}) async {
+  Future<bool> requestOtp({required String identifier, bool viaWhatsApp = false}) async {
     _setLoading(true);
     _setError(null);
     try {
@@ -243,7 +243,7 @@ class AuthController extends ChangeNotifier {
         }
       }
 
-      final responseData = await _authService.requestOtp(OtpRequestModel(identifier: identifier));
+      final responseData = await _authService.requestOtp(OtpRequestModel(identifier: identifier, viaWhatsApp: viaWhatsApp));
       _isOtpSent = true;
       // Capture otp_platform here
       _otpPlatform = responseData['otp_platform']?.toString();
