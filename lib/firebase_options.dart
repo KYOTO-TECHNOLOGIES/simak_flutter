@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -51,18 +48,30 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDUJyvyUkqx7tFOzPrsb8crW7fn9HJrchc',
-    appId: '1:470304276733:android:7a4bc795bfe8669a13be94',
+    appId: '1:470304276733:android:252a7598a67cf8d213be94',
     messagingSenderId: '470304276733',
     projectId: 'simakfresh-d5d86',
     storageBucket: 'simakfresh-d5d86.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCfjqZZwujfT9U4h_m8YVsEI7Al54S04Wo',
-    appId: '1:159473207444:ios:76ed3875e44ad5ebb4cc81',
-    messagingSenderId: '159473207444',
-    projectId: 'uae-project-fa8e6',
-    storageBucket: 'uae-project-fa8e6.firebasestorage.app',
-    iosBundleId: 'com.example.uaeEcomProject',
+    apiKey: 'AIzaSyBYcv8lzCknCQ43-fYYCq4QjvxnC7fj0uc',
+    appId: '1:470304276733:ios:e7924bd1c85b64a313be94',
+    messagingSenderId: '470304276733',
+    projectId: 'simakfresh-d5d86',
+    storageBucket: 'simakfresh-d5d86.firebasestorage.app',
+    androidClientId: '470304276733-4tb1bevukctraknkri496ruh4pf4lo3q.apps.googleusercontent.com',
+    iosClientId: '470304276733-0qdqq2hj0birdcn8l39d1j8qq1429ti6.apps.googleusercontent.com',
+    iosBundleId: 'com.simakfresh.app',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCYdgAolXjmMhmvfStttsyIO7SWtRDq2YM',
+    appId: '1:470304276733:web:caf4139bebf3c8cd13be94',
+    messagingSenderId: '470304276733',
+    projectId: 'simakfresh-d5d86',
+    authDomain: 'simakfresh-d5d86.firebaseapp.com',
+    storageBucket: 'simakfresh-d5d86.firebasestorage.app',
+  );
+
 }
