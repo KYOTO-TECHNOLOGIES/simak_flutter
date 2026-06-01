@@ -138,20 +138,27 @@ class _FloatingContactButtonState extends State<FloatingContactButton>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        for (int i = 0; i < _items.length; i++) ...[
-          _SocialButton(
-            data: _items[i],
-            animation: _itemAnimation(i),
-            onTap: () => _launch(_items[i].url),
-          ),
-          const SizedBox(height: 8),
+    // Force LTR layout so the expanded panel always anchors to the physical
+    // right edge in both LTR and RTL (Arabic) modes. Without this, Flutter
+    // flips CrossAxisAlignment.end to physical-left in RTL, pushing the menu
+    // toward the center of the screen instead of staying beside the FAB.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (int i = 0; i < _items.length; i++) ...[
+            _SocialButton(
+              data: _items[i],
+              animation: _itemAnimation(i),
+              onTap: () => _launch(_items[i].url),
+            ),
+            const SizedBox(height: 8),
+          ],
+          _MainFab(isOpen: _isOpen, onTap: _toggle, controller: _controller),
         ],
-        _MainFab(isOpen: _isOpen, onTap: _toggle, controller: _controller),
-      ],
+      ),
     );
   }
 }

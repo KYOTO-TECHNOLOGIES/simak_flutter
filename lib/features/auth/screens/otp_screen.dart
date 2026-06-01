@@ -339,7 +339,6 @@ class _OtpScreenState extends State<OtpScreen> {
                                   focusNode: _otpFocusNodes[index],
                                   keyboardType: TextInputType.number,
                                   textAlign: TextAlign.center,
-                                  maxLength: 1,
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface,
                                     fontSize: 20,
@@ -347,6 +346,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                   ),
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(6),
                                   ],
                                   decoration: InputDecoration(
                                     counterText: '',
@@ -375,10 +375,28 @@ class _OtpScreenState extends State<OtpScreen> {
                                     ),
                                   ),
                                   onChanged: (value) {
+                                    if (value.length > 1) {
+                                      // Handle paste or auto-fill
+                                      for (int i = 0; i < value.length && (index + i) < 6; i++) {
+                                        _otpControllers[index + i].text = value[i];
+                                      }
+                                      
+                                      final nextFocusIndex = index + value.length;
+                                      if (nextFocusIndex < 6) {
+                                        _otpFocusNodes[nextFocusIndex].requestFocus();
+                                      } else {
+                                        FocusScope.of(context).unfocus();
+                                      }
+                                      setState(() {});
+                                      return;
+                                    }
+
                                     if (value.isNotEmpty && index < 5) {
                                       _otpFocusNodes[index + 1].requestFocus();
                                     } else if (value.isEmpty && index > 0) {
                                       _otpFocusNodes[index - 1].requestFocus();
+                                    } else if (value.isNotEmpty && index == 5 && _isOtpComplete) {
+                                      FocusScope.of(context).unfocus();
                                     }
                                     setState(() {}); // Update button state
                                   },

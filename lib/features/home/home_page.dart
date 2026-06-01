@@ -472,7 +472,9 @@ class _HomePageState extends State<HomePage> {
                                   imageUrl:
                                       category.image ??
                                       AppConstants.kDefaultProductImage,
-                                  label: category.getLocalizedName(context.watch<LanguageProvider>().locale),
+                                  label: category.getLocalizedName(
+                                    context.watch<LanguageProvider>().locale,
+                                  ),
                                   onTap: () {
                                     // Set selected category and navigate
                                     controller.selectCategory(category.name);
@@ -1155,112 +1157,111 @@ class _BannerSlide extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                    // ── Tags row ─────────────────────────────
-                    if ((slide.tag != null && slide.tag!.isNotEmpty) ||
-                        (slide.type != null && slide.type!.isNotEmpty)) ...[
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: [
-                          if (slide.tag != null && slide.tag!.isNotEmpty)
-                            _buildPillTag(slide.tag!, AppColors.accent),
-                          if (slide.type != null && slide.type!.isNotEmpty)
-                            _buildPillTag(
-                              slide.type!,
-                              Colors.white.withOpacity(0.15),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                    ],
+                  // ── Tags row ─────────────────────────────
+                  if ((slide.tag != null && slide.tag!.isNotEmpty) ||
+                      (slide.type != null && slide.type!.isNotEmpty)) ...[
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        if (slide.tag != null && slide.tag!.isNotEmpty)
+                          _buildPillTag(slide.tag!, AppColors.accent),
+                        if (slide.type != null && slide.type!.isNotEmpty)
+                          _buildPillTag(
+                            slide.type!,
+                            Colors.white.withOpacity(0.15),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                  ],
 
-                    // ── Headline ─────────────────────────────
-                    if (slide.title != null)
-                      Flexible(
-                        child: _buildStyledText(
-                          context,
-                          slide.title!,
-                          GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            height: 1.1,
-                            letterSpacing: -0.2,
+                  // ── Headline ─────────────────────────────
+                  if (slide.title != null)
+                    Flexible(
+                      child: _buildStyledText(
+                        context,
+                        slide.title!,
+                        GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                          letterSpacing: -0.2,
+                        ),
+                        maxLines: 2,
+                      ),
+                    ),
+                  const SizedBox(height: 4),
+
+                  // ── Subtitle ─────────────────────────────
+                  if (slide.subtitle != null)
+                    Flexible(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.7,
+                        child: Text(
+                          slide.subtitle!,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 12, // Slightly smaller for better fit
+                            height: 1.3,
                           ),
                           maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    const SizedBox(height: 4),
+                    ),
+                  const SizedBox(height: 12),
 
-                    // ── Subtitle ─────────────────────────────
-                    if (slide.subtitle != null)
-                      Flexible(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          child: Text(
-                            slide.subtitle!,
+                  // ── CTA Button ───────────────────────────
+                  if (slide.ctaText != null)
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigate to Products tab in HomeShell
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/home',
+                          arguments: {'index': 1},
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.actionBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        minimumSize: const Size(
+                          0,
+                          36,
+                        ), // Ensure it stays compact
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            slide.ctaText!,
                             style: GoogleFonts.outfit(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 12, // Slightly smaller for better fit
-                              height: 1.3,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.chevron_right, size: 14),
+                        ],
                       ),
-                    const SizedBox(height: 12),
-
-                    // ── CTA Button ───────────────────────────
-                    if (slide.ctaText != null)
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate to Products tab in HomeShell
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/home',
-                            arguments: {'index': 1},
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.actionBlue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          minimumSize: const Size(
-                            0,
-                            36,
-                          ), // Ensure it stays compact
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              slide.ctaText!,
-                              style: GoogleFonts.outfit(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.chevron_right, size: 14),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-          )],
-            )
-          
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
-      );
-  
+      ),
+    );
   }
 
   Widget _buildPillTag(String text, Color color) {
@@ -1414,13 +1415,15 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
 
   Future<void> _initializePlayer() async {
     try {
-      _videoPlayerController = VideoPlayerController.asset('assets/gif/animation.gif.mp4');
+      _videoPlayerController = VideoPlayerController.asset(
+        'assets/gif/animation.gif.mp4',
+      );
       await _videoPlayerController!.initialize();
-      
+
       _videoPlayerController!.setLooping(true);
       _videoPlayerController!.setVolume(0.0);
       _videoPlayerController!.play();
-      
+
       if (mounted) setState(() {});
     } catch (e) {
       debugPrint("Video Initialization Error: $e");
@@ -1460,7 +1463,8 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
           fit: StackFit.expand,
           children: [
             // Background Layer
-            if (_videoPlayerController != null && _videoPlayerController!.value.isInitialized)
+            if (_videoPlayerController != null &&
+                _videoPlayerController!.value.isInitialized)
               SizedBox.expand(
                 child: FittedBox(
                   fit: BoxFit.cover,
@@ -1472,7 +1476,9 @@ class _FeaturedRecipeState extends State<_FeaturedRecipe> {
                 ),
               )
             else if (!_hasError)
-              const Center(child: CircularProgressIndicator(color: Colors.white24))
+              const Center(
+                child: CircularProgressIndicator(color: Colors.white24),
+              )
             else
               Container(
                 decoration: BoxDecoration(

@@ -761,50 +761,57 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: theme.cardColor,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: theme.dividerColor,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          _QtyButton(
-                                            icon: Icons.remove,
-                                            onTap: _quantity > 1
-                                                ? () => setState(
-                                                    () => _quantity--,
-                                                  )
-                                                : null,
-                                            theme: theme,
+                                    // Directionality.ltr prevents RTL from
+                                    // reversing the minus→value→plus order
+                                    // in Arabic mode. All tap callbacks and
+                                    // styling remain completely unchanged.
+                                    Directionality(
+                                      textDirection: TextDirection.ltr,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: theme.cardColor,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: theme.dividerColor,
                                           ),
-                                          SizedBox(
-                                            width: 38,
-                                            child: Text(
-                                              '$_quantity',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                color:
-                                                    theme.colorScheme.onSurface,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            _QtyButton(
+                                              icon: Icons.remove,
+                                              onTap: _quantity > 1
+                                                  ? () => setState(
+                                                      () => _quantity--,
+                                                    )
+                                                  : null,
+                                              theme: theme,
+                                            ),
+                                            SizedBox(
+                                              width: 38,
+                                              child: Text(
+                                                '$_quantity',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color:
+                                                      theme.colorScheme.onSurface,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          _QtyButton(
-                                            icon: Icons.add,
-                                            onTap:
-                                                _quantity < widget.product.stock
-                                                ? () => setState(
-                                                    () => _quantity++,
-                                                  )
-                                                : null,
-                                            theme: theme,
-                                            isPrimary: true,
-                                          ),
-                                        ],
+                                            _QtyButton(
+                                              icon: Icons.add,
+                                              onTap:
+                                                  _quantity < widget.product.stock
+                                                  ? () => setState(
+                                                      () => _quantity++,
+                                                    )
+                                                  : null,
+                                              theme: theme,
+                                              isPrimary: true,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     if (widget.product.stock > 0 &&

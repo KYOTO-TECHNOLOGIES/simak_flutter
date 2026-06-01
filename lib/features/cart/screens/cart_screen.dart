@@ -586,65 +586,70 @@ class _CartScreenState extends State<CartScreen> {
     );
     final displayQuantity = controller.getItemQuantity(item);
 
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildMiniBtn(
-            icon: Icons.remove,
-            onTap: () => controller.updateQuantity(
-              item.product.id,
-              displayQuantity - 1,
-              preparationSpecificationId: item.preparationSpecificationId,
-              cartItemId: item.id,
-            ),
-            isDisabled: displayQuantity <= 1 || isUpdating,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: isUpdating
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(
-                    '$displayQuantity',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-          ),
-          _buildMiniBtn(
-            icon: Icons.add,
-            onTap: () {
-              if (displayQuantity >= item.product.stock) {
-                SimakFeedback.showInfo(
-                  context,
-                  "That's our full catch! Only ${item.product.stock} fresh from Simak.",
-                );
-                return;
-              }
-              controller.updateQuantity(
+    // Directionality.ltr prevents RTL from reversing the minus→value→plus
+    // order in Arabic mode. All callbacks and styling remain unchanged.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildMiniBtn(
+              icon: Icons.remove,
+              onTap: () => controller.updateQuantity(
                 item.product.id,
-                displayQuantity + 1,
+                displayQuantity - 1,
                 preparationSpecificationId: item.preparationSpecificationId,
                 cartItemId: item.id,
-              );
-            },
-            isDisabled:
-                item.product.stock == 0 ||
-                !item.product.isAvailable ||
-                isUpdating,
-          ),
-        ],
+              ),
+              isDisabled: displayQuantity <= 1 || isUpdating,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: isUpdating
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      '$displayQuantity',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+            ),
+            _buildMiniBtn(
+              icon: Icons.add,
+              onTap: () {
+                if (displayQuantity >= item.product.stock) {
+                  SimakFeedback.showInfo(
+                    context,
+                    "That's our full catch! Only ${item.product.stock} fresh from Simak.",
+                  );
+                  return;
+                }
+                controller.updateQuantity(
+                  item.product.id,
+                  displayQuantity + 1,
+                  preparationSpecificationId: item.preparationSpecificationId,
+                  cartItemId: item.id,
+                );
+              },
+              isDisabled:
+                  item.product.stock == 0 ||
+                  !item.product.isAvailable ||
+                  isUpdating,
+            ),
+          ],
+        ),
       ),
     );
   }

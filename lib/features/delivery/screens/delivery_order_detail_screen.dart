@@ -724,7 +724,11 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                item.unit != null && item.unit!.isNotEmpty ? '${item.quantity} ${item.unit}' : 'QTY ${item.quantity}',
+                item.unit != null && item.unit!.isNotEmpty 
+                    ? (item.unit!.toLowerCase().endsWith('g') && !item.unit!.toLowerCase().endsWith('kg')
+                        ? '${item.quantity} × ${item.unit}'
+                        : '${item.quantity} ${item.unit}')
+                    : 'QTY ${item.quantity}',
                 style: GoogleFonts.outfit(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
@@ -843,28 +847,26 @@ class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
               ),
             ],
           ),
-          if (instructionsText.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Text(
-              'PREPARATION INSTRUCTIONS',
-              style: GoogleFonts.outfit(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: const Color.fromARGB(255, 156, 154, 154),
-                letterSpacing: 1.5,
-              ),
+          const SizedBox(height: 20),
+          Text(
+            'SPECIFIC INSTRUCTIONS',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: const Color.fromARGB(255, 156, 154, 154),
+              letterSpacing: 1.5,
             ),
-            const SizedBox(height: 8),
-            Text(
-              instructionsText,
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF2D3436),
-                height: 1.4,
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            instructionsText.isEmpty ? 'NO' : instructionsText,
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: instructionsText.isEmpty ? const Color(0xFFE67E22) : const Color(0xFF2D3436),
+              height: 1.4,
             ),
-          ],
+          ),
         ],
       ),
     );
