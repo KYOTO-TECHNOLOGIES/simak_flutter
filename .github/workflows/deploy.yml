@@ -34,11 +34,9 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-key.jks
 
       - name: Build AAB
-        run: |
-          flutter build appbundle --release \
-            --dart-define=SOME_ENV=${{ secrets.SOME_ENV }}
+        run: flutter build appbundle --release
         env:
-          KEYSTORE_PATH: my-key.jks
+          KEYSTORE_PATH: android/app/my-key.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
