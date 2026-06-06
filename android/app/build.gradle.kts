@@ -49,13 +49,13 @@ android {
         }
     }
     signingConfigs {
-    create("release") {
-        keyAlias = keystoreProperties["keyAlias"] as String
-        keyPassword = keystoreProperties["keyPassword"] as String
-        storeFile = file(keystoreProperties["storeFile"] as String)
-        storePassword = keystoreProperties["storePassword"] as String
+    release {
+        keyAlias System.getenv("KEY_ALIAS") ?: ""
+        keyPassword System.getenv("KEY_PASSWORD") ?: ""
+        storeFile file("my-key.jks")
+        storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
     }
-    }
+}
 
 
    buildTypes {
