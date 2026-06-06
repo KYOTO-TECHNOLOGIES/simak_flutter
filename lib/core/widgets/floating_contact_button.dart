@@ -41,14 +41,14 @@ class _FloatingContactButtonState extends State<FloatingContactButton>
       label: 'Instagram',
       color: Color(0xFFE1306C),
       shadowColor: Color(0xFFE1306C),
-      url: 'https://instagram.com',
+      url: 'https://www.instagram.com/simakfresh.ae?igsh=N2Q1bGx3MnJuNnNm',
       iconType: _IconType.instagram,
     ),
     _SocialData(
       label: 'Facebook',
       color: Color(0xFF1877F2),
       shadowColor: Color(0xFF1877F2),
-      url: 'https://facebook.com',
+      url: 'https://www.facebook.com/share/17QH8QPSrF/',
       iconType: _IconType.facebook,
     ),
 
@@ -56,14 +56,14 @@ class _FloatingContactButtonState extends State<FloatingContactButton>
       label: 'TikTok',
       color: Color(0xFF010101),
       shadowColor: Color(0xFF69C9D0),
-      url: 'https://tiktok.com',
+      url: 'https://www.tiktok.com/@simakfresh',
       iconType: _IconType.tiktok,
     ),
     _SocialData(
       label: 'Snapchat',
       color: Color(0xFFFFFC00),
       shadowColor: Color(0xFFFFFC00),
-      url: 'https://snapchat.com',
+      url: 'https://www.snapchat.com/add/simakfresh?share_id=7L3RKPWGMbQ&locale=en-GB',
       iconType: _IconType.snapchat,
     ),
     _SocialData(
