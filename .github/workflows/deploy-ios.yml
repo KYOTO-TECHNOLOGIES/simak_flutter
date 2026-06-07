@@ -68,6 +68,7 @@ jobs:
 
       - name: Build IPA
         run: |
+          flutter config --no-enable-swift-package-manager
           flutter build ipa --release \
             --export-options-plist=ios/ExportOptions.plist
 
