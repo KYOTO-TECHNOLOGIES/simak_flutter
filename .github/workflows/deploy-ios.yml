@@ -68,7 +68,23 @@ jobs:
           echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+      - name: Debug - Show Run Script error
+        run: |
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="Simak App Store Profile" \
+            DEVELOPMENT_TEAM=2X84JN9FPS \
+            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
+            PODS_CODE_SIGN_STYLE=Automatic \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            archive 2>&1 | grep -A 20 "error:"
 
+            
       - name: Build IPA
         run: |
           cd ios
