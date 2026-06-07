@@ -68,6 +68,25 @@ jobs:
         run: |
           /usr/libexec/PlistBuddy -c "Set :objects:13B07F941A680F5B00A75B9A:attributes:TargetAttributes:13B07F951A680F5B00A75B9A:DevelopmentTeam 2X84JN9FPS" ios/Runner.xcodeproj/project.pbxproj || true
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintVerification -bool YES
+      - name: Force manual signing in Xcode project
+        run: |
+          cd ios
+          # Disable automatic signing
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' Runner.xcodeproj/project.pbxproj
+          # Set team ID
+          sed -i '' 's/DEVELOPMENT_TEAM = ""/DEVELOPMENT_TEAM = 2X84JN9FPS/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = 2X84JN9FPS;/g' Runner.xcodeproj/project.pbxproj
+          # Set provisioning profile
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ""/PROVISIONING_PROFILE_SPECIFIER = "Simak App Store Profile"/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ;/PROVISIONING_PROFILE_SPECIFIER = "Simak App Store Profile";/g' Runner.xcodeproj/project.pbxproj
+          # Set certificate
+          sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer"/CODE_SIGN_IDENTITY = "Apple Distribution"/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_IDENTITY = ""/CODE_SIGN_IDENTITY = "Apple Distribution"/g' Runner.xcodeproj/project.pbxproj
+          
+          # Verify changes
+          grep -n "CODE_SIGN_STYLE" Runner.xcodeproj/project.pbxproj
+          grep -n "DEVELOPMENT_TEAM" Runner.xcodeproj/project.pbxproj
+          grep -n "PROVISIONING_PROFILE_SPECIFIER" Runner.xcodeproj/project.pbxproj
 
       - name: Build IPA
         run: |
