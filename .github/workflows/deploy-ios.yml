@@ -48,10 +48,6 @@ jobs:
           pod install
         timeout-minutes: 15
 
-      - name: Build Dart (no codesign)
-        run: |
-          flutter build ios --release --no-codesign
-
       - name: Install Apple Certificate
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
