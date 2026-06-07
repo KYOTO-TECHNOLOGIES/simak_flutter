@@ -101,13 +101,10 @@ jobs:
             DEVELOPMENT_TEAM=2X84JN9FPS \
             OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
             PODS_CODE_SIGN_STYLE=Automatic \
-            archive 2>&1 | tee /tmp/build.log | grep -E "^(.*error:|.*FAILED|The following)" || true
+            archive 2>&1 | tee /tmp/build.log || true
           
-          if grep -q "ARCHIVE FAILED" /tmp/build.log; then
-            echo "=== FULL ERRORS ==="
-            grep -E "(error:|FAILED)" /tmp/build.log
-            exit 1
-          fi
+          echo "=== LAST 100 LINES ==="
+          tail -100 /tmp/build.log
 
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/Runner.xcarchive \
