@@ -21,7 +21,9 @@ jobs:
           channel: 'stable'
 
       - name: Get dependencies
-        run: flutter pub get
+        run: |
+          flutter config --no-enable-swift-package-manager
+          flutter pub get
 
       - name: Install Apple Certificate
         env:
@@ -47,10 +49,11 @@ jobs:
           security set-key-partition-list \
             -S apple-tool:,apple:,codesign:,productbuild: \
             -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH login.keychain
+          security list-keychain -d user -s \
+            $KEYCHAIN_PATH \
+            "$HOME/Library/Keychains/login.keychain-db"
 
-          # Verify certificate is imported
-          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          security find-identity -v -p codesigning
 
       - name: Install Provisioning Profile
         env:
@@ -68,7 +71,6 @@ jobs:
 
       - name: Build IPA
         run: |
-          flutter config --no-enable-swift-package-manager
           flutter build ipa --release \
             --export-options-plist=ios/ExportOptions.plist
 
