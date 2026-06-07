@@ -122,10 +122,10 @@ jobs:
           
           mkdir -p ~/.appstoreconnect/private_keys
           cp $API_KEY_PATH ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-          
+
           xcrun altool --upload-app \
             --type ios \
             --file "$RUNNER_TEMP/ipa/Simak Fresh.ipa" \
             --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
-            --verbose
+            --show-progress
