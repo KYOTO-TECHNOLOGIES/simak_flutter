@@ -21,20 +21,44 @@ jobs:
           channel: 'stable'
 
       - name: Get dependencies
-        run: flutter pub get
-
-      - name: Install Apple Certificate & Profile
-        uses: apple-actions/import-codesign-assets@v1
-        with:
-          p12-file-base64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-          p12-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          provisioning-profile-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          multi-profile: false
-
-      - name: Build IPA
         run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist
+          flutter config --no-enable-swift-package-manager
+          flutter pub get
+
+      - name: Pod install
+        run: |
+          cd ios
+          pod install
+
+      - name: Install Apple Certificate
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/distribution.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD="temp1234"
+
+          echo -n "$IOS_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH \
+            -P "$IOS_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k $KEYCHAIN_PATH \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security \
+            -T /usr/bin/productbuild
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign:,productbuild: \
+            -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s \
+            $KEYCHAIN_PATH \
+            "$HOME/Library/Keychains/login.keychain-db"
+
+          security find-identity -v -p codesigning
 
       - name: Install Provisioning Profile
         env:
@@ -43,12 +67,28 @@ jobs:
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
           echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
 
       - name: Build IPA
         run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="Simak App Store Profile" \
+            DEVELOPMENT_TEAM=2X84JN9FPS \
+            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
+            PODS_CODE_SIGN_STYLE=Automatic \
+            archive
+
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            -exportOptionsPlist ../ios/ExportOptions.plist \
+            -exportPath $RUNNER_TEMP/ipa
 
       - name: Upload to App Store Connect
         env:
@@ -60,7 +100,7 @@ jobs:
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
           xcrun altool --upload-app \
             --type ios \
-            --file build/ios/ipa/*.ipa \
+            --file $RUNNER_TEMP/ipa/*.ipa \
             --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
             --private-key-path $API_KEY_PATH
