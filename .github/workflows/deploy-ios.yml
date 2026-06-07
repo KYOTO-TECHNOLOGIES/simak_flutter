@@ -71,18 +71,17 @@ jobs:
       - name: Force manual signing in Xcode project
         run: |
           cd ios
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/DEVELOPMENT_TEAM = ""/DEVELOPMENT_TEAM = 2X84JN9FPS/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = 2X84JN9FPS;/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ""/PROVISIONING_PROFILE_SPECIFIER = "Simak App Store Profile"/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ;/PROVISIONING_PROFILE_SPECIFIER = "Simak App Store Profile";/g' Runner.xcodeproj/project.pbxproj || true
-          grep -n "CODE_SIGN_STYLE" Runner.xcodeproj/project.pbxproj || true
-          grep -n "DEVELOPMENT_TEAM" Runner.xcodeproj/project.pbxproj || true
-          grep -n "PROVISIONING_PROFILE_SPECIFIER" Runner.xcodeproj/project.pbxproj || true
+          # Change CODE_SIGN_STYLE from Automatic to Manual
+          sed -i '' 's|<string>Automatic</string>|<string>Manual</string>|g' Runner.xcodeproj/project.pbxproj
+          
+          # Add DEVELOPMENT_TEAM after CODE_SIGN_STYLE key
+          sed -i '' 's|<key>CODE_SIGN_STYLE</key>|<key>CODE_SIGN_IDENTITY</key>\
+          <string>Apple Distribution</string>\
+          <key>CODE_SIGN_STYLE</key>|g' Runner.xcodeproj/project.pbxproj
 
-      - name: Debug project.pbxproj
-        run: |
-          sed -n '305,385p' ios/Runner.xcodeproj/project.pbxproj
+          # Verify
+          grep -n "CODE_SIGN_STYLE" Runner.xcodeproj/project.pbxproj
+          grep -n "CODE_SIGN_IDENTITY" Runner.xcodeproj/project.pbxproj
 
 
       - name: Build IPA
