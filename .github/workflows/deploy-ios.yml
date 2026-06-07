@@ -88,6 +88,12 @@ jobs:
           grep -n "DEVELOPMENT_TEAM" Runner.xcodeproj/project.pbxproj
           grep -n "PROVISIONING_PROFILE_SPECIFIER" Runner.xcodeproj/project.pbxproj
 
+
+      - name: Debug project.pbxproj
+        run: |
+          sed -n '305,385p' ios/Runner.xcodeproj/project.pbxproj
+
+
       - name: Build IPA
         run: |
           flutter build ipa --release \
