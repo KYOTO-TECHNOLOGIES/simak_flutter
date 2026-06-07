@@ -24,6 +24,7 @@ jobs:
         run: |
           flutter config --no-enable-swift-package-manager
           flutter pub get
+          flutter build ios --release --no-codesign
 
       - name: Install Apple Certificate
         env:
@@ -64,30 +65,24 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
 
-      - name: Configure Xcode signing
-        run: |
-          /usr/libexec/PlistBuddy -c "Set :objects:13B07F941A680F5B00A75B9A:attributes:TargetAttributes:13B07F951A680F5B00A75B9A:DevelopmentTeam 2X84JN9FPS" ios/Runner.xcodeproj/project.pbxproj || true
-          defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintVerification -bool YES
-      - name: Force manual signing in Xcode project
-        run: |
-          cd ios
-          # Change CODE_SIGN_STYLE from Automatic to Manual
-          sed -i '' 's|<string>Automatic</string>|<string>Manual</string>|g' Runner.xcodeproj/project.pbxproj
-          
-          # Add DEVELOPMENT_TEAM after CODE_SIGN_STYLE key
-          sed -i '' 's|<key>CODE_SIGN_STYLE</key>|<key>CODE_SIGN_IDENTITY</key>\
-          <string>Apple Distribution</string>\
-          <key>CODE_SIGN_STYLE</key>|g' Runner.xcodeproj/project.pbxproj
-
-          # Verify
-          grep -n "CODE_SIGN_STYLE" Runner.xcodeproj/project.pbxproj
-          grep -n "CODE_SIGN_IDENTITY" Runner.xcodeproj/project.pbxproj
-
-
       - name: Build IPA
         run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="Simak App Store Profile" \
+            DEVELOPMENT_TEAM=2X84JN9FPS \
+            archive
+
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            -exportOptionsPlist ../ios/ExportOptions.plist \
+            -exportPath $RUNNER_TEMP/ipa \
+            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db"
 
       - name: Upload to App Store Connect
         env:
@@ -99,7 +94,7 @@ jobs:
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
           xcrun altool --upload-app \
             --type ios \
-            --file build/ios/ipa/*.ipa \
+            --file $RUNNER_TEMP/ipa/*.ipa \
             --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
             --private-key-path $API_KEY_PATH
