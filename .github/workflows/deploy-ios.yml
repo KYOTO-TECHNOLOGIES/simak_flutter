@@ -119,9 +119,13 @@ jobs:
         run: |
           API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
+          
+          # Copy to where altool expects it
+          mkdir -p ~/.appstoreconnect/private_keys
+          cp $API_KEY_PATH ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
+          
           xcrun altool --upload-app \
             --type ios \
-            --file $RUNNER_TEMP/ipa/*.ipa \
+            --file "$RUNNER_TEMP/ipa/Simak Fresh.ipa" \
             --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
-            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
-            --private-key-path $API_KEY_PATH
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
