@@ -36,7 +36,10 @@ jobs:
           security unlock-keychain -p "" $KEYCHAIN_PATH
           security import $CERTIFICATE_PATH -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
-
+      - name: Debug - Check certificates
+        run: |
+          security find-identity -v -p codesigning
+          security list-keychains
       - name: Install Provisioning Profile
         env:
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
