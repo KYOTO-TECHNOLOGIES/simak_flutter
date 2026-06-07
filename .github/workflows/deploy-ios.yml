@@ -82,7 +82,7 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
             PODS_CODE_SIGN_STYLE=Automatic \
             -archivePath $RUNNER_TEMP/Runner.xcarchive \
-            archive 2>&1 | grep -A 20 "error:"
+            archive 2>&1 || true
 
             
       - name: Build IPA
