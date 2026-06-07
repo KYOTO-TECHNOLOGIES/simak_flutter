@@ -27,10 +27,10 @@ jobs:
 
       - name: Set Development Team in Xcode project
         run: |
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 2X84JN9FPS;/g' ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = 2X84JN9FPS;/g' ios/Runner.xcodeproj/project.pbxproj
-          grep "DEVELOPMENT_TEAM" ios/Runner.xcodeproj/project.pbxproj
+          grep -n "DEVELOPMENT_TEAM" ios/Runner.xcodeproj/project.pbxproj || echo "NOT FOUND"
 
+
+          
       - name: Pod install
         run: |
           cd ios
