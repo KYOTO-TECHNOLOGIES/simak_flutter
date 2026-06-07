@@ -27,14 +27,26 @@ jobs:
 
       - name: Set Development Team in Xcode project
         run: |
-          grep -n "DEVELOPMENT_TEAM" ios/Runner.xcodeproj/project.pbxproj || echo "NOT FOUND"
+          python3 -c "
+          import re
+          with open('ios/Runner.xcodeproj/project.pbxproj', 'r') as f:
+              content = f.read()
+          content = re.sub(
+              r'(CODE_SIGN_STYLE = [^;]+;)',
+              r'\1\n\t\t\t\tDEVELOPMENT_TEAM = 2X84JN9FPS;',
+              content
+          )
+          with open('ios/Runner.xcodeproj/project.pbxproj', 'w') as f:
+              f.write(content)
+          print('Done')
+          "
+          grep "DEVELOPMENT_TEAM" ios/Runner.xcodeproj/project.pbxproj
 
-
-          
       - name: Pod install
         run: |
           cd ios
-          pod install --repo-update
+          pod install
+        timeout-minutes: 15
 
       - name: Build Dart (no codesign)
         run: |
