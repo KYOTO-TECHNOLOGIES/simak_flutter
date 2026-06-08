@@ -1,0 +1,119 @@
+[33mbf4430a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Update deploy-ios.yml
+[33mb07e46a[m Merge pull request #2 from KYOTO-TECHNOLOGIES/rizan
+[33mf1930db[m[33m ([m[1;31morigin/rizan[m[33m)[m Create ExportOptions.plist
+[33mff4229e[m Create deploy-ios.yml
+[33mb8ef21c[m Update build.gradle.kts
+[33m6f6a8cf[m Update deploy.yml
+[33mdc9029c[m Update deploy.yml
+[33mcde9884[m Update build.gradle.kts
+[33m5946d68[m Update deploy.yml
+[33m76a8be4[m Update deploy.yml
+[33m0ef9d23[m Merge pull request #1 from KYOTO-TECHNOLOGIES/rizan
+[33m7624ee7[m Merge branch 'main' into rizan
+[33m2afab62[m Update pubspec.yaml
+[33m4a7deb3[m Create deploy.yml
+[33mc14a753[m updated1
+[33m70e001c[m updated
+[33m354f7f3[m updated login
+[33meb0da33[m updated login
+[33m97b7dd3[m updated login
+[33m8e2f528[m updated phone
+[33mcba492a[m updated
+[33md02df07[m updated
+[33m231bbe0[m updated
+[33m037a044[m delivery
+[33mc983e8b[m Merge remote-tracking branch 'origin/deployment-ios'
+[33m249fc89[m update
+[33mb5f8188[m modified info.plist for future lifesaver
+[33m463ba3a[m Again PUblishig skip issue checking
+[33m5b2f77c[m PUblishig skip fixed
+[33mf54a36d[m Submit to testflight now is tru
+[33m73199a1[m project files to target changed in to iOS 15.0
+[33m07279ca[m Manifest target size changed
+[33mcd0073e[m Generating issue fixed
+[33m0346ee8[m Certificate issue fixed
+[33m9fa1447[m again code magic issues
+[33m6fd8027[m some fixed in codemagic.yaml
+[33mb75b2eb[m Changes in codemagic.yaml
+[33ma0655d8[m Google Sing in Commented for ios
+[33m4099c6e[m Key name issue fixed
+[33m9b07c14[m Key name specified
+[33m8caa1c0[m Fix yaml
+[33ma71161b[m Setup iOS publishing
+[33m9db99e2[m Fix codemagic config
+[33m421c0bf[m Add codemagic workflow
+[33m34e5a09[m pubspec
+[33m206daa8[m update5
+[33m64aab4d[m update4
+[33m4a55b18[m update4
+[33m49144f7[m update3
+[33mf937ff1[m update3
+[33m935052a[m update2
+[33mef86abb[m update1
+[33mbbed3e8[m updated
+[33m082cd8f[m updated
+[33m38e353c[m ----
+[33m0c41f17[m some home changes
+[33mcc7c833[m detail
+[33m1e2f9c1[m home
+[33m20dfc38[m logout
+[33m83093e7[m --
+[33m72ccc6e[m --
+[33m82680fc[m --
+[33m04be53b[m updated proceesing
+[33m9ed7c08[m updated detail
+[33mb4d5ad2[m updated detail
+[33ma3e237e[m updated last
+[33m84f689d[m cart
+[33m4c73017[m category
+[33m45585be[m  modified2
+[33mf4166e5[m  modified
+[33mcae1613[m cart logic  and profile modified
+[33m5d185cb[m image
+[33m8dfe6a0[m image
+[33ma1e97dd[m aed in cart
+[33mabd306f[m coupon
+[33md5476a6[m changed
+[33md0ac260[m updated
+[33mf2faa7b[m updated
+[33mfab59a8[m updated the product order page
+[33mbd9033c[m updated the product order page
+[33m3d00d05[m updated the product detail page
+[33mc039b26[m updated the order page
+[33m678b68d[m updated
+[33m9a3dc78[m emirates based data showing
+[33m24f7142[m small changes in home
+[33m47ea3fa[m small changes in home
+[33mcf1eba7[m Referral page edited
+[33m3101d1e[m Changed smaller part in the profile
+[33m65d313d[m Changed smaller portion in cart
+[33m300b965[m Changed the UI and some functionality
+[33m09612a1[m Updated UI, added new features, and modified project files
+[33m20d9dad[m Updated notification permission logic and other changes
+[33m76bd907[m Updated project structure
+[33m04dcee8[m Reorganize project: Move Flutter code to root
+[33m287f42d[m Initial Flutter project upload
+[33m26b6f51[m Merge pull request #4 from midhu-mhmd/feature/footer-update
+[33m8e08ba3[m ui change
+[33m0f3f821[m add product updated
+[33m295ab44[m cart api updated
+[33m42206ed[m Update footer and ignore node_modules
+[33m0c3727c[m Merge pull request #3 from midhu-mhmd/main
+[33m3c78cea[m footer and cart fix
+[33m36aca1c[m Merge pull request #2 from midhu-mhmd/main
+[33md5b35cf[m Delete vite.config.ts
+[33m5ef777e[m Delete tsconfig.node.json
+[33ma57000b[m Delete tsconfig.json
+[33m6fba980[m Delete tsconfig.app.json
+[33mab192f3[m Delete package.json
+[33ma781fa1[m Delete package-lock.json
+[33m6f3a4df[m Delete index.html
+[33mc7686e5[m Delete eslint.config.js
+[33md01ed15[m Delete README.md
+[33mfe87cec[m Delete .gitignore
+[33m0ee0b00[m Delete src directory
+[33ma357c1d[m Delete public directory
+[33m4bf43af[m some errors fix
+[33m2410f51[m Add existing frontend project files
+[33m6f82b95[m Add existing frontend project files
+[33m2af985c[m Initial commit

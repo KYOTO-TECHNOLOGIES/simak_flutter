@@ -11,6 +11,7 @@ class UserModel {
   final String email;
   final String? phoneNumber;
   final String? role;
+  final String? nationality;
   final bool isActive;
   final bool isEmailVerified;
   final bool isPhoneVerified;
@@ -31,6 +32,7 @@ class UserModel {
     required this.email,
     this.phoneNumber,
     this.role,
+    this.nationality,
     this.isActive = true,
     this.isEmailVerified = false,
     this.isPhoneVerified = false,
@@ -53,6 +55,7 @@ class UserModel {
       email: json['email'] as String? ?? '',
       phoneNumber: json['phone_number'] as String?,
       role: json['role'] as String?,
+      nationality: json['nationality'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       isEmailVerified: json['is_email_verified'] as bool? ?? false,
       isPhoneVerified: json['is_phone_verified'] as bool? ?? false,
@@ -84,6 +87,7 @@ class UserModel {
       'email': email,
       'phone_number': phoneNumber,
       'role': role,
+      'nationality': nationality,
       'is_active': isActive,
       'is_email_verified': isEmailVerified,
       'is_phone_verified': isPhoneVerified,
@@ -145,12 +149,6 @@ class UserModel {
             ? (existing.isPhoneVerified || (json['is_phone_verified'] as bool? ?? false)) 
             : existing.isPhoneVerified);
 
-    debugPrint('--- UserModel.merge ---');
-    debugPrint('Existing: ID=${existing.id}, E=${existing.email}(V:${existing.isEmailVerified}), P=${existing.phoneNumber}(V:${existing.isPhoneVerified})');
-    debugPrint('JSON Keys: ${json.keys.toList()}');
-    debugPrint('Calculated Status: emailChanged=$emailChanged, emailVerified=$mergedEmailVerified');
-    debugPrint('Calculated Status: phoneChanged=$phoneChanged, phoneVerified=$mergedPhoneVerified');
-
     return UserModel(
       id: json['id'] as int? ?? existing.id,
       firstName: json['first_name'] as String? ?? existing.firstName,
@@ -159,6 +157,7 @@ class UserModel {
       email: newEmail,
       phoneNumber: newPhone,
       role: json['role'] as String? ?? existing.role,
+      nationality: json['nationality'] as String? ?? existing.nationality,
       isActive: json['is_active'] as bool? ?? existing.isActive,
       isEmailVerified: mergedEmailVerified,
       isPhoneVerified: mergedPhoneVerified,
@@ -191,6 +190,7 @@ class UserModel {
     String? email,
     String? phoneNumber,
     String? role,
+    String? nationality,
     bool? isActive,
     bool? isEmailVerified,
     bool? isPhoneVerified,
@@ -211,6 +211,7 @@ class UserModel {
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       role: role ?? this.role,
+      nationality: nationality ?? this.nationality,
       isActive: isActive ?? this.isActive,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
