@@ -555,8 +555,6 @@ class AuthController extends ChangeNotifier {
         if (prePhoneV && !_currentUser!.isPhoneVerified) {
           _currentUser = _currentUser!.copyWith(isPhoneVerified: true);
         }
-
-        debugPrint('Post-Update Merge Local User: E=${_currentUser!.email}(V:${_currentUser!.isEmailVerified}), P=${_currentUser!.phoneNumber}(V:${_currentUser!.isPhoneVerified})');
       } else {
         _currentUser = UserModel.fromJson(responseData);
       }

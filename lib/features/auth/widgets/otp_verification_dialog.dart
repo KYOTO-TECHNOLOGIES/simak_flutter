@@ -61,6 +61,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _viaWhatsApp = false;
+  bool _isVerifying = false; // Guard for auto-verify
 
   late CountryCode _selectedCountry;
 
@@ -190,12 +191,13 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
 
   Future<void> _verifyOtp() async {
     final otp = _otpController.text.trim();
-    if (otp.isEmpty || otp.length < 4) {
-      setState(() => _errorMessage = 'Please enter the OTP');
+    if (otp.isEmpty || otp.length < 6 || _isVerifying) {
+      if (!_isVerifying) setState(() => _errorMessage = 'Please enter the complete 6-digit OTP');
       return;
     }
 
     setState(() {
+      _isVerifying = true;
       _isLoading = true;
       _errorMessage = null;
     });
@@ -234,6 +236,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
     } else {
       setState(() {
         _isLoading = false;
+        _isVerifying = false;
         _errorMessage = auth.errorMessage ?? tr(context, 'otp_verify_failed');
       });
     }
@@ -557,9 +560,18 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   controller: _otpController,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black87,
                   ),
+                  onChanged: (value) {
+                    setState(() => _errorMessage = null);
+                    if (value.length == 6 && !_isVerifying) {
+                      _verifyOtp();
+                    }
+                  },
                   decoration: _inputDecoration(isDark).copyWith(
                     hintText: tr(context, 'enter_otp_hint'),
                     counterText: '',
@@ -620,37 +632,33 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _verifyOtp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00B4DB),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
+                if (_isLoading || _isVerifying)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        children: [
+                          const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
+                              color: Color(0xFF00B4DB),
                               strokeWidth: 2,
                             ),
-                          )
-                        : const Text(
-                            'Verify OTP',
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Verifying...',
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDark ? Colors.white60 : Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
 
                 const SizedBox(height: 12),
                 Center(

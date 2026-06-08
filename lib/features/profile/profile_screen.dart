@@ -349,7 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _selectedDob = null;
     }
     _preferredLanguageCode = user.profile?.preferredLanguage ?? 'en';
-    _selectedNationality = user.profile?.nationality;
+    _selectedNationality = user.nationality;
     setState(() => _isEditing = true);
   }
 
@@ -377,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     profileData['preferred_language'] = _preferredLanguageCode;
     if (_selectedNationality != null) {
-      profileData['nationality'] = _selectedNationality;
+      data['nationality'] = _selectedNationality;
     }
 
     if (profileData.isNotEmpty) {
@@ -392,7 +392,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _isEditing = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tr(context, 'profile_updated')),
+          content: Text(trStatic(context, 'profile_updated')),
           backgroundColor: Colors.green,
         ),
       );
@@ -400,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            auth.errorMessage ?? tr(context, 'profile_update_failed'),
+            auth.errorMessage ?? trStatic(context, 'profile_update_failed'),
           ),
           backgroundColor: Colors.red,
         ),
@@ -1095,7 +1095,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildInfoFieldWithIcon(
                   context,
                   tr(context, 'nationality_label'),
-                  _nationalityDisplay(profile?.nationality),
+                  _nationalityDisplay(user.nationality),
                   Icons.flag_outlined,
                   theme,
                 ),
@@ -3707,7 +3707,7 @@ class _NationalityPickerSheetState extends State<_NationalityPickerSheet> {
                           ? const Icon(Icons.check, color: AppColors.actionBlue)
                           : null,
                       onTap: () {
-                        widget.onSelected(item.key);
+                        widget.onSelected(item.value);
                         Navigator.pop(context);
                       },
                     );
