@@ -23,6 +23,7 @@ class _OtpScreenState extends State<OtpScreen> {
   Timer? _timer;
   int _secondsRemaining = 120; // 2 minutes = 120 seconds
   String? _identifier;
+  bool _isVerifying = false; // Guard to prevent duplicate auto-verify calls
 
   @override
   void initState() {
@@ -140,15 +141,19 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _verifyOtp() async {
-    if (!_isOtpComplete || _identifier == null) return;
+    if (!_isOtpComplete || _identifier == null || _isVerifying) return;
+
+    setState(() => _isVerifying = true);
 
     final otp = _otpControllers.map((c) => c.text).join();
     final auth = context.read<AuthController>();
     final success = await auth.verifyOtp(identifier: _identifier!, otp: otp);
 
     if (success && mounted) {
-      final auth = context.read<AuthController>();
       auth.handleAuthNavigation(context);
+    } else if (mounted) {
+      // Reset so user can re-enter OTP and auto-verify triggers again
+      setState(() => _isVerifying = false);
     }
   }
 
@@ -388,6 +393,8 @@ class _OtpScreenState extends State<OtpScreen> {
                                         FocusScope.of(context).unfocus();
                                       }
                                       setState(() {});
+                                      // Auto-verify after paste
+                                      if (_isOtpComplete) _verifyOtp();
                                       return;
                                     }
 
@@ -395,10 +402,12 @@ class _OtpScreenState extends State<OtpScreen> {
                                       _otpFocusNodes[index + 1].requestFocus();
                                     } else if (value.isEmpty && index > 0) {
                                       _otpFocusNodes[index - 1].requestFocus();
-                                    } else if (value.isNotEmpty && index == 5 && _isOtpComplete) {
+                                    } else if (value.isNotEmpty && index == 5) {
                                       FocusScope.of(context).unfocus();
                                     }
-                                    setState(() {}); // Update button state
+                                    setState(() {});
+                                    // Auto-verify when all digits entered
+                                    if (_isOtpComplete) _verifyOtp();
                                   },
                                 ),
                               );
@@ -426,44 +435,32 @@ class _OtpScreenState extends State<OtpScreen> {
                             },
                           ),
 
-                          // Verify Button
+                          // Loading indicator during auto-verification
                           Consumer<AuthController>(
                             builder: (context, auth, _) {
-                              return SizedBox(
-                                height: 54,
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: (_isOtpComplete && !auth.isLoading)
-                                      ? _verifyOtp
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.actionBlue,
-                                    disabledBackgroundColor: AppColors
-                                        .actionBlue
-                                        .withOpacity(0.3),
-                                    foregroundColor: AppColors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                              if (!auth.isLoading && !_isVerifying) {
+                                return const SizedBox.shrink();
+                              }
+                              return Column(
+                                children: [
+                                  const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: AppColors.actionBlue,
                                     ),
                                   ),
-                                  child: auth.isLoading
-                                      ? const SizedBox(
-                                          height: 24,
-                                          width: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                      : Text(
-                                          tr(context, 'verify_login'),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1,
-                                          ),
-                                        ),
-                                ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Verifying...',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               );
                             },
                           ),

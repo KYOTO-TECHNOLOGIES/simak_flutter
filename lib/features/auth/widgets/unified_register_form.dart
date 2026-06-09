@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -339,13 +340,13 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
         const SizedBox(height: 32),
         
         // ─── Auth Options Divider ─────────────────────────────────
-        /* Row(
+        Row(
           children: [
             Expanded(child: Divider(color: theme.dividerColor)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                tr(context, 'or_divider'),
+                tr(context, 'auth_options'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -360,37 +361,48 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
         const SizedBox(height: 24),
 
         // ─── Google Sign In (Website Style) ───────────────────────
-        SizedBox(
-          height: 54,
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: theme.dividerColor),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CustomImage(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
-                  height: 20,
-                  width: 20,
+        Consumer<AuthController>(
+          builder: (context, auth, _) {
+            return SizedBox(
+              height: 54,
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: auth.isLoading ? null : () async {
+                  final success = await auth.signInWithGoogle();
+                  if (success && context.mounted) {
+                    auth.handleAuthNavigation(context);
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: theme.dividerColor),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  tr(context, 'google_sign_in'),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.8),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    letterSpacing: 0.5,
+                child: auth.isLoading && auth.errorMessage == null 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomImage(
+                        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
+                        height: 20,
+                        width: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        tr(context, 'google_sign_in'),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withOpacity(0.8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
-        ), */
+              ),
+            );
+          },
+        ),
       ],
     );
   }
