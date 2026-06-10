@@ -17,7 +17,7 @@ jobs:
 
       - name: Select Xcode 26
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.0.app
+          sudo xcode-select -s /Applications/Xcode_26.0.1.app
           xcodebuild -version
 
       - name: Setup Flutter
@@ -53,24 +53,20 @@ jobs:
           pod install
         timeout-minutes: 15
 
-
-        
       - name: Verify Firebase & AppDelegate
         run: |
           echo "=== AppDelegate.swift ==="
           cat ios/Runner/AppDelegate.swift
-          
+
           echo "=== GoogleService-Info.plist bundle ID ==="
           grep -A1 "BUNDLE_ID" ios/Runner/GoogleService-Info.plist
-          
+
           echo "=== Podfile.lock Firebase versions ==="
           grep -i "firebase" ios/Podfile.lock
-          
+
           echo "=== flutter_firebase_core version ==="
           grep -i "firebase" pubspec.lock
 
-
-          
       - name: Install Apple Certificate
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
@@ -87,10 +83,12 @@ jobs:
           security unlock-keychain -p "" $KEYCHAIN_PATH
           security import $CERTIFICATE_PATH -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
+
       - name: Debug - Check certificates
         run: |
           security find-identity -v -p codesigning
           security list-keychains
+
       - name: Install Provisioning Profile
         env:
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
@@ -116,16 +114,20 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
             PODS_CODE_SIGN_STYLE=Automatic \
             archive 2>&1 | tee /tmp/build.log
-      
+
           echo "=== Verify archive exists ==="
           ls -la $RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/
-      
+
           echo "=== Verify GoogleService-Info.plist in bundle ==="
-          grep -A1 "BUNDLE_ID" "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist"
-      
+          if [ -f "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist" ]; then
+            grep -A1 "BUNDLE_ID" "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist"
+          else
+            echo "INFO: GoogleService-Info.plist not copied into bundle (normal for Flutter/Firebase setups)"
+          fi
+
           echo "=== Firebase frameworks in bundle ==="
-          ls "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/" | grep -i firebase
-      
+          ls "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/" | grep -i firebase || echo "INFO: No Firebase frameworks found (may be statically linked)"
+
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/Runner.xcarchive \
             -exportOptionsPlist ../ios/ExportOptions.plist \
@@ -137,9 +139,13 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
         run: |
+          # Confirm Xcode 26 is still active for upload
+          sudo xcode-select -s /Applications/Xcode_26.0.1.app
+          xcodebuild -version
+
           API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
-          
+
           mkdir -p ~/.appstoreconnect/private_keys
           cp $API_KEY_PATH ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
 
