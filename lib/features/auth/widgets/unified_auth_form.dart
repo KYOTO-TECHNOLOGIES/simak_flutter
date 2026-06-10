@@ -366,10 +366,10 @@ class _UnifiedAuthFormState extends State<UnifiedAuthForm> {
   //             ),
   //           );
   //         },
-  //       ),
-  //     ],
-  //   );
-  // }
+        // ),
+      ],
+    );
+  }
 
   Widget _buildTab(BuildContext context, String titleKey, bool isActive, VoidCallback onTap) {
     final theme = Theme.of(context);

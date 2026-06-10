@@ -41,9 +41,7 @@ class _NameInputDialogState extends State<NameInputDialog> {
       };
       
       if (_selectedNationality != null) {
-        data['profile'] = {
-          'nationality': _selectedNationality,
-        };
+        data['nationality'] = _selectedNationality;
       }
 
       final success = await auth.updateProfile(data);
