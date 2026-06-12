@@ -30,136 +30,134 @@ jobs:
           flutter config --no-enable-swift-package-manager
           flutter pub get
 
+      - name: Bump build number
+        run: |
+          BUILD_NUMBER=$(date +%Y%m%d%H%M)
+          sed -i "s/^version: .*/version: 1.0.7+$BUILD_NUMBER/" pubspec.yaml
+          echo "Version set to:"
+          grep "^version:" pubspec.yaml
+
       - name: Set Development Team in Xcode project
         run: |
           python3 -c "
           import re
           with open('ios/Runner.xcodeproj/project.pbxproj', 'r') as f:
               content = f.read()
-          content = re.sub(
-              r'(CODE_SIGN_STYLE = [^;]+;)',
-              r'\1\n\t\t\t\tDEVELOPMENT_TEAM = 2X84JN9FPS;',
-              content
-          )
+          content = re.sub(r'DEVELOPMENT_TEAM = [^;]+;', 'DEVELOPMENT_TEAM = 2X84JN9FPS;', content)
+          if 'DEVELOPMENT_TEAM' not in content:
+              content = re.sub(
+                  r'(CODE_SIGN_STYLE = [^;]+;)',
+                  r'\1\n\t\t\t\tDEVELOPMENT_TEAM = 2X84JN9FPS;',
+                  content
+              )
           with open('ios/Runner.xcodeproj/project.pbxproj', 'w') as f:
               f.write(content)
           print('Done')
           "
-          grep "DEVELOPMENT_TEAM" ios/Runner.xcodeproj/project.pbxproj
+          grep "DEVELOPMENT_TEAM" ios/Runner.xcodeproj/project.pbxproj | head -3
 
       - name: Pod install
         run: |
           cd ios
           rm -f Podfile.lock
           pod install
-          echo "=== Firebase SDK version ==="
-          grep "Firebase SDK version" Podfile.lock
+          echo "=== Firebase versions installed ==="
+          grep "FirebaseCore\|FirebaseMessaging\|FirebaseInstallations\|FirebaseCoreInternal" Podfile.lock | grep -v "^\s*-" | grep -v "^  "
         timeout-minutes: 15
-      - name: Show exact pod versions
+
+      - name: Verify AppDelegate Firebase guard
         run: |
-          echo "=== Podfile.lock ==="
-          cat ios/Podfile.lock
+          echo "=== AppDelegate.swift ==="
+          cat ios/Runner/AppDelegate.swift
+          echo "=== Checking Firebase guard ==="
+          grep "FirebaseApp.app()" ios/Runner/AppDelegate.swift && echo "✅ Guard present" || (echo "❌ Guard MISSING - add if FirebaseApp.app() == nil check" && exit 1)
+          echo "=== GoogleService-Info.plist BUNDLE_ID ==="
+          grep -A1 "BUNDLE_ID" ios/Runner/GoogleService-Info.plist
 
-          
-      # - name: Verify Firebase & AppDelegate
-      #   run: |
-      #     echo "=== AppDelegate.swift ==="
-      #     cat ios/Runner/AppDelegate.swift
+      - name: Install Apple Certificate
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/distribution.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD="temp1234"
 
-      #     echo "=== GoogleService-Info.plist bundle ID ==="
-      #     grep -A1 "BUNDLE_ID" ios/Runner/GoogleService-Info.plist
+          echo -n "$IOS_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          echo "=== Installed certificates ==="
+          security find-identity -v -p codesigning
 
-      #     echo "=== Podfile.lock Firebase versions ==="
-      #     grep -i "firebase" ios/Podfile.lock
+      - name: Install Provisioning Profile
+        env:
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          PP_PATH=$RUNNER_TEMP/profile.mobileprovision
+          echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          echo "✅ Provisioning profile installed"
 
-      #     echo "=== flutter_firebase_core version ==="
-      #     grep -i "firebase" pubspec.lock
+      - name: Build IPA
+        run: |
+          set -o pipefail
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="Simak App Store Profile" \
+            DEVELOPMENT_TEAM=2X84JN9FPS \
+            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
+            PODS_CODE_SIGN_STYLE=Automatic \
+            archive 2>&1 | tee /tmp/build.log
 
-      # - name: Install Apple Certificate
-      #   env:
-      #     IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-      #     IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-      #   run: |
-      #     CERTIFICATE_PATH=$RUNNER_TEMP/distribution.p12
-      #     KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-      #     KEYCHAIN_PASSWORD="temp1234"
+          echo "=== Verify archive exists ==="
+          ls -la $RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/
 
-      #     echo -n "$IOS_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo "=== Verify GoogleService-Info.plist in bundle ==="
+          if [ -f "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist" ]; then
+            grep -A1 "BUNDLE_ID" "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist"
+          else
+            echo "INFO: GoogleService-Info.plist not in bundle root (normal for Flutter/Firebase)"
+          fi
 
-      #     security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-      #     security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-      #     security unlock-keychain -p "" $KEYCHAIN_PATH
-      #     security import $CERTIFICATE_PATH -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-      #     security list-keychain -d user -s $KEYCHAIN_PATH
+          echo "=== Firebase frameworks in bundle ==="
+          ls "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/" | grep -i firebase || echo "INFO: No Firebase frameworks (statically linked)"
 
-      # - name: Debug - Check certificates
-      #   run: |
-      #     security find-identity -v -p codesigning
-      #     security list-keychains
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/Runner.xcarchive \
+            -exportOptionsPlist ../ios/ExportOptions.plist \
+            -exportPath $RUNNER_TEMP/ipa
 
-      # - name: Install Provisioning Profile
-      #   env:
-      #     IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-      #   run: |
-      #     PP_PATH=$RUNNER_TEMP/profile.mobileprovision
-      #     echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
-      #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-      #     cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          echo "=== IPA created ==="
+          ls -lh "$RUNNER_TEMP/ipa/"
 
-      # - name: Build IPA
-      #   run: |
-      #     set -o pipefail
-      #     cd ios
-      #     xcodebuild -workspace Runner.xcworkspace \
-      #       -scheme Runner \
-      #       -configuration Release \
-      #       -archivePath $RUNNER_TEMP/Runner.xcarchive \
-      #       -destination "generic/platform=iOS" \
-      #       CODE_SIGN_STYLE=Manual \
-      #       CODE_SIGN_IDENTITY="Apple Distribution" \
-      #       PROVISIONING_PROFILE_SPECIFIER="Simak App Store Profile" \
-      #       DEVELOPMENT_TEAM=2X84JN9FPS \
-      #       OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
-      #       PODS_CODE_SIGN_STYLE=Automatic \
-      #       archive 2>&1 | tee /tmp/build.log
+      - name: Upload to App Store Connect
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.0.1.app
 
-      #     echo "=== Verify archive exists ==="
-      #     ls -la $RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/
+          API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8
+          echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
 
-      #     echo "=== Verify GoogleService-Info.plist in bundle ==="
-      #     if [ -f "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist" ]; then
-      #       grep -A1 "BUNDLE_ID" "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist"
-      #     else
-      #       echo "INFO: GoogleService-Info.plist not copied into bundle (normal for Flutter/Firebase setups)"
-      #     fi
+          mkdir -p ~/.appstoreconnect/private_keys
+          cp $API_KEY_PATH ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
 
-      #     echo "=== Firebase frameworks in bundle ==="
-      #     ls "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/" | grep -i firebase || echo "INFO: No Firebase frameworks found (may be statically linked)"
-
-      #     xcodebuild -exportArchive \
-      #       -archivePath $RUNNER_TEMP/Runner.xcarchive \
-      #       -exportOptionsPlist ../ios/ExportOptions.plist \
-      #       -exportPath $RUNNER_TEMP/ipa
-
-      # - name: Upload to App Store Connect
-      #   env:
-      #     APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-      #     APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-      #     APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
-      #   run: |
-      #     # Confirm Xcode 26 is still active for upload
-      #     sudo xcode-select -s /Applications/Xcode_26.0.1.app
-      #     xcodebuild -version
-
-      #     API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8
-      #     echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
-
-      #     mkdir -p ~/.appstoreconnect/private_keys
-      #     cp $API_KEY_PATH ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-
-      #     xcrun altool --upload-app \
-      #       --type ios \
-      #       --file "$RUNNER_TEMP/ipa/Simak Fresh.ipa" \
-      #       --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
-      #       --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
-      #       --show-progress
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$RUNNER_TEMP/ipa/Simak Fresh.ipa" \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --show-progress \
+            --verbose
