@@ -66,6 +66,7 @@ jobs:
           grep "FirebaseMessaging" Podfile.lock | head -3 || true
           grep "FirebaseInstallations" Podfile.lock | head -3 || true
         timeout-minutes: 15
+        
       - name: Debug Firebase Configuration
         run: |
           echo "=============================="
@@ -142,7 +143,7 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
           echo "✅ Provisioning profile installed"
 
-       - name: Build IPA
+      - name: Build IPA
         run: |
           set -o pipefail
 
