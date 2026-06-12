@@ -30,12 +30,12 @@ jobs:
           flutter config --no-enable-swift-package-manager
           flutter pub get
 
-      - name: Bump build number
-        run: |
-          BUILD_NUMBER=$(date +%Y%m%d%H%M)
-          sed -i "s/^version: .*/version: 1.0.7+$BUILD_NUMBER/" pubspec.yaml
-          echo "Version set to:"
-          grep "^version:" pubspec.yaml
+      # - name: Bump build number
+      #   run: |
+      #     BUILD_NUMBER=$(date +%Y%m%d%H%M)
+      #     sed -i "s/^version: .*/version: 1.0.7+$BUILD_NUMBER/" pubspec.yaml
+      #     echo "Version set to:"
+      #     grep "^version:" pubspec.yaml
 
       - name: Set Development Team in Xcode project
         run: |
