@@ -3,7 +3,7 @@ name: Deploy iOS to App Store
 on:
   push:
     branches:
-      - deployiosrizan-cicdios
+      - deployiosrizan-cicdios-rm
 
 jobs:
   deploy:
@@ -62,7 +62,9 @@ jobs:
           rm -f Podfile.lock
           pod install
           echo "=== Firebase versions installed ==="
-          grep "FirebaseCore\|FirebaseMessaging\|FirebaseInstallations\|FirebaseCoreInternal" Podfile.lock | grep -v "^\s*-" | grep -v "^  "
+          grep "FirebaseCore" Podfile.lock | head -5 || true
+          grep "FirebaseMessaging" Podfile.lock | head -3 || true
+          grep "FirebaseInstallations" Podfile.lock | head -3 || true
         timeout-minutes: 15
 
       - name: Verify AppDelegate Firebase guard
