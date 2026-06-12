@@ -62,14 +62,12 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // Start intro scale and fade-in immediately
     _introController.forward().then((_) {
       if (mounted) {
         _mainFadeController.forward();
       }
     });
 
-    // Start floating immediately
     _logoFloatController.repeat(reverse: true);
 
     _checkInitialization();
@@ -143,7 +141,6 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // ─── Floating & Scaling Logo ───────────────────
                     Transform.translate(
                       offset: Offset(0, floatOffset),
                       child: Transform.scale(
@@ -159,17 +156,14 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const SizedBox(height: 24),
 
-                    // ─── Animated Language Text ─────────────────────
                     _LanguageAnimator(onComplete: _onAnimationComplete),
 
                     const SizedBox(height: 20),
 
-                    // ─── Wave Divider ──────────────────────────────
                     const _WaveDivider(),
 
                     const SizedBox(height: 12),
 
-                    // ─── Bouncing Creatures ────────────────────────
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -205,7 +199,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ─── Language Animator ──────────────────────────────────────────────
 class _LanguageAnimator extends StatefulWidget {
   final VoidCallback onComplete;
 
@@ -230,20 +223,16 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
   }
 
   void _startSequence() async {
-    // English is shown first. Keep it visible for enough time.
     await Future.delayed(const Duration(milliseconds: 700));
 
-    // Transition to Arabic
     if (!mounted) return;
     setState(() => _currentIndex = 1);
     await Future.delayed(const Duration(milliseconds: 600));
 
-    // Transition to Chinese
     if (!mounted) return;
     setState(() => _currentIndex = 2);
     await Future.delayed(const Duration(milliseconds: 600));
 
-    // Final pause before transition completion
     await Future.delayed(const Duration(milliseconds: 100));
     if (mounted) widget.onComplete();
   }
@@ -259,7 +248,7 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
           alignment: Alignment.center,
           children: <Widget>[
             ...previousChildren,
-            ?currentChild,
+            if (currentChild != null) currentChild,
           ],
         );
       },
@@ -291,7 +280,6 @@ class _LanguageAnimatorState extends State<_LanguageAnimator> {
   }
 }
 
-// ─── Shimmer Text ────────────────────────────────────────────────────
 class _ShimmerText extends StatefulWidget {
   final String textA;
   final String textB;
@@ -381,11 +369,10 @@ class _SlidingGradientTransform extends GradientTransform {
       bounds.width * (slidePercent * 2 - 1),
       0.0,
       0.0,
-      );
+    );
   }
 }
 
-// ─── Bouncing Creature ────────────────────────────────────────────────
 class _BouncingCreature extends StatefulWidget {
   final String image;
   final Color color;
@@ -463,10 +450,9 @@ class _BouncingCreatureState extends State<_BouncingCreature>
           ),
         ),
         const SizedBox(height: 3),
-        // Shadow/Glow effect
         AnimatedBuilder(
           animation: _bounceController,
-          builder: (context, _) {
+          builder: (context, __) {
             final double scale = (1.0 + _yAnimation.value / 60.0).clamp(
               0.5,
               1.0,
@@ -488,7 +474,6 @@ class _BouncingCreatureState extends State<_BouncingCreature>
   }
 }
 
-// ─── Wave Divider Painter ───────────────────────────────────────────
 class _WaveDivider extends StatelessWidget {
   const _WaveDivider();
 
@@ -513,7 +498,6 @@ class _WavePainter extends CustomPainter {
     final path = Path();
     path.moveTo(0, size.height / 2);
 
-    // M0 3.5 Q22.5 0 45 3.5 Q67.5 7 90 3.5 Q112.5 0 135 3.5 Q157.5 7 180 3.5
     path.quadraticBezierTo(
       size.width * 0.125,
       0,
