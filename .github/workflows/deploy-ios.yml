@@ -66,7 +66,68 @@ jobs:
           grep "FirebaseMessaging" Podfile.lock | head -3 || true
           grep "FirebaseInstallations" Podfile.lock | head -3 || true
         timeout-minutes: 15
-        
+      - name: Add GoogleService-Info.plist to Xcode project
+        run: |
+          python3 << 'EOF'
+          import re, uuid
+      
+          pbxproj = 'ios/Runner.xcodeproj/project.pbxproj'
+          with open(pbxproj, 'r') as f:
+              content = f.read()
+      
+          # Skip if already present
+          if 'GoogleService-Info.plist' in content:
+              print("✅ Already in project")
+              exit(0)
+      
+          # Generate stable UUIDs
+          file_ref_uuid = 'AA' + uuid.uuid4().hex[:22].upper()
+          build_file_uuid = 'BB' + uuid.uuid4().hex[:22].upper()
+      
+          # 1. Add PBXFileReference
+          file_ref = f'\t\t{file_ref_uuid} /* GoogleService-Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = GoogleService-Info.plist; sourceTree = "<group>"; }};\n'
+          content = re.sub(
+              r'(\/\* End PBXFileReference section \*\/)',
+              file_ref + r'\1',
+              content
+          )
+      
+          # 2. Add PBXBuildFile
+          build_file = f'\t\t{build_file_uuid} /* GoogleService-Info.plist in Resources */ = {{isa = PBXBuildFile; fileRef = {file_ref_uuid} /* GoogleService-Info.plist */; }};\n'
+          content = re.sub(
+              r'(\/\* End PBXBuildFile section \*\/)',
+              build_file + r'\1',
+              content
+          )
+      
+          # 3. Add to Runner group (children)
+          content = re.sub(
+              r'(\/\* Runner \*\/ = \{[^}]*?children = \([^)]*?)(Runner-Bridging-Header\.h)',
+              r'\1' + file_ref_uuid + ' /* GoogleService-Info.plist */,\n\t\t\t\t' + r'\2',
+              content,
+              flags=re.DOTALL
+          )
+      
+          # 4. Add to Resources build phase
+          content = re.sub(
+              r'(\/\* Resources \*\/.*?files = \([^)]*?)(AppFrameworkInfo\.plist)',
+              r'\1' + build_file_uuid + ' /* GoogleService-Info.plist in Resources */,\n\t\t\t\t' + r'\2',
+              content,
+              flags=re.DOTALL
+          )
+      
+          with open(pbxproj, 'w') as f:
+              f.write(content)
+      
+          print("✅ GoogleService-Info.plist added to project")
+      
+          # Verify
+          if 'GoogleService-Info.plist' in open(pbxproj).read():
+              print("✅ Verified in project.pbxproj")
+          else:
+              print("❌ FAILED to add")
+              exit(1)
+          EOF
       - name: Debug Firebase Configuration
         run: |
           echo "=============================="
