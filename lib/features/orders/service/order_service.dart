@@ -29,12 +29,12 @@ class OrderService {
         'preferred_delivery_slot': deliverySlotId,
         'delivery_notes': deliveryNotes,
         'tip_amount': tipAmount,
-        'coupon_code': ?couponCode,
-        'product_id': ?productId,
-        'quantity': ?quantity,
-        'success_url': ?successUrl,
-        'cancel_url': ?cancelUrl,
-        'pending_url': ?pendingUrl,
+        if (couponCode != null) 'coupon_code': couponCode,
+        if (productId != null) 'product_id': productId,
+        if (quantity != null) 'quantity': quantity,
+        if (successUrl != null) 'success_url': successUrl,
+        if (cancelUrl != null) 'cancel_url': cancelUrl,
+        if (pendingUrl != null) 'pending_url': pendingUrl,
       },
     );
     return response.data;
@@ -64,9 +64,9 @@ class OrderService {
         'device': 'mobile',
         'address_id': addressId,
         'tip_amount': tipAmount,
-        'coupon_code': ?couponCode,
-        'product_id': ?productId,
-        'quantity': ?quantity,
+        if (couponCode != null) 'coupon_code': couponCode,
+        if (productId != null) 'product_id': productId,
+        if (quantity != null) 'quantity': quantity,
       },
     );
     return response.data;
@@ -74,23 +74,21 @@ class OrderService {
 
   Future<List<Map<String, dynamic>>> getAvailableCoupons() async {
     try {
-      // Try the primary endpoint first
       final response = await _dio.get('orders/available_coupons/');
       final dynamic data = response.data;
       List<Map<String, dynamic>> results = [];
-      
+
       if (data is List) {
         results = List<Map<String, dynamic>>.from(data);
       } else if (data is Map && data.containsKey('results')) {
         results = List<Map<String, dynamic>>.from(data['results']);
       }
-      
+
       if (results.isNotEmpty) return results;
     } catch (e) {
       debugPrint('Error fetching from orders/available_coupons/: $e');
     }
 
-    // fallback to marketing/coupons/ if the first one is empty or fails
     try {
       final response = await _dio.get('marketing/coupons/');
       final dynamic data = response.data;
@@ -102,7 +100,7 @@ class OrderService {
     } catch (e) {
       debugPrint('Error fetching from marketing/coupons/: $e');
     }
-    
+
     return [];
   }
 
@@ -160,7 +158,6 @@ class OrderService {
     );
   }
 
-  /// Fetches the earliest available delivery date based on product/address.
   Future<Map<String, dynamic>> getDeliveryEstimate({
     dynamic addressId,
     int? productId,
@@ -169,15 +166,14 @@ class OrderService {
     final response = await _dio.get(
       'orders/estimate_delivery/',
       queryParameters: {
-        'address': ?addressId,
-        'product_id': ?productId,
-        'quantity': ?quantity,
+        if (addressId != null) 'address': addressId,
+        if (productId != null) 'product_id': productId,
+        if (quantity != null) 'quantity': quantity,
       },
     );
     return response.data;
   }
 
-  /// Fetches available timeslots for a specific date.
   Future<Map<String, dynamic>> getAvailableSlots(String date) async {
     final response = await _dio.get(
       'orders/delivery-slots/available/',
@@ -186,7 +182,6 @@ class OrderService {
     return response.data;
   }
 
-  /// Fetches delivery charge settings (min order for free delivery, etc.).
   Future<Map<String, dynamic>> getDeliveryChargeSettings() async {
     final response = await _dio.get('orders/delivery_charge_settings/');
     return response.data;
