@@ -3,7 +3,7 @@ name: Deploy iOS to App Store
 on:
   push:
     branches:
-      - deployiosrizan-cicdios-rm
+      - deployiosrizan-cicdios
 
 jobs:
   deploy:
@@ -50,7 +50,10 @@ jobs:
       - name: Pod install
         run: |
           cd ios
+          rm -f Podfile.lock
           pod install
+          echo "=== Firebase SDK version ==="
+          grep "Firebase SDK version" Podfile.lock
         timeout-minutes: 15
       - name: Show exact pod versions
         run: |
