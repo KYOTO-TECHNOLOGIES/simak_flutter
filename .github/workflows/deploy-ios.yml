@@ -30,13 +30,6 @@ jobs:
           flutter config --no-enable-swift-package-manager
           flutter pub get
 
-      # - name: Bump build number
-      #   run: |
-      #     BUILD_NUMBER=$(date +%Y%m%d%H%M)
-      #     sed -i "s/^version: .*/version: 1.0.7+$BUILD_NUMBER/" pubspec.yaml
-      #     echo "Version set to:"
-      #     grep "^version:" pubspec.yaml
-
       - name: Set Development Team in Xcode project
         run: |
           python3 -c "
@@ -66,113 +59,45 @@ jobs:
           grep "FirebaseMessaging" Podfile.lock | head -3 || true
           grep "FirebaseInstallations" Podfile.lock | head -3 || true
         timeout-minutes: 15
-      # - name: Add GoogleService-Info.plist to Xcode project
-      #   run: |
-      #     python3 << 'EOF'
-      #     import re, uuid
-      
-      #     pbxproj = 'ios/Runner.xcodeproj/project.pbxproj'
-      #     with open(pbxproj, 'r') as f:
-      #         content = f.read()
-      
-      #     # Skip if already present
-      #     if 'GoogleService-Info.plist' in content:
-      #         print("✅ Already in project")
-      #         exit(0)
-      
-      #     # Generate stable UUIDs
-      #     file_ref_uuid = 'AA' + uuid.uuid4().hex[:22].upper()
-      #     build_file_uuid = 'BB' + uuid.uuid4().hex[:22].upper()
-      
-      #     # 1. Add PBXFileReference
-      #     file_ref = f'\t\t{file_ref_uuid} /* GoogleService-Info.plist */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = GoogleService-Info.plist; sourceTree = "<group>"; }};\n'
-      #     content = re.sub(
-      #         r'(\/\* End PBXFileReference section \*\/)',
-      #         file_ref + r'\1',
-      #         content
-      #     )
-      
-      #     # 2. Add PBXBuildFile
-      #     build_file = f'\t\t{build_file_uuid} /* GoogleService-Info.plist in Resources */ = {{isa = PBXBuildFile; fileRef = {file_ref_uuid} /* GoogleService-Info.plist */; }};\n'
-      #     content = re.sub(
-      #         r'(\/\* End PBXBuildFile section \*\/)',
-      #         build_file + r'\1',
-      #         content
-      #     )
-      
-      #     # 3. Add to Runner group (children)
-      #     content = re.sub(
-      #         r'(\/\* Runner \*\/ = \{[^}]*?children = \([^)]*?)(Runner-Bridging-Header\.h)',
-      #         r'\1' + file_ref_uuid + ' /* GoogleService-Info.plist */,\n\t\t\t\t' + r'\2',
-      #         content,
-      #         flags=re.DOTALL
-      #     )
-      
-      #     # 4. Add to Resources build phase
-      #     content = re.sub(
-      #         r'(\/\* Resources \*\/.*?files = \([^)]*?)(AppFrameworkInfo\.plist)',
-      #         r'\1' + build_file_uuid + ' /* GoogleService-Info.plist in Resources */,\n\t\t\t\t' + r'\2',
-      #         content,
-      #         flags=re.DOTALL
-      #     )
-      
-      #     with open(pbxproj, 'w') as f:
-      #         f.write(content)
-      
-      #     print("✅ GoogleService-Info.plist added to project")
-      
-      #     # Verify
-      #     if 'GoogleService-Info.plist' in open(pbxproj).read():
-      #         print("✅ Verified in project.pbxproj")
-      #     else:
-      #         print("❌ FAILED to add")
-      #         exit(1)
-      #     EOF
+
       - name: Debug Firebase Configuration
         run: |
           echo "=============================="
           echo "GoogleService-Info.plist exists?"
           echo "=============================="
           ls -la ios/Runner/
-
           echo ""
           echo "=============================="
           echo "Firebase plist content"
           echo "=============================="
           plutil -p ios/Runner/GoogleService-Info.plist || cat ios/Runner/GoogleService-Info.plist
-
           echo ""
           echo "=============================="
           echo "Searching project.pbxproj"
           echo "=============================="
           grep -n "GoogleService-Info.plist" ios/Runner.xcodeproj/project.pbxproj || echo "NOT FOUND IN PROJECT"
-
           echo ""
           echo "=============================="
           echo "Bundle Identifier"
           echo "=============================="
           grep -R "PRODUCT_BUNDLE_IDENTIFIER" ios/Runner.xcodeproj/project.pbxproj | head -20
-
           echo ""
           echo "=============================="
           echo "Podfile.lock Firebase packages"
           echo "=============================="
           grep Firebase ios/Podfile.lock || true
-
           echo ""
           echo "=============================="
           echo "FlutterFire packages"
           echo "=============================="
           grep firebase pubspec.yaml || true
 
-
-
       - name: Verify AppDelegate Firebase guard
         run: |
           echo "=== AppDelegate.swift ==="
           cat ios/Runner/AppDelegate.swift
           echo "=== Checking Firebase guard ==="
-          grep "FirebaseApp.app()" ios/Runner/AppDelegate.swift && echo "✅ Guard present" || (echo "❌ Guard MISSING - add if FirebaseApp.app() == nil check" && exit 1)
+          grep "FirebaseApp.app()" ios/Runner/AppDelegate.swift && echo "✅ Guard present" || (echo "❌ Guard MISSING" && exit 1)
           echo "=== GoogleService-Info.plist BUNDLE_ID ==="
           grep -A1 "BUNDLE_ID" ios/Runner/GoogleService-Info.plist
 
@@ -184,7 +109,6 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/distribution.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           KEYCHAIN_PASSWORD="temp1234"
-
           echo -n "$IOS_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
@@ -207,9 +131,7 @@ jobs:
       - name: Build IPA
         run: |
           set -o pipefail
-
           cd ios
-
           xcodebuild \
             -workspace Runner.xcworkspace \
             -scheme Runner \
@@ -223,75 +145,37 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
             PODS_CODE_SIGN_STYLE=Automatic \
             archive | tee /tmp/archive.log
-
-          echo ""
-          echo "=============================="
-          echo "Archive Contents"
-          echo "=============================="
-
-          find $RUNNER_TEMP/Runner.xcarchive -name "*.plist"
-
           echo ""
           echo "=============================="
           echo "Runner.app contents"
           echo "=============================="
-
           ls -la $RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app
-
           echo ""
           echo "=============================="
           echo "Looking for GoogleService-Info.plist"
           echo "=============================="
-
-          find $RUNNER_TEMP/Runner.xcarchive -name "GoogleService-Info.plist"
-
           APP_PATH="$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app"
-
+          find $RUNNER_TEMP/Runner.xcarchive -name "GoogleService-Info.plist"
           if [ -f "$APP_PATH/GoogleService-Info.plist" ]; then
             echo "FOUND Firebase plist"
             plutil -p "$APP_PATH/GoogleService-Info.plist"
           else
             echo "MISSING Firebase plist in app bundle"
           fi
-
           echo ""
           echo "=============================="
-          echo "Frameworks"
+          echo "Export IPA"
           echo "=============================="
-
-          ls -la "$APP_PATH/Frameworks" || true
-
           xcodebuild \
             -exportArchive \
             -archivePath $RUNNER_TEMP/Runner.xcarchive \
             -exportOptionsPlist ../ios/ExportOptions.plist \
             -exportPath $RUNNER_TEMP/ipa
-
           echo ""
           echo "=============================="
           echo "IPA Files"
           echo "=============================="
-
-          ls -lah $RUNNER_TEMP/ipa  echo "=== Verify archive exists ==="
-          ls -la $RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/
-
-          echo "=== Verify GoogleService-Info.plist in bundle ==="
-          if [ -f "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist" ]; then
-            grep -A1 "BUNDLE_ID" "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/GoogleService-Info.plist"
-          else
-            echo "INFO: GoogleService-Info.plist not in bundle root (normal for Flutter/Firebase)"
-          fi
-
-          echo "=== Firebase frameworks in bundle ==="
-          ls "$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/" | grep -i firebase || echo "INFO: No Firebase frameworks (statically linked)"
-
-          xcodebuild -exportArchive \
-            -archivePath $RUNNER_TEMP/Runner.xcarchive \
-            -exportOptionsPlist ../ios/ExportOptions.plist \
-            -exportPath $RUNNER_TEMP/ipa
-
-          echo "=== IPA created ==="
-          ls -lh "$RUNNER_TEMP/ipa/"
+          ls -lah $RUNNER_TEMP/ipa
 
       - name: Upload to App Store Connect
         env:
@@ -300,13 +184,10 @@ jobs:
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
         run: |
           sudo xcode-select -s /Applications/Xcode_26.0.1.app
-
           API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
-
           mkdir -p ~/.appstoreconnect/private_keys
           cp $API_KEY_PATH ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-
           xcrun altool --upload-app \
             --type ios \
             --file "$RUNNER_TEMP/ipa/Simak Fresh.ipa" \
