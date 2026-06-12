@@ -3,7 +3,7 @@ name: Deploy iOS to App Store
 on:
   push:
     branches:
-      - deployiosrizan-cicdios-rm
+      - deployiosrizan-cicdios
 
 jobs:
   deploy:
