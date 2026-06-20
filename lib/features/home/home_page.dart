@@ -246,7 +246,7 @@ class _HomePageState extends State<HomePage> {
           onRefresh: () async {
             final emirate = context.read<EmirateController>().selectedEmirate;
             await Future.wait([
-              context.read<ProductController>().fetchProducts(emirate: emirate),
+              context.read<ProductController>().fetchProducts(emirate: emirate, forceRefresh: true),
               context.read<ProductController>().fetchCategories(),
               context.read<MarketingController>().fetchBanners(),
               context.read<MarketingController>().fetchDeliveryOffers(),
@@ -256,6 +256,9 @@ class _HomePageState extends State<HomePage> {
           color: AppColors.primary,
           child: CustomScrollView(
             controller: _scrollController,
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             slivers: [
               // ─── App Bar ─────────────────────────────────────────
               SliverAppBar(

@@ -167,45 +167,68 @@ class ProductController extends ChangeNotifier {
   }
 
   // ─── Fetching (Offline-First) ────────────────────────────────
-  /// Loads products from cache instantly, then silently refreshes
-  /// from API in the background if the cache is stale.
-  /// Loads products (offline-first). Shows cache instantly, then updates via API.
-  Future<void> fetchProducts({String? emirate, String? categoryName}) async {
+  /// Loads products, offline-first by default.
+  ///
+  /// When [forceRefresh] is `true` (e.g. triggered by pull-to-refresh):
+  ///   • Sets [isLoading] = true immediately so the UI can react.
+  ///   • Bypasses the cache-return shortcut and awaits the full API call.
+  ///   • The [RefreshIndicator] spinner stays visible until the API responds.
+  ///
+  /// When [forceRefresh] is `false` (default, normal navigation):
+  ///   • Returns cached data instantly if available (no loading flash).
+  ///   • Silently refreshes from API in the background via [onRefresh].
+  Future<void> fetchProducts({
+    String? emirate,
+    String? categoryName,
+    bool forceRefresh = false,
+  }) async {
     final cat = categoryName ?? _selectedCategory;
-    
+
     // TEMPORARY: ignore emirate parameter
     _activeEmirate = null;
-    
-    // If we have no items at all, show the main loading spinner.
-    // If we already have items (cached or from previous fetch), we load silently.
-    if (_products.isEmpty) {
+
+    // Show spinner if:
+    //   a) We have no products yet (first load), OR
+    //   b) The caller explicitly requested a visible refresh (pull-to-refresh).
+    if (_products.isEmpty || forceRefresh) {
       _isLoading = true;
       _error = null;
       notifyListeners();
     }
 
     try {
-      final freshProducts = await _service.fetchProducts(
-        emirate: null, // Force fetch all
-        categoryName: cat,
-        // This callback fires when background API refresh completes.
-        onRefresh: (refreshedData) {
-          _products = refreshedData;
-          if (cat == 'All') {
-            _allProducts = refreshedData;
-          }
-          notifyListeners();
-        },
-      );
-      
-      // Set the initial (cached or first-fetch) data
-      _products = freshProducts;
-      if (cat == 'All') {
-        _allProducts = freshProducts;
+      if (forceRefresh) {
+        // ── Forced refresh: skip cache, call API directly and await it. ─
+        // This keeps the RefreshIndicator spinning until real data arrives.
+        final freshProducts = await _service.fetchProductsFromApi(
+          emirate: null,
+          categoryName: cat,
+        );
+        _products = freshProducts;
+        if (cat == 'All') {
+          _allProducts = freshProducts;
+        }
+      } else {
+        // ── Normal (offline-first): return cache instantly, refresh silently. ─
+        final freshProducts = await _service.fetchProducts(
+          emirate: null,
+          categoryName: cat,
+          onRefresh: (refreshedData) {
+            _products = refreshedData;
+            if (cat == 'All') {
+              _allProducts = refreshedData;
+            }
+            notifyListeners();
+          },
+        );
+        _products = freshProducts;
+        if (cat == 'All') {
+          _allProducts = freshProducts;
+        }
       }
       notifyListeners();
     } catch (e) {
-      // Only error out if we have absolutely no data to show.
+      // Only surface an error if we have nothing to show.
       if (_products.isEmpty) {
         _error = 'failed_load_products';
       }
