@@ -75,13 +75,15 @@ class _ProductsPageState extends State<ProductsPage>
             onRefresh: () async {
               final emirate = context.read<EmirateController>().selectedEmirate;
               await Future.wait([
-                controller.fetchProducts(emirate: emirate),
+                controller.fetchProducts(emirate: emirate, forceRefresh: true),
                 controller.fetchCategories(),
               ]);
             },
             color: AppColors.primary,
             child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               slivers: [
                 // ─── Sliver App Bar ──────────────────────────────────
                 _buildSliverAppBar(theme, isDark, controller),

@@ -168,39 +168,71 @@ class ProductService {
   //  PRIVATE HELPERS
   // ═══════════════════════════════════════════════════════════════
 
-  /// Fetches the product list from the API and saves it to cache.
+  /// Public entry point for a forced (non-cached) product fetch.
+  /// Called by [ProductController.fetchProducts] when [forceRefresh] is true,
+  /// e.g. during pull-to-refresh, so the spinner waits for real API data.
+  Future<List<ProductModel>> fetchProductsFromApi({
+    String? emirate,
+    String? categoryName,
+  }) =>
+      _fetchProductsFromApi(emirate: emirate, categoryName: categoryName);
+
+  /// Fetches ALL products from the API (following pagination) and saves to cache.
   Future<List<ProductModel>> _fetchProductsFromApi({
     String? emirate,
     String? categoryName,
   }) async {
-    final Map<String, dynamic> queryParameters = {};
-    if (emirate != null) queryParameters['available_emirates'] = emirate;
+    final Map<String, dynamic> initialQueryParameters = {};
+    if (emirate != null) initialQueryParameters['available_emirates'] = emirate;
     if (categoryName != null && categoryName != 'All') {
-      queryParameters['category_name'] = categoryName;
+      initialQueryParameters['category_name'] = categoryName;
     }
 
-    final response = await _dio.get(
-      'products/products/',
-      queryParameters: queryParameters,
-    );
-    final data = response.data;
+    final List<dynamic> allRaw = [];
+    // nextUrl starts as null — first request uses the base endpoint + query params.
+    String? nextUrl;
+    bool isFirstPage = true;
 
-    final List<dynamic> rawList;
-    if (data is Map<String, dynamic> && data.containsKey('results')) {
-      rawList = data['results'] as List;
-    } else if (data is List) {
-      rawList = data;
-    } else {
-      rawList = [];
-    }
+    // Loop through all pages until there is no 'next' URL.
+    do {
+      final Response<dynamic> response;
+      if (isFirstPage) {
+        response = await _dio.get(
+          'products/products/',
+          queryParameters: initialQueryParameters,
+        );
+        isFirstPage = false;
+      } else {
+        // The 'next' field from DRF is a full absolute URL.
+        // Extract just the path+query to avoid Dio prepending baseUrl again.
+        final uri = Uri.parse(nextUrl!);
+        final relativeUrl = uri.path.replaceFirst(RegExp(r'^/api/'), '') +
+            (uri.query.isNotEmpty ? '?${uri.query}' : '');
+        response = await _dio.get(relativeUrl);
+      }
 
-    // Save to cache.
+      final data = response.data;
+
+      if (data is Map<String, dynamic> && data.containsKey('results')) {
+        allRaw.addAll(data['results'] as List);
+        // 'next' is either a URL string or null when we're on the last page.
+        nextUrl = data['next'] as String?;
+      } else if (data is List) {
+        allRaw.addAll(data);
+        nextUrl = null; // Non-paginated list — only one page.
+      } else {
+        nextUrl = null;
+      }
+    } while (nextUrl != null);
+
+    // Save the complete result set to cache.
     String cacheKey = _productsCacheKey;
     if (emirate != null) cacheKey += '_$emirate';
     if (categoryName != null && categoryName != 'All') cacheKey += '_cat_$categoryName';
 
-    await _cache.saveToCache(cacheKey, rawList);
-    return rawList.map((e) => ProductModel.fromJson(e)).toList();
+    await _cache.saveToCache(cacheKey, allRaw);
+    debugPrint('📦 Fetched ${allRaw.length} products total for key: $cacheKey');
+    return allRaw.map((e) => ProductModel.fromJson(e)).toList();
   }
 
   /// Silently refreshes products from API in the background.
