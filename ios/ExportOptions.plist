@@ -6,10 +6,6 @@
     <string>app-store</string>
     <key>teamID</key>
     <string>2X84JN9FPS</string>
-    <key>uploadBitcode</key>
-    <false/>
-    <key>uploadSymbols</key>
-    <true/>
     <key>signingStyle</key>
     <string>manual</string>
     <key>signingCertificate</key>
@@ -19,5 +15,11 @@
         <key>com.simakfresh.app</key>
         <string>Simak App Store Profile</string>
     </dict>
+    <key>uploadBitcode</key>
+    <false/>
+    <key>compileBitcode</key>
+    <false/>
+    <key>uploadSymbols</key>
+    <true/>
 </dict>
 </plist>
