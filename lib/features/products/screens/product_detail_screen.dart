@@ -16,6 +16,7 @@ import 'package:uae_ecom_project/features/orders/model/review_model.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 import 'package:uae_ecom_project/features/products/widgets/video_player_widget.dart';
+import 'package:uae_ecom_project/features/products/widgets/full_screen_image_viewer.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
 import 'package:uae_ecom_project/core/widgets/floating_view_cart_bar.dart';
@@ -423,6 +424,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           ),
                                           Row(
                                             children: [
+                                              if (media[_currentImageIndex].type == _MediaType.image) ...[
+                                                _HeaderButton(
+                                                  icon: Icons.fullscreen_rounded,
+                                                  onTap: () {
+                                                    final imageMedia = media.where((m) => m.type == _MediaType.image).toList();
+                                                    final currentUrl = media[_currentImageIndex].url;
+                                                    int initialIndex = imageMedia.indexWhere((m) => m.url == currentUrl);
+                                                    if (initialIndex == -1) initialIndex = 0;
+
+                                                    final imageUrls = imageMedia.map((m) => m.url.isNotEmpty ? m.url : AppConstants.kDefaultProductImage).toList();
+
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => FullScreenImageViewer(
+                                                          imageUrls: imageUrls,
+                                                          initialIndex: initialIndex,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  theme: theme,
+                                                ),
+                                                const SizedBox(width: 8),
+                                              ],
                                               _HeaderButton(
                                                 icon: Icons.share_rounded,
                                                 onTap: () async {
