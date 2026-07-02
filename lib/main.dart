@@ -163,21 +163,21 @@ class _MyAppState extends State<MyApp> {
   }
 
   // void setupFCM() async {
-  //   // 🔔 Ask permission (important for Android 13+ / iOS)
+  //   //  Ask permission (important for Android 13+ / iOS)
   //   await FirebaseMessaging.instance.requestPermission();
 
   //   final notificationService = NotificationService();
 
-  //   // 📱 Initial Sync
+  //   //  Initial Sync
   //   notificationService.syncToken();
 
-  //   // 🔄 Listen for token refresh and re-register
+  //   //  Listen for token refresh and re-register
   //   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
   //     debugPrint("FCM TOKEN REFRESHED: $newToken");
   //     notificationService.syncToken();
   //   });
 
-  //   // 📩 Listen for messages (when app is open)
+  //   //  Listen for messages (when app is open)
   //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
   //     debugPrint("Notification Received!");
   //     debugPrint(message.notification?.title);

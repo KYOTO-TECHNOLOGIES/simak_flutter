@@ -903,7 +903,7 @@ class _TrendingCard extends StatelessWidget {
                       ),
                       child: CustomImage(
                         product.thumbnail,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         width: double.infinity,
                         height: double.infinity,
                         padding: const EdgeInsets.all(24.0),
@@ -1128,7 +1128,7 @@ class _OnSaleCard extends StatelessWidget {
                       product.thumbnail.isNotEmpty
                           ? product.thumbnail
                           : fallbackImageUrl,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       width: 90,
                       height: double.infinity,
                       padding: const EdgeInsets.all(12.0),
@@ -1314,7 +1314,7 @@ class _EnhancedProductCard extends StatelessWidget {
                       ),
                       child: CustomImage(
                         product.thumbnail,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         width: double.infinity,
                         height: double.infinity,
                         padding: const EdgeInsets.all(32.0),

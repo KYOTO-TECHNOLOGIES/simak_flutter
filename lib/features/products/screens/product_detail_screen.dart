@@ -1456,7 +1456,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       child: Center(
         child: CustomImage(
           item.url.isNotEmpty ? item.url : AppConstants.kDefaultProductImage,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           width: double.infinity,
           height: double.infinity,
           padding: const EdgeInsets.all(48.0),
