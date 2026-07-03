@@ -20,8 +20,8 @@ class ReviewBottomSheet {
     final commentController =
         TextEditingController(text: existingReview?.comment ?? '');
     final List<File> selectedImages = [];
-    final List<String> networkImages = existingReview != null 
-        ? List<String>.from(existingReview.images) 
+    final List<String> networkImages = existingReview != null
+        ? List<String>.from(existingReview.images)
         : [];
     bool isSubmitting = false;
 
@@ -58,7 +58,6 @@ class ReviewBottomSheet {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Pull indicator
                     Container(
                       width: 40,
                       height: 4,
@@ -69,7 +68,6 @@ class ReviewBottomSheet {
                     ),
                     const SizedBox(height: 16),
 
-                    // Header: Match Web UI
                     Row(
                       children: [
                         Container(
@@ -134,7 +132,6 @@ class ReviewBottomSheet {
                     ),
                     const SizedBox(height: 32),
 
-                    // Rating Stars
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (i) {
@@ -148,10 +145,9 @@ class ReviewBottomSheet {
                               starIndex <= selectedRating
                                   ? Icons.star_rounded
                                   : Icons.star_outline_rounded,
-                              color:
-                                  starIndex <= selectedRating
-                                      ? const Color(0xFFFFB800)
-                                      : Colors.grey[300],
+                              color: starIndex <= selectedRating
+                                  ? const Color(0xFFFFB800)
+                                  : Colors.grey[300],
                               size: 42,
                             ),
                           ),
@@ -172,7 +168,6 @@ class ReviewBottomSheet {
                     ],
                     const SizedBox(height: 28),
 
-                    // Comment Field
                     TextField(
                       controller: commentController,
                       maxLines: 4,
@@ -184,10 +179,9 @@ class ReviewBottomSheet {
                           fontSize: 14,
                         ),
                         filled: true,
-                        fillColor:
-                            isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : const Color(0xFFF8F9FB),
+                        fillColor: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : const Color(0xFFF8F9FB),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(color: Colors.grey.shade100),
@@ -204,7 +198,6 @@ class ReviewBottomSheet {
                     ),
                     const SizedBox(height: 24),
 
-                    // Add Photos Section
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -281,7 +274,7 @@ class ReviewBottomSheet {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: selectedImages.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
                           itemBuilder: (context, i) {
                             return Stack(
                               clipBehavior: Clip.none,
@@ -302,8 +295,6 @@ class ReviewBottomSheet {
                                     ),
                                   ),
                                 ),
-                                // NEW badge – visible in edit mode so user
-                                // knows which images are freshly added
                                 if (existingReview != null)
                                   Positioned(
                                     bottom: 12,
@@ -359,7 +350,6 @@ class ReviewBottomSheet {
                       ),
                     ],
 
-                    // Dedicated Existing Photos Section (MATCH WEB UI)
                     if (networkImages.isNotEmpty) ...[
                       const SizedBox(height: 32),
                       Container(
@@ -396,7 +386,7 @@ class ReviewBottomSheet {
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: networkImages.length,
-                                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                                separatorBuilder: (_, __) => const SizedBox(width: 12),
                                 itemBuilder: (context, i) {
                                   return Stack(
                                     clipBehavior: Clip.none,
@@ -465,77 +455,67 @@ class ReviewBottomSheet {
 
                     const SizedBox(height: 32),
 
-                    // Submit Button
                     Align(
                       alignment: Alignment.centerRight,
                       child: SizedBox(
                         width: 150,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed:
-                              selectedRating == 0 || isSubmitting
-                                  ? null
-                                  : () async {
-                                    setDialogState(() => isSubmitting = true);
-                                    final controller =
-                                        context.read<OrderController>();
-                                    final auth = context.read<AuthController>();
+                          onPressed: selectedRating == 0 || isSubmitting
+                              ? null
+                              : () async {
+                                  setDialogState(() => isSubmitting = true);
+                                  final controller = context.read<OrderController>();
+                                  final auth = context.read<AuthController>();
 
-                                    bool success;
-                                    if (existingReview != null) {
-                                      success = await controller.editReview(
-                                        reviewId: existingReview.id,
-                                        rating: selectedRating,
-                                        comment: commentController.text.trim(),
-                                        images: selectedImages,
-                                      );
-                                      // Refresh the review from server so the
-                                      // local cache reflects the new images list
-                                      if (success) {
-                                        await controller.fetchReviewDetails(
-                                          existingReview.id,
-                                        );
-                                      }
-                                    } else {
-                                      success = await controller.addReview(
-                                        productId: product.id,
-                                        rating: selectedRating,
-                                        comment: commentController.text.trim(),
-                                        images: selectedImages,
+                                  bool success;
+                                  if (existingReview != null) {
+                                    success = await controller.editReview(
+                                      reviewId: existingReview.id,
+                                      rating: selectedRating,
+                                      comment: commentController.text.trim(),
+                                      images: selectedImages,
+                                    );
+                                    if (success) {
+                                      await controller.fetchReviewDetails(
+                                        existingReview.id,
                                       );
                                     }
+                                  } else {
+                                    success = await controller.addReview(
+                                      productId: product.id,
+                                      rating: selectedRating,
+                                      comment: commentController.text.trim(),
+                                      images: selectedImages,
+                                    );
+                                  }
 
-                                    if (success &&
-                                        auth.currentUser?.id != null) {
-                                      await controller.fetchMyOrders(
-                                        userId: auth.currentUser!.id!,
-                                      );
-                                    }
+                                  if (success && auth.currentUser?.id != null) {
+                                    await controller.fetchMyOrders(
+                                      userId: auth.currentUser!.id!,
+                                    );
+                                  }
 
-                                    if (ctx.mounted) {
-                                      Navigator.pop(ctx);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                            SnackBar(
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                              backgroundColor:
-                                                  success
-                                                      ? AppColors.actionBlue
-                                                      : Colors.red,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              content: Text(
-                                                success
-                                                    ? tr(context, 'order_review_success')
-                                                    : tr(context, 'review_failed_save'),
-                                              ),
-                                            ),
-                                          );
-                                    }
-                                  },
+                                  if (ctx.mounted) {
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        behavior: SnackBarBehavior.floating,
+                                        backgroundColor: success
+                                            ? AppColors.actionBlue
+                                            : Colors.red,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        content: Text(
+                                          success
+                                              ? tr(context, 'order_review_success')
+                                              : tr(context, 'review_failed_save'),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0F172A),
                             foregroundColor: Colors.white,
@@ -544,23 +524,22 @@ class ReviewBottomSheet {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child:
-                              isSubmitting
-                                  ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                  : Text(
-                                    tr(context, 'order_submit_review'),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
                                   ),
+                                )
+                              : Text(
+                                  tr(context, 'order_submit_review'),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -585,9 +564,9 @@ class ReviewBottomSheet {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: isNetwork 
-                ? CustomImage(path)
-                : Image.file(File(path)),
+              child: isNetwork
+                  ? CustomImage(path)
+                  : Image.file(File(path)),
             ),
             Positioned(
               top: 10,

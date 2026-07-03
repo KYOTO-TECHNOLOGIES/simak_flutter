@@ -50,7 +50,6 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Initialize Firebase in the background isolate
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -63,7 +62,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await TokenStorage().init();
-  // Initialize Hive cache before the app starts.
   await CacheService().init();
   try {
     await Firebase.initializeApp(
@@ -75,7 +73,6 @@ void main() async {
     if (!e.toString().contains('duplicate-app')) rethrow;
   }
 
-  // Register background messaging handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await TokenStorage().init();
@@ -109,7 +106,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initDeepLinks() async {
-    // 1. Handle initial link (cold start)
     try {
       final initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) {
@@ -119,7 +115,6 @@ class _MyAppState extends State<MyApp> {
       debugPrint('Deep Link Error: $e');
     }
 
-    // 2. Handle subsequent links (app in background/foreground)
     _sub = _appLinks.uriLinkStream.listen(
       (Uri? uri) {
         if (uri != null) {
@@ -135,7 +130,6 @@ class _MyAppState extends State<MyApp> {
   void _handleDeepLink(Uri uri) {
     debugPrint('Captured Deep Link: $uri');
 
-    // Only handle myapp://payment links
     if (uri.scheme == 'myapp' && uri.host == 'payment') {
       final String path = uri.path;
       final String orderId = uri.queryParameters['order_id'] ?? '';
@@ -186,29 +180,26 @@ class _MyAppState extends State<MyApp> {
   // }
 
   void setupFCM() async {
-  final settings = await FirebaseMessaging.instance.requestPermission();
+    final settings = await FirebaseMessaging.instance.requestPermission();
+    debugPrint("Permission Status: ${settings.authorizationStatus}");
 
-  debugPrint("Permission Status: ${settings.authorizationStatus}");
+    String? token = await FirebaseMessaging.instance.getToken();
+    debugPrint("FCM TOKEN => $token");
 
-  String? token = await FirebaseMessaging.instance.getToken();
-
-  debugPrint("FCM TOKEN => $token");
-
-  final notificationService = NotificationService();
-
-  notificationService.syncToken();
-
-  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-    debugPrint("FCM TOKEN REFRESHED => $newToken");
+    final notificationService = NotificationService();
     notificationService.syncToken();
-  });
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    debugPrint("Notification Received!");
-    debugPrint(message.notification?.title);
-    debugPrint(message.notification?.body);
-  });
-}
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      debugPrint("FCM TOKEN REFRESHED => $newToken");
+      notificationService.syncToken();
+    });
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint("Notification Received!");
+      debugPrint(message.notification?.title);
+      debugPrint(message.notification?.body);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -292,13 +283,11 @@ class _MyAppState extends State<MyApp> {
             },
             builder: (context, child) {
               return Consumer<ConnectivityProvider>(
-                builder: (context, connectivity, _) {
-                  // Only show the no-internet screen when offline
-                  // AND there is no cached data to fall back to.
+                builder: (context, connectivity, __) {
                   final hasCachedProducts = CacheService().hasCache('products');
                   return Stack(
                     children: [
-                      ?child,
+                      if (child != null) child,
                       if (!connectivity.isOnline && !hasCachedProducts)
                         const PremiumNoInternetScreen(),
                     ],
