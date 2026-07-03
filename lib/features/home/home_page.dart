@@ -880,7 +880,7 @@ class _ProductCard extends StatelessWidget {
                       product.thumbnail.isNotEmpty
                           ? product.thumbnail
                           : fallbackImageUrl,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       width: double.infinity,
                     ),
                   ),
