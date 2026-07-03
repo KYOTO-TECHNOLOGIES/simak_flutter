@@ -220,7 +220,7 @@ class _PopularProductCard extends StatelessWidget {
                         const BorderRadius.vertical(top: Radius.circular(16)),
                     child: CustomImage(
                       product.thumbnail.isNotEmpty ? product.thumbnail : fallbackImageUrl,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       width: double.infinity,
                     ),
                   ),
