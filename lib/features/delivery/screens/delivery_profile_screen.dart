@@ -17,7 +17,7 @@ class DeliveryProfileScreen extends StatelessWidget {
     if (dateStr == null || dateStr.trim().isEmpty) return 'Not set';
     try {
       final date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy').format(date);
+      return DateFormat('dd MMM yyyy').format(date.toLocal());
     } catch (_) {
       return dateStr;
     }
