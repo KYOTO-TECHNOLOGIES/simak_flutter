@@ -126,9 +126,9 @@ class DeliveryAssignment {
       orderId: json['order'],
       deliveryBoyId: json['delivery_boy'],
       status: json['status'],
-      assignedAt: json['assigned_at'] != null ? DateTime.parse(json['assigned_at']) : null,
-      acceptedAt: json['accepted_at'] != null ? DateTime.parse(json['accepted_at']) : null,
-      deliveredAt: json['delivered_at'] != null ? DateTime.parse(json['delivered_at']) : null,
+      assignedAt: json['assigned_at'] != null ? DateTime.parse(json['assigned_at']).toLocal() : null,
+      acceptedAt: json['accepted_at'] != null ? DateTime.parse(json['accepted_at']).toLocal() : null,
+      deliveredAt: json['delivered_at'] != null ? DateTime.parse(json['delivered_at']).toLocal() : null,
       notes: json['notes'],
     );
   }
@@ -158,7 +158,7 @@ class DeliveryProof {
       proofImage: json['proof_image'],
       signatureName: json['signature_name'],
       notes: json['notes'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: DateTime.parse(json['created_at']).toLocal(),
     );
   }
 }
@@ -187,7 +187,7 @@ class DeliveryCancellationRequest {
       reason: json['reason'],
       status: json['status'],
       reviewNotes: json['review_notes'],
-      requestedAt: DateTime.parse(json['requested_at']),
+      requestedAt: DateTime.parse(json['requested_at']).toLocal(),
     );
   }
 }

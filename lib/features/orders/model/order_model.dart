@@ -78,7 +78,7 @@ class OrderModel {
       totalPrice: double.tryParse((json['total_price'] ?? json['total_amount'])?.toString() ?? '0') ?? 0.0,
       status: json['status']?.toString() ?? 'Pending',
       createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+          ? DateTime.parse(json['created_at']).toLocal() 
           : DateTime.now(),
       paymentMethod: (json['payment']?['payment_method']?.toString() ?? 
                       json['payment_method']?.toString() ?? 
@@ -131,14 +131,14 @@ class OrderModel {
       receiptImage: (json['delivery_proof']?['proof_image'] ?? json['receipt_image'])?.toString(),
       deliveryAssignmentStatus: json['delivery_assignment']?['status']?.toString(),
       deliveryAssignedAt: json['delivery_assignment']?['assigned_at'] != null 
-          ? DateTime.parse(json['delivery_assignment']['assigned_at']) 
+          ? DateTime.parse(json['delivery_assignment']['assigned_at']).toLocal() 
           : null,
       deliveryAcceptedAt: json['delivery_assignment']?['accepted_at'] != null 
-          ? DateTime.parse(json['delivery_assignment']['accepted_at']) 
+          ? DateTime.parse(json['delivery_assignment']['accepted_at']).toLocal() 
           : null,
       deliveryDeliveredAt: json['delivery_assignment']?['delivered_at'] != null 
-          ? DateTime.parse(json['delivery_assignment']['delivered_at']) 
-          : (json['delivered_at'] != null ? DateTime.parse(json['delivered_at']) : null),
+          ? DateTime.parse(json['delivery_assignment']['delivered_at']).toLocal() 
+          : (json['delivered_at'] != null ? DateTime.parse(json['delivered_at']).toLocal() : null),
       deliveryCancelRequest: json['delivery_cancel_request'] != null
           ? DeliveryCancelRequest.fromJson(json['delivery_cancel_request'])
           : null,
@@ -173,8 +173,8 @@ class DeliveryCancelRequest {
       reason: json['reason'] as String? ?? '',
       status: json['status'] as String? ?? 'PENDING',
       reviewNotes: json['review_notes'] as String?,
-      requestedAt: DateTime.parse(json['requested_at']),
-      reviewedAt: json['reviewed_at'] != null ? DateTime.parse(json['reviewed_at']) : null,
+      requestedAt: DateTime.parse(json['requested_at']).toLocal(),
+      reviewedAt: json['reviewed_at'] != null ? DateTime.parse(json['reviewed_at']).toLocal() : null,
     );
   }
 }
@@ -247,7 +247,7 @@ class StatusHistoryItem {
     return StatusHistoryItem(
       status: json['status']?.toString() ?? '',
       notes: json['notes']?.toString(),
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']).toLocal() : DateTime.now(),
     );
   }
 }
@@ -275,7 +275,7 @@ class PaymentInfo {
       amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
       status: json['status']?.toString() ?? '',
       method: json['payment_method']?.toString() ?? '',
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']).toLocal() : DateTime.now(),
       paymentUrl: json['payment_url']?.toString(),
     );
   }

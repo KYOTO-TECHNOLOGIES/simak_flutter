@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
@@ -142,27 +143,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     });
   }
 
+  /// Formats a DateTime as "1 Jan 2025, 3:05 PM" in the device's local timezone.
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final hr = date.hour > 12
-        ? date.hour - 12
-        : (date.hour == 0 ? 12 : date.hour);
-    final period = date.hour >= 12 ? 'PM' : 'AM';
-    final min = date.minute.toString().padLeft(2, '0');
-    return '${date.day} ${months[date.month - 1]} ${date.year}, $hr:$min $period';
+    final local = date.toLocal();
+    return DateFormat('d MMM yyyy, h:mm a').format(local);
   }
 
   @override
@@ -785,12 +769,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return trText(context, method);
   }
 
+  /// Formats only the time portion as "3:05 PM" in the device's local timezone.
   String _formatTime(DateTime date) {
-    final hour = date.hour > 12
-        ? date.hour - 12
-        : (date.hour == 0 ? 12 : date.hour);
-    final amPm = date.hour >= 12 ? 'PM' : 'AM';
-    return '${hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} $amPm';
+    return DateFormat('h:mm a').format(date.toLocal());
   }
 
   Widget _buildDeliveryAddress(
