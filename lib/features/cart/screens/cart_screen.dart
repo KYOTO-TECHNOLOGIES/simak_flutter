@@ -495,11 +495,15 @@ class _CartScreenState extends State<CartScreen> {
                               color: Colors.black54,
                             ),
                           ),
-                          Text(
-                            item.preparationSpecificationName!,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.black87,
+                          Flexible(
+                            child: Text(
+                              item.preparationSpecificationName!,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
