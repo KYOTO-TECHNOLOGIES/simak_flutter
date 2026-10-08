@@ -46,6 +46,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _prepSectionKey = GlobalKey();
 
+  // ── Add-on State ─────────────────────────────────────────────────
+  // Maps addon.id → selected quantity (0 = not selected)
+  final Map<int, int> _addonQuantities = {};
+
+  /// Sum of (addon.extraPrice × selectedQty) for all selected addons.
+  double get _totalAddonPricePerUnit {
+    final addons = _detailProduct?.addons ?? widget.product.addons;
+    double total = 0.0;
+    for (final addon in addons) {
+      final qty = _addonQuantities[addon.id] ?? 0;
+      if (qty > 0) total += addon.extraPrice * qty;
+    }
+    return total;
+  }
+
+  /// Returns the loaded-from-API detail product (if available), else the passed-in widget.product.
+  ProductModel? _detailProduct;
+
+  /// Full line total: (finalPrice + addon extras) × product quantity
+  double get _effectiveTotalPrice =>
+      (widget.product.finalPrice + _totalAddonPricePerUnit) * _quantity;
+
   @override
   void initState() {
     super.initState();
@@ -740,7 +762,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      'AED ${(widget.product.finalPrice * _quantity).toStringAsFixed(2)}',
+                                      'AED ${_effectiveTotalPrice.toStringAsFixed(2)}',
                                       style: const TextStyle(
                                         color: AppColors.primary,
                                         fontSize: 28,
@@ -768,6 +790,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     ],
                                   ],
                                 ),
+                                // ── Addon cost hint ─────────────────────
+                                if (_totalAddonPricePerUnit > 0)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      'Includes addons +${_totalAddonPricePerUnit.toStringAsFixed(2)} per unit',
+                                      style: const TextStyle(
+                                        color: Color(0xFF00ACC1),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 22),
@@ -860,6 +895,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 22),
 
                             _buildPreparationSection(theme),
+
+                            // ── Add-ons Section ─────────────────────
+                            _buildAddonsSection(theme, productController),
 
                             const SizedBox(height: 22),
 
@@ -1272,6 +1310,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                 preparationInstructions:
                                                     _specialInstructionsController
                                                         .text,
+                                                addonQuantities:
+                                                    _addonQuantities.isEmpty
+                                                        ? null
+                                                        : _addonQuantities,
                                               );
                                           if (!context.mounted) return;
                                           if (success) {
@@ -1390,6 +1432,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                   preparationInstructions:
                                                       _specialInstructionsController
                                                           .text,
+                                                  addonQuantities:
+                                                      _addonQuantities.isEmpty
+                                                          ? null
+                                                          : _addonQuantities,
                                                 );
 
                                             if (!context.mounted) return;
@@ -1652,6 +1698,176 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             style: const TextStyle(fontSize: 13),
           ),
         ],
+      ],
+    );
+  }
+
+  // ── Add-ons Section Widget ──────────────────────────────────────────
+  Widget _buildAddonsSection(ThemeData theme, ProductController productController) {
+    final detailAddons = productController.selectedProduct?.id == widget.product.id &&
+            productController.selectedProduct?.addons.isNotEmpty == true
+        ? productController.selectedProduct!.addons
+        : widget.product.addons;
+
+    if (detailAddons.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          title: trStatic(context, 'Addons'),
+          theme: theme,
+        ),
+        const SizedBox(height: 12),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: detailAddons.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final addon = detailAddons[index];
+            final qty = _addonQuantities[addon.id] ?? 0;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: qty > 0
+                      ? AppColors.primary
+                      : theme.dividerColor.withOpacity(0.4),
+                  width: qty > 0 ? 1.5 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  if (addon.image != null && addon.image!.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CustomImage(
+                        addon.image!,
+                        width: 52,
+                        height: 52,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          addon.name,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '+ ${addon.extraPrice.toStringAsFixed(2)} AED',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Quantity controls (+ / -)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: qty > 0
+                          ? AppColors.primary.withOpacity(0.08)
+                          : theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: qty > 0
+                            ? AppColors.primary.withOpacity(0.3)
+                            : theme.dividerColor,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: qty > 0
+                              ? () {
+                                  setState(() {
+                                    if (qty == 1) {
+                                      _addonQuantities.remove(addon.id);
+                                    } else {
+                                      _addonQuantities[addon.id] = qty - 1;
+                                    }
+                                  });
+                                }
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.remove,
+                              size: 18,
+                              color: qty > 0
+                                  ? AppColors.primary
+                                  : theme.disabledColor,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          constraints: const BoxConstraints(minWidth: 26),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$qty',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: qty > 0
+                                  ? AppColors.primary
+                                  : theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: (addon.maxQuantity <= 0 || qty < addon.maxQuantity)
+                              ? () {
+                                  setState(() {
+                                    _addonQuantities[addon.id] = qty + 1;
+                                  });
+                                }
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.add,
+                              size: 18,
+                              color: (addon.maxQuantity <= 0 || qty < addon.maxQuantity)
+                                  ? AppColors.primary
+                                  : theme.disabledColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
     );
   }

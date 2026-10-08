@@ -73,7 +73,7 @@ class CartController extends ChangeNotifier {
     }
   }
 
-  Future<bool> addToCart(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions}) async {
+  Future<bool> addToCart(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions, Map<int, int>? addonQuantities}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -81,6 +81,7 @@ class CartController extends ChangeNotifier {
       await _service.addItem(productId, quantity, 
         preparationSpecificationId: preparationSpecificationId,
         preparationInstructions: preparationInstructions,
+        addonQuantities: addonQuantities,
       );
       await fetchCart(); // Refresh cart after adding
       return true;

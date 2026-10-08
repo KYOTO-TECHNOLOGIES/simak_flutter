@@ -21,6 +21,7 @@ class ProductModel {
   final List<String> availableEmirates;
   final String unit;
   final List<PreparationSpecification> preparationSpecifications;
+  final List<ProductAddon> addons;
 
   ProductModel({
     required this.id,
@@ -42,6 +43,7 @@ class ProductModel {
     this.availableEmirates = const [],
     this.unit = 'piece',
     this.preparationSpecifications = const [],
+    this.addons = const [],
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -80,6 +82,10 @@ class ProductModel {
                   ?.map((e) => PreparationSpecification.fromJson(Map<String, dynamic>.from(e)))
                   .toList() ??
               [],
+      addons: (json['addons'] as List<dynamic>?)
+              ?.map((e) => ProductAddon.fromJson(Map<String, dynamic>.from(e)))
+              .toList() ??
+          [],
     );
   }
 
@@ -203,6 +209,50 @@ class PreparationSpecification {
           ? ProductModel.getAbsoluteUrl(json['image'].toString())
           : null,
       extraPrice: double.tryParse(json['extra_price']?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
+// ─── ProductAddon Model ──────────────────────────────────────────────
+class ProductAddon {
+  final int id;
+  final String name;
+  final String? nameArabic;
+  final String? nameChinese;
+  final String? description;
+  final String? image;
+  final double extraPrice;
+  final int maxQuantity;
+  final int sortOrder;
+  final bool isActive;
+
+  ProductAddon({
+    required this.id,
+    required this.name,
+    this.nameArabic,
+    this.nameChinese,
+    this.description,
+    this.image,
+    this.extraPrice = 0.0,
+    this.maxQuantity = 1,
+    this.sortOrder = 0,
+    this.isActive = true,
+  });
+
+  factory ProductAddon.fromJson(Map<String, dynamic> json) {
+    return ProductAddon(
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      name: json['localizedName']?.toString() ?? json['name']?.toString() ?? '',
+      nameArabic: json['name_arabic']?.toString(),
+      nameChinese: json['name_chinese']?.toString(),
+      description: json['localizedDescription']?.toString() ?? json['description']?.toString(),
+      image: json['image'] != null
+          ? ProductModel.getAbsoluteUrl(json['image'].toString())
+          : null,
+      extraPrice: double.tryParse(json['extra_price']?.toString() ?? '0') ?? 0.0,
+      maxQuantity: int.tryParse(json['max_quantity']?.toString() ?? '1') ?? 1,
+      sortOrder: int.tryParse(json['sort_order']?.toString() ?? '0') ?? 0,
+      isActive: json['is_active'] == true || json['is_active'] == 1,
     );
   }
 }
