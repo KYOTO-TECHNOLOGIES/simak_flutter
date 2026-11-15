@@ -52,7 +52,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   /// Sum of (addon.extraPrice × selectedQty) for all selected addons.
   double get _totalAddonPricePerUnit {
-    final addons = _detailProduct?.addons ?? widget.product.addons;
+    final addons = _product.addons.where((addon) => addon.isActive);
     double total = 0.0;
     for (final addon in addons) {
       final qty = _addonQuantities[addon.id] ?? 0;
@@ -61,12 +61,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return total;
   }
 
-  /// Returns the loaded-from-API detail product (if available), else the passed-in widget.product.
+  /// Prefer detail data so pricing and configuration match the current catalog.
   ProductModel? _detailProduct;
+  ProductModel get _product => _detailProduct ?? widget.product;
 
-  /// Full line total: (finalPrice + addon extras) × product quantity
+  /// Full line total includes preparation and add-on extras.
   double get _effectiveTotalPrice =>
-      (widget.product.finalPrice + _totalAddonPricePerUnit) * _quantity;
+      (_product.finalPrice +
+          (_selectedPreparation?.extraPrice ?? 0) +
+          _totalAddonPricePerUnit) * _quantity;
 
   @override
   void initState() {
@@ -74,14 +77,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _pageController = PageController();
     _fetchReviews();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductController>().fetchProductDetail(widget.product.id);
+      context.read<ProductController>().fetchProductDetail(_product.id);
     });
   }
 
   Future<void> _fetchReviews() async {
     try {
       final controller = context.read<OrderController>();
-      final reviews = await controller.fetchProductReviews(widget.product.id);
+      final reviews = await controller.fetchProductReviews(_product.id);
       if (mounted) {
         setState(() {
           _reviews = reviews;
@@ -105,20 +108,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final items = <_MediaItem>[];
 
     // Add main image first if it exists
-    if (widget.product.mainImage != null &&
-        widget.product.mainImage!.isNotEmpty) {
+    if (_product.mainImage != null &&
+        _product.mainImage!.isNotEmpty) {
       items.add(
         _MediaItem(
           type: _MediaType.image,
-          url: widget.product.mainImage!,
+          url: _product.mainImage!,
           id: -1, // Special ID for main image
         ),
       );
     }
 
     // Add gallery images (avoiding duplicates if it matches main image)
-    for (var img in widget.product.images) {
-      if (img.image != widget.product.mainImage) {
+    for (var img in _product.images) {
+      if (img.image != _product.mainImage) {
         items.add(
           _MediaItem(type: _MediaType.image, url: img.image, id: img.id),
         );
@@ -127,7 +130,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     // Add videos
     items.addAll(
-      widget.product.videos.map(
+      _product.videos.map(
         (e) => _MediaItem(
           type: _MediaType.video,
           url: e.video,
@@ -150,16 +153,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   int get _discountPercent {
-    if (widget.product.discountPrice == null || widget.product.price <= 0) {
+    if (_product.discountPrice == null || _product.price <= 0) {
       return 0;
     }
-    return (((widget.product.price - widget.product.finalPrice) /
-                widget.product.price) *
+    return (((_product.price - _product.finalPrice) /
+                _product.price) *
             100)
         .round();
   }
 
-  bool get _inStock => widget.product.isAvailable && widget.product.stock > 0;
+  bool get _inStock => _product.isAvailable && _product.stock > 0;
 
   /// Returns the quantity of this product already in the cart.
   void _showPrepSelectionModal() {
@@ -168,14 +171,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => PrepSelectionSheet(
-        product: widget.product,
+        product: _product,
         onSelected: (specId, instructions) async {
+          if (!_canAddMoreToCart(_quantity)) return;
           final cartController = context.read<CartController>();
           final success = await cartController.addToCart(
-            widget.product.id,
+            _product.id,
             _quantity,
             preparationSpecificationId: specId,
             preparationInstructions: instructions,
+            addonQuantities: _addonQuantities,
           );
 
           if (!context.mounted) return;
@@ -197,15 +202,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   int _cartQtyForProduct() {
     final cartItems = context.read<CartController>().cart?.items ?? [];
-    final existing = cartItems.where((i) => i.product.id == widget.product.id);
-    return existing.isEmpty ? 0 : existing.first.quantity;
+    final existing = cartItems.where((i) => i.product.id == _product.id);
+    return existing.fold(0, (total, item) => total + item.quantity);
   }
 
   /// Shows an error snackbar and returns false if adding [qty] more would
   /// exceed available stock. Returns true when it is safe to proceed.
   bool _canAddMoreToCart(int qty) {
     final existingQty = _cartQtyForProduct();
-    final stock = widget.product.stock;
+    final stock = _product.stock;
     if (existingQty + qty > stock) {
       SimakFeedback.showError(
         context,
@@ -239,10 +244,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final media = _media;
 
     return Consumer<ProductController>(
       builder: (context, productController, _) {
+        final selected = productController.selectedProduct;
+        if (selected?.id == widget.product.id) _detailProduct = selected;
+        final media = _media;
 
         return Scaffold(
           body: Container(
@@ -475,18 +482,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                 icon: Icons.share_rounded,
                                                 onTap: () async {
                                                   final text =
-                                                      '*${widget.product.name}*\n'
-                                                      'AED ${widget.product.finalPrice}\n\n'
-                                                      '${widget.product.description}\n\n'
-                                                      '${trStatic(context, 'check_this_out')} https://simakfresh.ae/product/${widget.product.id}\n'
+                                                      '*${_product.name}*\n'
+                                                      'AED ${_product.finalPrice}\n\n'
+                                                      '${_product.description}\n\n'
+                                                      '${trStatic(context, 'check_this_out')} https://simakfresh.ae/product/${_product.id}\n'
                                                       'Download the app: https://play.google.com/store/apps/details?id=com.simakfresh.app';
 
-                                                  if (widget
-                                                              .product
+                                                  if (_product
                                                               .mainImage !=
                                                           null &&
-                                                      widget
-                                                          .product
+                                                      _product
                                                           .mainImage!
                                                           .isNotEmpty) {
                                                     try {
@@ -496,8 +501,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                         '${tmpDir.path}/shared_product.jpg',
                                                       );
                                                       await Dio().download(
-                                                        widget
-                                                            .product
+                                                        _product
                                                             .mainImage!,
                                                         file.path,
                                                       );
@@ -603,7 +607,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, widget.product.categoryName).toUpperCase(),
+                                    Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, _product.categoryName).toUpperCase(),
                                     style: TextStyle(
                                       color: theme.colorScheme.primary,
                                       fontSize: 11,
@@ -613,8 +617,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (widget.product.stock == 0 ||
-                                    !widget.product.isAvailable)
+                                if (_product.stock == 0 ||
+                                    !_product.isAvailable)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
@@ -633,7 +637,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       ),
                                     ),
                                   )
-                                else if (widget.product.stock < 15)
+                                else if (_product.stock < 15)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
@@ -657,7 +661,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             context,
                                             'low_stock',
                                             args: {
-                                              'count': widget.product.stock
+                                              'count': _product.stock
                                                   .toString(),
                                             },
                                           ),
@@ -677,7 +681,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                             // Product name
                             Text(
-                              widget.product.name,
+                              _product.name,
                               style: TextStyle(
                                 color: theme.colorScheme.onSurface,
                                 fontSize: 28,
@@ -690,14 +694,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 12),
 
                             // Rating row
-                            if (widget.product.rating > 0) ...[
+                            if (_product.rating > 0) ...[
                               Row(
                                 children: [
                                   // Stars
                                   Row(
                                     children: List.generate(5, (i) {
                                       final filled =
-                                          i < widget.product.rating.round();
+                                          i < _product.rating.round();
                                       return Icon(
                                         filled
                                             ? Icons.star_rounded
@@ -709,7 +713,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    widget.product.rating.toStringAsFixed(1),
+                                    _product.rating.toStringAsFixed(1),
                                     style: TextStyle(
                                       color: theme.colorScheme.onSurface
                                           .withOpacity(0.85),
@@ -719,7 +723,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '(${widget.product.reviewsCount} ${tr(context, 'reviews_label')})',
+                                    '(${_product.reviewsCount} ${tr(context, 'reviews_label')})',
                                     style: TextStyle(
                                       color: theme.colorScheme.onSurface
                                           .withOpacity(0.5),
@@ -739,11 +743,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   _quantity == 1
                                       ? trStatic(
                                           context,
-                                          'Price per ${widget.product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')}',
+                                          'Price per ${_product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')}',
                                         )
                                       : trStatic(
                                           context,
-                                          widget.product.unit
+                                          _product.unit
                                                   .toLowerCase()
                                                   .contains('kg')
                                               ? 'price_for_quantity_kg'
@@ -769,7 +773,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
-                                    if (widget.product.discountPrice !=
+                                    if (_product.discountPrice !=
                                         null) ...[
                                       const SizedBox(width: 10),
                                       Padding(
@@ -777,7 +781,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           bottom: 3,
                                         ),
                                         child: Text(
-                                          'AED ${(widget.product.price * _quantity).toStringAsFixed(2)}',
+                                          'AED ${(_product.price * _quantity).toStringAsFixed(2)}',
                                           style: TextStyle(
                                             color: theme.colorScheme.onSurface
                                                 .withOpacity(0.45),
@@ -795,7 +799,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 4),
                                     child: Text(
-                                      'Includes addons +${_totalAddonPricePerUnit.toStringAsFixed(2)} per unit',
+                                      tr(context, 'addon_price_summary', args: {'amount': _totalAddonPricePerUnit.toStringAsFixed(2)}),
                                       style: const TextStyle(
                                         color: Color(0xFF00ACC1),
                                         fontSize: 12,
@@ -863,7 +867,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             _QtyButton(
                                               icon: Icons.add,
                                               onTap:
-                                                  _quantity < widget.product.stock
+                                                  _quantity < _product.stock
                                                   ? () => setState(
                                                       () => _quantity++,
                                                     )
@@ -875,11 +879,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ),
                                       ),
                                     ),
-                                    if (widget.product.stock > 0 &&
-                                        widget.product.stock < 20) ...[
+                                    if (_product.stock > 0 &&
+                                        _product.stock < 20) ...[
                                       const SizedBox(height: 6),
                                       Text(
-                                        '${widget.product.stock} ${widget.product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')} ${trStatic(context, 'in_stock')}',
+                                        '${_product.stock} ${_product.unit.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ')} ${trStatic(context, 'in_stock')}',
                                         style: const TextStyle(
                                           color: Colors.orange,
                                           fontSize: 11,
@@ -897,7 +901,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             _buildPreparationSection(theme),
 
                             // ── Add-ons Section ─────────────────────
-                            _buildAddonsSection(theme, productController),
+                            _buildAddonsSection(theme),
 
                             const SizedBox(height: 22),
 
@@ -1019,8 +1023,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             const SizedBox(height: 12),
                             _ExpandableText(
-                              text: widget.product.description.isNotEmpty
-                                  ? widget.product.description
+                              text: _product.description.isNotEmpty
+                                  ? _product.description
                                   : tr(context, 'default_description'),
                               theme: theme,
                             ),
@@ -1028,8 +1032,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 24),
 
                             // ── Available Emirates ──────────────────
-                            if (widget
-                                .product
+                            if (_product
                                 .availableEmirates
                                 .isNotEmpty) ...[
                               _SectionTitle(
@@ -1052,7 +1055,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: widget.product.availableEmirates.map((
+                                children: _product.availableEmirates.map((
                                   emirate,
                                 ) {
                                   // Format the API string (e.g. 'umm_al_quwain' -> 'Umm Al Quwain')
@@ -1196,7 +1199,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               final controller = context
                                   .read<ProductController>();
                               final success = await controller.notifyMe(
-                                widget.product.id,
+                                _product.id,
                               );
 
                               if (context.mounted) {
@@ -1250,8 +1253,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           ),
                                         )) {
                                           // MANDATORY: Check if preparation is selected
-                                          if (widget
-                                              .product
+                                          if (_product
                                               .preparationSpecifications
                                               .isNotEmpty) {
                                             if (_selectedPreparation == null) {
@@ -1268,13 +1270,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                                               final success = await cartController
                                                   .addToCart(
-                                                    widget.product.id,
+                                                    _product.id,
                                                     _quantity,
                                                     preparationSpecificationId:
                                                         _selectedPreparation?.id,
                                                     preparationInstructions:
                                                         _specialInstructionsController
                                                             .text,
+                                                    addonQuantities: _addonQuantities,
                                                   );
                                               if (!context.mounted) return;
                                               if (success) {
@@ -1303,7 +1306,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                                           final success = await cartController
                                               .addToCart(
-                                                widget.product.id,
+                                                _product.id,
                                                 _quantity,
                                                 preparationSpecificationId:
                                                     _selectedPreparation?.id,
@@ -1387,8 +1390,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             ),
                                           )) {
                                             // MANDATORY: Preparation specification check
-                                            if (widget
-                                                    .product
+                                            if (_product
                                                     .preparationSpecifications
                                                     .isNotEmpty &&
                                                 _selectedPreparation == null) {
@@ -1398,7 +1400,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                                             final existingQty =
                                                 _cartQtyForProduct();
-                                            final stock = widget.product.stock;
+                                            final stock = _product.stock;
 
                                             if (existingQty >= stock) {
                                               SimakFeedback.showError(
@@ -1425,7 +1427,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                 .read<CartController>();
                                             final success = await cartController
                                                 .addToCart(
-                                                  widget.product.id,
+                                                  _product.id,
                                                   qtyToAdd,
                                                   preparationSpecificationId:
                                                       _selectedPreparation?.id,
@@ -1547,7 +1549,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       key: _prepSectionKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.product.preparationSpecifications.isNotEmpty) ...[
+        if (_product.preparationSpecifications.isNotEmpty) ...[
           _SectionTitle(
             title: tr(context, 'preparation_cleaning'),
             theme: theme,
@@ -1556,7 +1558,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: widget.product.preparationSpecifications.map((spec) {
+              children: _product.preparationSpecifications.map((spec) {
                 final isSelected = _selectedPreparation?.id == spec.id;
                 return GestureDetector(
                   onTap: () {
@@ -1703,11 +1705,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   // ── Add-ons Section Widget ──────────────────────────────────────────
-  Widget _buildAddonsSection(ThemeData theme, ProductController productController) {
-    final detailAddons = productController.selectedProduct?.id == widget.product.id &&
-            productController.selectedProduct?.addons.isNotEmpty == true
-        ? productController.selectedProduct!.addons
-        : widget.product.addons;
+  Widget _buildAddonsSection(ThemeData theme) {
+    final detailAddons = _product.addons.where((a) => a.isActive).toList();
 
     if (detailAddons.isEmpty) {
       return const SizedBox.shrink();
@@ -1717,7 +1716,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(
-          title: trStatic(context, 'Addons'),
+          title: tr(context, 'addons'),
           theme: theme,
         ),
         const SizedBox(height: 12),
@@ -1917,7 +1916,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(width: 3),
                     Text(
-                      widget.product.rating.toStringAsFixed(1),
+                      _product.rating.toStringAsFixed(1),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,

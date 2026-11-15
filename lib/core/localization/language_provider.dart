@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'catalog_localization.dart';
 
 /// App-wide language provider for managing the current locale.
 class LanguageProvider extends ChangeNotifier {
@@ -10,7 +11,7 @@ class LanguageProvider extends ChangeNotifier {
   String get locale => _locale;
   bool get hasSelectedLanguage => _hasSelectedLanguage;
   bool get isInitialized => _isInitialized;
-  
+
   bool get isChinese => _locale == 'cn';
   bool get isEnglish => _locale == 'en';
   bool get isArabic => _locale == 'ar';
@@ -22,7 +23,10 @@ class LanguageProvider extends ChangeNotifier {
 
   Future<void> _loadLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    _locale = prefs.getString('selectedLocale_v2') ?? 'en';
+    _locale = CatalogLocalization.normalize(
+      prefs.getString('selectedLocale_v2') ?? 'en',
+    );
+    CatalogLocalization.locale = _locale;
     _hasSelectedLanguage = prefs.getBool('hasSelectedLanguage_v2') ?? false;
     _isInitialized = true;
     notifyListeners();
@@ -35,11 +39,13 @@ class LanguageProvider extends ChangeNotifier {
   }
 
   Future<void> setLocale(String code) async {
+    code = CatalogLocalization.normalize(code);
     if (_locale == code && _hasSelectedLanguage) return;
     _locale = code;
+    CatalogLocalization.locale = code;
     _hasSelectedLanguage = true;
     notifyListeners();
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedLocale_v2', code);
     await prefs.setBool('hasSelectedLanguage_v2', true);

@@ -762,6 +762,10 @@ class _ProductsPageState extends State<ProductsPage>
 
   void _handleBuyNow(ProductModel product, {int quantity = 1}) async {
     if (_requireLogin(action: trStatic(context, 'action_buy'))) {
+      if (product.addons.isNotEmpty) {
+        _navigateToDetail(product);
+        return;
+      }
       if (product.preparationSpecifications.isNotEmpty) {
         // Show selection modal if preparation is required
         _showPrepSelectionModal(context, product, quantity: quantity);

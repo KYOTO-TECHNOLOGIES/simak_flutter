@@ -95,6 +95,9 @@ String trTextStatic(BuildContext context, String englishText) {
 // ═══════════════════════════════════════════════════════════════════
 final Map<String, Map<String, String>> _translations = {
   'en': {
+    'addons': 'Add-ons',
+    'addon_price_summary': 'Includes add-ons +{amount} per unit',
+
     // ── Bottom Nav ───────────────────────────────────────────
     'nav_home': 'Home',
     'nav_products': 'Products',
@@ -912,6 +915,9 @@ final Map<String, Map<String, String>> _translations = {
   //  CHINESE
   // ═════════════════════════════════════════════════════════════════
   'cn': {
+    'addons': '加购配料',
+    'addon_price_summary': '包含加购配料，每份 +{amount}',
+
     'nav_home': '首页',
     'nav_products': '产品',
     'nav_profile': '个人中心',
@@ -1656,6 +1662,9 @@ final Map<String, Map<String, String>> _translations = {
   //  ARABIC
   // ═════════════════════════════════════════════════════════════════
   'ar': {
+    'addons': 'الإضافات',
+    'addon_price_summary': 'يشمل إضافات +{amount} لكل وحدة',
+
     // ── Bottom Nav ───────────────────────────────────────────
     'nav_home': 'الرئيسية',
     'nav_products': 'المنتجات',

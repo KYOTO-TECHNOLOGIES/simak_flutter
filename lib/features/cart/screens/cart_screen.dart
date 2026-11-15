@@ -471,6 +471,14 @@ class _CartScreenState extends State<CartScreen> {
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
 
+                  for (final selection in item.addons) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${selection.quantity} × ${selection.addon.name} (+AED ${selection.lineExtraPrice.toStringAsFixed(2)})',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                  ],
+
                   // Preparation Badge
                   if (item.preparationSpecificationName != null) ...[
                     const SizedBox(height: 8),
