@@ -452,8 +452,16 @@ class _HomePageState extends State<HomePage> {
                               );
                             }
 
-                            final categories = controller.backendCategories;
-                            if (categories.isEmpty) {
+                            // Non-grill backend categories shown first
+                            final categories = controller.backendCategories
+                                .where((c) => !c.name.toUpperCase().contains('GRILL'))
+                                .toList();
+                            // Look up the GRILL & FRY category from backend (may be null if not yet loaded)
+                            final grillFryCats = controller.backendCategories
+                                .where((c) => c.name.toUpperCase().contains('GRILL'))
+                                .toList();
+                            final grillFryCategory = grillFryCats.isNotEmpty ? grillFryCats.first : null;
+                            if (categories.isEmpty && !controller.isCategoriesLoading) {
                               return Center(
                                 child: Text(
                                   tr(context, 'no_categories'),
@@ -465,10 +473,32 @@ class _HomePageState extends State<HomePage> {
                               );
                             }
 
+                            // Existing categories + 1 GRILL & FRY = total
+                            final totalCategoriesCount = categories.length + 1;
+
                             return ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: categories.length,
+                              itemCount: totalCategoriesCount,
                               itemBuilder: (context, index) {
+                                // Last card: GRILL & FRY — uses the same API flow as other categories
+                                if (index == categories.length) {
+                                  return _CategoryCard(
+                                    index: index,
+                                    imageUrl: 'assets/images/grill_and_fry.jpg',
+                                    label: tr(context, 'cat_grill_and_fry'),
+                                    onTap: () {
+                                      // Use API category name if available, else fall back to known name
+                                      final catName = grillFryCategory?.name ?? 'GRILL & FRY FISH';
+                                      controller.selectCategory(catName);
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        '/home',
+                                        arguments: {'index': 1},
+                                      );
+                                    },
+                                  );
+                                }
+
                                 final category = categories[index];
                                 return _CategoryCard(
                                   index: index,

@@ -7,6 +7,7 @@ import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 import 'package:uae_ecom_project/features/auth/screens/otp_screen.dart';
 import 'package:uae_ecom_project/features/auth/screens/register_screen.dart';
+import 'package:uae_ecom_project/features/grill_fry/screens/grill_fry_category_page.dart';
 import 'package:uae_ecom_project/features/home/home_shell.dart';
 import 'package:uae_ecom_project/features/orders/controller/coupon_controller.dart';
 import 'package:uae_ecom_project/features/orders/controller/order_controller.dart';
@@ -278,6 +279,7 @@ class _MyAppState extends State<MyApp> {
               },
               '/delivery_dashboard': (_) => const DeliveryDashboardScreen(),
               '/delivery_profile': (_) => const DeliveryProfileScreen(),
+              '/grill_fry': (_) => const GrillFryCategoryPage(),
               '/error': (_) => const ErrorScreen(),
             },
             builder: (context, child) {

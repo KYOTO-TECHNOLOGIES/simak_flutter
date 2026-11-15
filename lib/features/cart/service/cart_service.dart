@@ -31,7 +31,7 @@ class CartService {
     }
   }
 
-  Future<void> addItem(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions}) async {
+  Future<void> addItem(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions, Map<int, int>? addonQuantities}) async {
     try {
       final url = 'cart/add_item/';
       final data = {
@@ -43,6 +43,11 @@ class CartService {
           'preparation_option_id': preparationSpecificationId,
         },
         if (preparationInstructions != null) 'preparation_instructions': preparationInstructions,
+        if (addonQuantities != null && addonQuantities.isNotEmpty)
+          'addon_quantities': addonQuantities.entries
+              .where((e) => e.value > 0)
+              .map((e) => {'addon_id': e.key, 'quantity': e.value})
+              .toList(),
       };
       debugPrint('POST Request to: $url');
       debugPrint('Payload: $data');
