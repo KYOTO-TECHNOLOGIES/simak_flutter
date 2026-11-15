@@ -71,4 +71,29 @@ void main() {
     await CartService().addItem(10, 1);
     expect(adapter.request!.data.containsKey('addons'), false);
   });
+  test(
+    'cart addon update targets a line and sends independent quantities',
+    () async {
+      await CartService().updateAddons(42, {8: 3, 9: 0});
+      expect(adapter.request!.path, 'cart/update_item_addons/');
+      expect(adapter.request!.data, {
+        'cart_item_id': 42,
+        'addons': [
+          {'id': 8, 'quantity': 3},
+        ],
+      });
+    },
+  );
+
+  test('clearing addons sends an explicit empty list', () async {
+    await CartService().updateAddons(42, {});
+    expect(adapter.request!.data['addons'], isEmpty);
+  });
+
+  test('product quantity updates do not rewrite addon quantities', () async {
+    await CartService().updateQuantity(10, 4, cartItemId: 42);
+    expect(adapter.request!.data['quantity'], 4);
+    expect(adapter.request!.data['cart_item_id'], 42);
+    expect(adapter.request!.data.containsKey('addons'), false);
+  });
 }

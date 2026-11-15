@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uae_ecom_project/features/grill_fry/widgets/grill_fry_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/config/app_colors.dart';
 import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
@@ -39,8 +40,8 @@ class _ProductsPageState extends State<ProductsPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller = context.read<ProductController>();
       final emirate = context.read<EmirateController>().selectedEmirate;
-      
-      // Always call fetchProducts; the controller now handles 
+
+      // Always call fetchProducts; the controller now handles
       // showing cache instantly vs showing a loader.
       controller.fetchProducts(emirate: emirate);
       controller.fetchCategories();
@@ -71,6 +72,9 @@ class _ProductsPageState extends State<ProductsPage>
       color: theme.scaffoldBackgroundColor,
       child: Consumer<ProductController>(
         builder: (context, controller, _) {
+          final isGrillFry = controller.selectedCategory.toUpperCase().contains(
+            'GRILL',
+          );
           return RefreshIndicator(
             onRefresh: () async {
               final emirate = context.read<EmirateController>().selectedEmirate;
@@ -89,7 +93,10 @@ class _ProductsPageState extends State<ProductsPage>
                 _buildSliverAppBar(theme, isDark, controller),
 
                 // ─── Category Chips ──────────────────────────────────
-                _buildCategoryChips(theme, controller),
+                if (isGrillFry)
+                  const SliverToBoxAdapter(child: GrillFryBanner())
+                else
+                  _buildCategoryChips(theme, controller),
 
                 // ─── Loading / Error / Content ───────────────────────
                 if (controller.isLoading && controller.products.isEmpty)
@@ -285,9 +292,10 @@ class _ProductsPageState extends State<ProductsPage>
         background: ClipRect(
           child: Container(
             decoration: BoxDecoration(
-              color: isDark
-                  ? theme.scaffoldBackgroundColor
-                  : theme.scaffoldBackgroundColor,
+              color:
+                  isDark
+                      ? theme.scaffoldBackgroundColor
+                      : theme.scaffoldBackgroundColor,
             ),
             child: SafeArea(
               bottom: false,
@@ -450,19 +458,20 @@ class _ProductsPageState extends State<ProductsPage>
                 color: theme.colorScheme.onSurface.withOpacity(0.4),
                 size: 20,
               ),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? GestureDetector(
-                      onTap: () {
-                        _searchController.clear();
-                        controller.setSearchQuery('');
-                      },
-                      child: Icon(
-                        Icons.close,
-                        color: theme.colorScheme.onSurface.withOpacity(0.4),
-                        size: 18,
-                      ),
-                    )
-                  : null,
+              suffixIcon:
+                  _searchController.text.isNotEmpty
+                      ? GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          controller.setSearchQuery('');
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                          size: 18,
+                        ),
+                      )
+                      : null,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             ),
@@ -503,30 +512,30 @@ class _ProductsPageState extends State<ProductsPage>
                     color: isSelected ? AppColors.primary : theme.cardColor,
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : theme.dividerColor,
+                      color:
+                          isSelected ? AppColors.primary : theme.dividerColor,
                     ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
+                    boxShadow:
+                        isSelected
+                            ? [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                            : null,
                   ),
                   child: Text(
                     controller.getLocalizedCategoryName(context, cat),
                     style: TextStyle(
-                      color: isSelected
-                          ? AppColors.white
-                          : theme.colorScheme.onSurface.withOpacity(0.7),
+                      color:
+                          isSelected
+                              ? AppColors.white
+                              : theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -727,13 +736,16 @@ class _ProductsPageState extends State<ProductsPage>
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
           final product = controller.filteredProducts[index];
-            return _EnhancedProductCard(
-              product: product,
-              fallbackImageUrl: controller.fallbackImageUrl,
-              onTap: () => _navigateToDetail(product),
-              onBuyNow: () => _handleBuyNow(product),
-              onNotifyMe: () => _handleNotifyMe(product),
-            );
+          return _EnhancedProductCard(
+            product: product,
+            isGrillFry: controller.selectedCategory.toUpperCase().contains(
+              'GRILL',
+            ),
+            fallbackImageUrl: controller.fallbackImageUrl,
+            onTap: () => _navigateToDetail(product),
+            onBuyNow: () => _handleBuyNow(product),
+            onNotifyMe: () => _handleNotifyMe(product),
+          );
         }, childCount: controller.filteredProducts.length),
       ),
     );
@@ -752,7 +764,10 @@ class _ProductsPageState extends State<ProductsPage>
       final success = await controller.notifyMe(product.id);
       if (mounted) {
         if (success) {
-          SimakFeedback.showSuccess(context, trStatic(context, 'notify_all_set'));
+          SimakFeedback.showSuccess(
+            context,
+            trStatic(context, 'notify_all_set'),
+          );
         } else {
           SimakFeedback.showError(context, trStatic(context, 'notify_failed'));
         }
@@ -774,10 +789,7 @@ class _ProductsPageState extends State<ProductsPage>
 
       // Add to cart first
       final cartController = context.read<CartController>();
-      final success = await cartController.addToCart(
-        product.id,
-        quantity,
-      );
+      final success = await cartController.addToCart(product.id, quantity);
 
       if (success && mounted) {
         if (cartController.hasOutOfStock) {
@@ -795,35 +807,42 @@ class _ProductsPageState extends State<ProductsPage>
     }
   }
 
-  void _showPrepSelectionModal(BuildContext context, ProductModel product, {int quantity = 1}) {
+  void _showPrepSelectionModal(
+    BuildContext context,
+    ProductModel product, {
+    int quantity = 1,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => PrepSelectionSheet(
-        product: product,
-        onSelected: (specId, instructions) async {
-          final cartController = context.read<CartController>();
-          final success = await cartController.addToCart(
-            product.id,
-            quantity,
-            preparationSpecificationId: specId,
-            preparationInstructions: instructions,
-          );
+      builder:
+          (context) => PrepSelectionSheet(
+            product: product,
+            onSelected: (specId, instructions) async {
+              final cartController = context.read<CartController>();
+              final success = await cartController.addToCart(
+                product.id,
+                quantity,
+                preparationSpecificationId: specId,
+                preparationInstructions: instructions,
+              );
 
-          if (success) {
-            if (context.mounted) {
-              if (Navigator.canPop(context)) Navigator.pop(context);
-              Navigator.pushNamed(context, '/cart');
-            }
-          } else {
-            if (context.mounted) {
-              SimakFeedback.showError(
-                  context, cartController.error ?? 'Failed to add to cart');
-            }
-          }
-        },
-      ),
+              if (success) {
+                if (context.mounted) {
+                  if (Navigator.canPop(context)) Navigator.pop(context);
+                  Navigator.pushNamed(context, '/cart');
+                }
+              } else {
+                if (context.mounted) {
+                  SimakFeedback.showError(
+                    context,
+                    cartController.error ?? 'Failed to add to cart',
+                  );
+                }
+              }
+            },
+          ),
     );
   }
 
@@ -1042,14 +1061,15 @@ class _TrendingCard extends StatelessWidget {
                     width: double.infinity,
                     height: 32,
                     child: ElevatedButton(
-                      onPressed: (product.isAvailable && product.stock > 0)
-                          ? onBuyNow
-                          : onNotifyMe,
+                      onPressed:
+                          (product.isAvailable && product.stock > 0)
+                              ? onBuyNow
+                              : onNotifyMe,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             (product.isAvailable && product.stock > 0)
-                            ? AppColors.actionBlue
-                            : AppColors.actionBlue, // Same blue but active
+                                ? AppColors.actionBlue
+                                : AppColors.actionBlue, // Same blue but active
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -1057,7 +1077,12 @@ class _TrendingCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        tr(context, (product.isAvailable && product.stock > 0) ? 'buy_now' : 'notify_me'),
+                        tr(
+                          context,
+                          (product.isAvailable && product.stock > 0)
+                              ? 'buy_now'
+                              : 'notify_me',
+                        ),
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -1193,7 +1218,12 @@ class _OnSaleCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, product.categoryName).toUpperCase(),
+                        Provider.of<ProductController>(context, listen: false)
+                            .getLocalizedCategoryName(
+                              context,
+                              product.categoryName,
+                            )
+                            .toUpperCase(),
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           fontSize: 9,
@@ -1263,6 +1293,7 @@ class _EnhancedProductCard extends StatelessWidget {
   final VoidCallback onBuyNow;
   final VoidCallback onNotifyMe;
   final String fallbackImageUrl;
+  final bool isGrillFry;
 
   const _EnhancedProductCard({
     required this.product,
@@ -1270,6 +1301,7 @@ class _EnhancedProductCard extends StatelessWidget {
     required this.onBuyNow,
     required this.onNotifyMe,
     required this.fallbackImageUrl,
+    this.isGrillFry = false,
   });
 
   int get discountPercent {
@@ -1318,10 +1350,13 @@ class _EnhancedProductCard extends StatelessWidget {
                       ),
                       child: CustomImage(
                         product.thumbnail,
-                        fit: BoxFit.contain,
+                        fit: isGrillFry ? BoxFit.cover : BoxFit.contain,
                         width: double.infinity,
                         height: double.infinity,
-                        padding: const EdgeInsets.all(32.0),
+                        padding:
+                            isGrillFry
+                                ? EdgeInsets.zero
+                                : const EdgeInsets.all(32.0),
                       ),
                     ),
                   ),
@@ -1340,7 +1375,12 @@ class _EnhancedProductCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          Provider.of<ProductController>(context, listen: false).getLocalizedCategoryName(context, product.categoryName).toUpperCase(),
+                          Provider.of<ProductController>(context, listen: false)
+                              .getLocalizedCategoryName(
+                                context,
+                                product.categoryName,
+                              )
+                              .toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 7,
@@ -1436,27 +1476,37 @@ class _EnhancedProductCard extends StatelessWidget {
                     width: double.infinity,
                     height: 38,
                     child: ElevatedButton.icon(
-                      onPressed: (product.isAvailable && product.stock > 0)
-                          ? onBuyNow
-                          : onNotifyMe,
+                      onPressed:
+                          (product.isAvailable && product.stock > 0)
+                              ? onBuyNow
+                              : onNotifyMe,
                       icon: Icon(
-                        (product.isAvailable && product.stock > 0) ? Icons.flash_on : Icons.notifications_active_outlined,
+                        (product.isAvailable && product.stock > 0)
+                            ? Icons.flash_on
+                            : Icons.notifications_active_outlined,
                         size: 14,
                       ),
                       label: Text(
-                        tr(context, (product.isAvailable && product.stock > 0) ? 'buy_now' : 'notify_me'),
+                        tr(
+                          context,
+                          (product.isAvailable && product.stock > 0)
+                              ? 'buy_now'
+                              : 'notify_me',
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             (product.isAvailable && product.stock > 0)
-                            ? AppColors.actionBlue
-                            : AppColors.actionBlue,
+                                ? (isGrillFry
+                                    ? const Color(0xFF353D36)
+                                    : AppColors.actionBlue)
+                                : AppColors.actionBlue,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        textStyle: const TextStyle(
+                        textStyle: theme.textTheme.labelLarge?.copyWith(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cart_addons_sheet.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
@@ -74,15 +75,16 @@ class _CartScreenState extends State<CartScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: !isLoggedIn
-          ? _buildGuestState(context, theme)
-          : cartController.error != null && cartController.cart == null
-          ? _buildErrorState(context, theme, cartController.error!)
-          : cartController.isLoading && cartController.cart == null
-          ? const Center(child: CircularProgressIndicator())
-          : cartController.uniqueItemCount == 0
-          ? _buildEmptyState(context, theme)
-          : _buildCartBody(context, theme, cartController),
+      body:
+          !isLoggedIn
+              ? _buildGuestState(context, theme)
+              : cartController.error != null && cartController.cart == null
+              ? _buildErrorState(context, theme, cartController.error!)
+              : cartController.isLoading && cartController.cart == null
+              ? const Center(child: CircularProgressIndicator())
+              : cartController.uniqueItemCount == 0
+              ? _buildEmptyState(context, theme)
+              : _buildCartBody(context, theme, cartController),
     );
   }
 
@@ -176,7 +178,8 @@ class _CartScreenState extends State<CartScreen> {
                     shrinkWrap: true,
                     itemCount: unavailableItems.length,
                     separatorBuilder:
-                        (context, idx) => Divider(height: 24, color: Colors.grey.shade100),
+                        (context, idx) =>
+                            Divider(height: 24, color: Colors.grey.shade100),
                     itemBuilder:
                         (_, index) =>
                             _buildUnavailableItemTile(unavailableItems[index]),
@@ -430,39 +433,39 @@ class _CartScreenState extends State<CartScreen> {
                             cartItemId: item.id,
                           )
                           ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.error,
-                                ),
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.error,
                               ),
-                            )
-                          : IconButton(
-                              onPressed: () async {
-                                final success = await controller.removeItem(
-                                  item.product.id,
-                                  preparationSpecificationId:
-                                      item.preparationSpecificationId,
-                                  cartItemId: item.id,
-                                );
-                                if (!success && context.mounted) {
-                                  SimakFeedback.showError(
-                                    context,
-                                    controller.error ??
-                                        trStatic(context, 'failed_to_remove'),
-                                  );
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 20,
-                                color: Colors.grey,
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              constraints: const BoxConstraints(),
                             ),
+                          )
+                          : IconButton(
+                            onPressed: () async {
+                              final success = await controller.removeItem(
+                                item.product.id,
+                                preparationSpecificationId:
+                                    item.preparationSpecificationId,
+                                cartItemId: item.id,
+                              );
+                              if (!success && context.mounted) {
+                                SimakFeedback.showError(
+                                  context,
+                                  controller.error ??
+                                      trStatic(context, 'failed_to_remove'),
+                                );
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 20,
+                              color: Colors.grey,
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            constraints: const BoxConstraints(),
+                          ),
                     ],
                   ),
 
@@ -475,9 +478,52 @@ class _CartScreenState extends State<CartScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '${selection.quantity} × ${selection.addon.name} (+AED ${selection.lineExtraPrice.toStringAsFixed(2)})',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
+
+                  if (item.product.addons.any((addon) => addon.isActive) ||
+                      item.addons.isNotEmpty)
+                    TextButton.icon(
+                      onPressed:
+                          controller.isLoading ||
+                                  controller.isItemUpdatingQuantity(
+                                    item.product.id,
+                                    cartItemId: item.id,
+                                  )
+                              ? null
+                              : () async {
+                                final quantities = await showModalBottomSheet<
+                                  Map<int, int>
+                                >(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.sizeOf(context).height * .75,
+                                  ),
+                                  builder: (_) => CartAddonsSheet(item: item),
+                                );
+                                if (quantities == null || !context.mounted) {
+                                  return;
+                                }
+                                final success = await controller.updateAddons(
+                                  item.id,
+                                  quantities,
+                                );
+                                if (!success && context.mounted) {
+                                  SimakFeedback.showError(
+                                    context,
+                                    trStatic(context, 'failed_update_addons'),
+                                  );
+                                }
+                              },
+                      icon: const Icon(Icons.tune_rounded, size: 16),
+                      label: Text(tr(context, 'edit_addons')),
+                    ),
 
                   // Preparation Badge
                   if (item.preparationSpecificationName != null) ...[
@@ -614,29 +660,31 @@ class _CartScreenState extends State<CartScreen> {
           children: [
             _buildMiniBtn(
               icon: Icons.remove,
-              onTap: () => controller.updateQuantity(
-                item.product.id,
-                displayQuantity - 1,
-                preparationSpecificationId: item.preparationSpecificationId,
-                cartItemId: item.id,
-              ),
+              onTap:
+                  () => controller.updateQuantity(
+                    item.product.id,
+                    displayQuantity - 1,
+                    preparationSpecificationId: item.preparationSpecificationId,
+                    cartItemId: item.id,
+                  ),
               isDisabled: displayQuantity <= 1 || isUpdating,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: isUpdating
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(
-                      '$displayQuantity',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+              child:
+                  isUpdating
+                      ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : Text(
+                        '$displayQuantity',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
             ),
             _buildMiniBtn(
               icon: Icons.add,
@@ -697,14 +745,14 @@ class _CartScreenState extends State<CartScreen> {
     final threshold = orderController.freeDeliveryThreshold;
 
     // Use in-stock total if there are OOS items
-    final subtotal = controller.hasOutOfStock
-        ? controller.inStockTotalPrice
-        : controller.cart!.totalPrice;
+    final subtotal =
+        controller.hasOutOfStock
+            ? controller.inStockTotalPrice
+            : controller.cart!.totalPrice;
 
     final isFreeShipping = subtotal >= threshold;
-    final shippingCharge = isFreeShipping
-        ? 0.0
-        : orderController.deliveryCharge;
+    final shippingCharge =
+        isFreeShipping ? 0.0 : orderController.deliveryCharge;
     final itemsTotal = subtotal + shippingCharge;
 
     return Container(
@@ -790,36 +838,38 @@ class _CartScreenState extends State<CartScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: controller.isCartValid
-                  ? () async {
-                      await _handleProceedToCheckout(context, controller);
-                    }
-                  : () {
-                      if (controller.cart == null ||
-                          controller.cart!.items.isEmpty) {
-                        return;
+              onPressed:
+                  controller.isCartValid
+                      ? () async {
+                        await _handleProceedToCheckout(context, controller);
                       }
+                      : () {
+                        if (controller.cart == null ||
+                            controller.cart!.items.isEmpty) {
+                          return;
+                        }
 
-                      String msg = trStatic(context, 'adjust_to_checkout');
-                      if (!controller.hasInStockItems) {
-                        msg = trStatic(
-                          context,
-                          'no_items_available',
-                        ); // Custom message for all OOS
-                      }
+                        String msg = trStatic(context, 'adjust_to_checkout');
+                        if (!controller.hasInStockItems) {
+                          msg = trStatic(
+                            context,
+                            'no_items_available',
+                          ); // Custom message for all OOS
+                        }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(msg),
-                          backgroundColor: AppColors.error,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(msg),
+                            backgroundColor: AppColors.error,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
               style: ElevatedButton.styleFrom(
-                backgroundColor: controller.isCartValid
-                    ? AppColors.primary
-                    : Colors.grey.shade400,
+                backgroundColor:
+                    controller.isCartValid
+                        ? AppColors.primary
+                        : Colors.grey.shade400,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(

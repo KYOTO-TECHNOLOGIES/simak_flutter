@@ -91,6 +91,20 @@ class CartService {
     }
   }
 
+  Future<void> updateAddons(int cartItemId, Map<int, int> quantities) async {
+    await _dio.post(
+      'cart/update_item_addons/',
+      data: {
+        'cart_item_id': cartItemId,
+        'addons':
+            quantities.entries
+                .where((entry) => entry.value > 0)
+                .map((entry) => {'id': entry.key, 'quantity': entry.value})
+                .toList(),
+      },
+    );
+  }
+
   Future<void> removeItem(
     int productId, {
     int? preparationSpecificationId,

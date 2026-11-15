@@ -13,12 +13,24 @@ class CartController extends ChangeNotifier {
   final Map<int, int> _optimisticQuantities = {};
 
   bool isItemRemoving(int productId, {int? preparationId, int? cartItemId}) {
-    final key = cartItemId ?? (preparationId != null ? '${productId}_$preparationId'.hashCode : productId);
+    final key =
+        cartItemId ??
+        (preparationId != null
+            ? '${productId}_$preparationId'.hashCode
+            : productId);
     return _removingItemIds.contains(key);
   }
 
-  bool isItemUpdatingQuantity(int productId, {int? preparationId, int? cartItemId}) {
-    final key = cartItemId ?? (preparationId != null ? '${productId}_$preparationId'.hashCode : productId);
+  bool isItemUpdatingQuantity(
+    int productId, {
+    int? preparationId,
+    int? cartItemId,
+  }) {
+    final key =
+        cartItemId ??
+        (preparationId != null
+            ? '${productId}_$preparationId'.hashCode
+            : productId);
     return _updatingQuantityIds.contains(key);
   }
 
@@ -26,7 +38,6 @@ class CartController extends ChangeNotifier {
     final key = item.id; // Always use item.id for optimistic quantity
     return _optimisticQuantities[key] ?? item.quantity;
   }
-
 
   CartModel? _cart;
   CartModel? get cart => _cart;
@@ -41,21 +52,30 @@ class CartController extends ChangeNotifier {
   int get uniqueItemCount => (_cart?.items ?? []).length;
   double get totalPrice => _cart?.totalPrice ?? 0.0;
 
-  bool get hasOutOfStock => (_cart?.items ?? []).any((item) => item.product.stock == 0 || !item.product.isAvailable);
-  bool get hasInsufficientStock => (_cart?.items ?? []).any((item) => item.quantity > item.product.stock && item.product.stock > 0);
-  List<CartItemModel> get outOfStockItems => (_cart?.items ?? [])
-      .where((item) => item.product.stock == 0 || !item.product.isAvailable)
-      .toList();
-  
+  bool get hasOutOfStock => (_cart?.items ?? []).any(
+    (item) => item.product.stock == 0 || !item.product.isAvailable,
+  );
+  bool get hasInsufficientStock => (_cart?.items ?? []).any(
+    (item) => item.quantity > item.product.stock && item.product.stock > 0,
+  );
+  List<CartItemModel> get outOfStockItems =>
+      (_cart?.items ?? [])
+          .where((item) => item.product.stock == 0 || !item.product.isAvailable)
+          .toList();
+
   // New getters for partial checkout
-  int get uniqueInStockItemCount => (_cart?.items ?? []).where((item) => item.product.stock > 0 && item.product.isAvailable).length;
+  int get uniqueInStockItemCount =>
+      (_cart?.items ?? [])
+          .where((item) => item.product.stock > 0 && item.product.isAvailable)
+          .length;
   bool get hasInStockItems => uniqueInStockItemCount > 0;
   double get inStockTotalPrice => (_cart?.items ?? [])
       .where((item) => item.product.stock > 0 && item.product.isAvailable)
       .fold(0.0, (sum, item) => sum + item.subtotal);
 
   // The cart is "valid" to proceed if there's at least one available in-stock item
-  bool get isCartValid => hasInStockItems && !hasInsufficientStock && uniqueItemCount > 0;
+  bool get isCartValid =>
+      hasInStockItems && !hasInsufficientStock && uniqueItemCount > 0;
 
   Future<void> fetchCart() async {
     _isLoading = true;
@@ -73,12 +93,20 @@ class CartController extends ChangeNotifier {
     }
   }
 
-  Future<bool> addToCart(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions, Map<int, int>? addonQuantities}) async {
+  Future<bool> addToCart(
+    int productId,
+    int quantity, {
+    int? preparationSpecificationId,
+    String? preparationInstructions,
+    Map<int, int>? addonQuantities,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _service.addItem(productId, quantity, 
+      await _service.addItem(
+        productId,
+        quantity,
         preparationSpecificationId: preparationSpecificationId,
         preparationInstructions: preparationInstructions,
         addonQuantities: addonQuantities,
@@ -88,7 +116,7 @@ class CartController extends ChangeNotifier {
     } catch (e) {
       _error = e.toString();
       debugPrint('CartController.addToCart Error: $e');
-      notifyListeners(); 
+      notifyListeners();
       return false;
     } finally {
       _isLoading = false;
@@ -96,57 +124,92 @@ class CartController extends ChangeNotifier {
     }
   }
 
-
   // ... (previous methods)
 
-  void updateQuantity(int productId, int quantity, {int? preparationSpecificationId, int? cartItemId}) {
+  void updateQuantity(
+    int productId,
+    int quantity, {
+    int? preparationSpecificationId,
+    int? cartItemId,
+  }) {
     if (quantity < 1) return;
-    
-    final itemKey = cartItemId ?? (preparationSpecificationId != null 
-        ? '${productId}_$preparationSpecificationId'.hashCode 
-        : productId);
-    
+
+    final itemKey =
+        cartItemId ??
+        (preparationSpecificationId != null
+            ? '${productId}_$preparationSpecificationId'.hashCode
+            : productId);
+
     // Optimistic update
     if (cartItemId != null) {
       _optimisticQuantities[cartItemId] = quantity;
     }
-    
+
     _updatingQuantityIds.add(itemKey);
     notifyListeners();
 
     _debounceTimers[itemKey]?.cancel();
-    _debounceTimers[itemKey] = Timer(const Duration(milliseconds: 400), () async {
-      try {
-        await _service.updateQuantity(productId, quantity, 
-          preparationSpecificationId: preparationSpecificationId,
-          cartItemId: cartItemId,
-        );
-        await fetchCart();
-      } catch (e) {
-        _error = e.toString();
-        debugPrint('CartController.updateQuantity Error: $e');
-        // Rollback optimistic update on error? 
-        // Better to just let fetchCart fix it or notify user.
-      } finally {
-        if (cartItemId != null) {
-          _optimisticQuantities.remove(cartItemId);
+    _debounceTimers[itemKey] = Timer(
+      const Duration(milliseconds: 400),
+      () async {
+        try {
+          await _service.updateQuantity(
+            productId,
+            quantity,
+            preparationSpecificationId: preparationSpecificationId,
+            cartItemId: cartItemId,
+          );
+          await fetchCart();
+        } catch (e) {
+          _error = e.toString();
+          debugPrint('CartController.updateQuantity Error: $e');
+          // Rollback optimistic update on error?
+          // Better to just let fetchCart fix it or notify user.
+        } finally {
+          if (cartItemId != null) {
+            _optimisticQuantities.remove(cartItemId);
+          }
+          _updatingQuantityIds.remove(itemKey);
+          notifyListeners();
         }
-        _updatingQuantityIds.remove(itemKey);
-        notifyListeners();
-      }
-    });
+      },
+    );
   }
 
-   Future<bool> removeItem(int productId, {int? preparationSpecificationId, int? cartItemId}) async {
-    final itemKey = cartItemId ?? (preparationSpecificationId != null 
-        ? '${productId}_$preparationSpecificationId'.hashCode 
-        : productId);
-        
+  Future<bool> updateAddons(int cartItemId, Map<int, int> quantities) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _service.updateAddons(cartItemId, quantities);
+      await fetchCart();
+      return _error == null;
+    } catch (e) {
+      _error = 'failed_update_addons';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> removeItem(
+    int productId, {
+    int? preparationSpecificationId,
+    int? cartItemId,
+  }) async {
+    final itemKey =
+        cartItemId ??
+        (preparationSpecificationId != null
+            ? '${productId}_$preparationSpecificationId'.hashCode
+            : productId);
+
     _removingItemIds.add(itemKey);
     _error = null;
     notifyListeners();
     try {
-      await _service.removeItem(productId, 
+      await _service.removeItem(
+        productId,
         preparationSpecificationId: preparationSpecificationId,
         cartItemId: cartItemId,
       );
@@ -164,14 +227,14 @@ class CartController extends ChangeNotifier {
 
   Future<void> removeOutOfStockItems() async {
     if (_cart == null) return;
-    
+
     final oosItems = outOfStockItems;
-    
+
     if (oosItems.isEmpty) return;
-    
+
     _isLoading = true;
     notifyListeners();
-    
+
     try {
       for (final item in oosItems) {
         await _service.removeItem(
