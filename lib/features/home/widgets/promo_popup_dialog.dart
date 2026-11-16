@@ -1,3 +1,4 @@
+import 'package:uae_ecom_project/core/localization/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uae_ecom_project/core/widgets/custom_image.dart';
@@ -66,6 +67,7 @@ class PromoPopupDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageProvider>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;

@@ -27,7 +27,7 @@ class CustomImage extends StatelessWidget {
           url,
           width: width,
           height: height,
-          fit: BoxFit.contain,
+          fit: fit,
         ),
       );
     }
