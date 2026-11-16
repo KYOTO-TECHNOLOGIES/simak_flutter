@@ -138,6 +138,7 @@ jobs:
             -configuration Release \
             -archivePath $RUNNER_TEMP/Runner.xcarchive \
             -destination "generic/platform=iOS" \
+            DART_DEFINES="$(printf '%s' 'API_BASE_URL=https://simakfresh.ae/api/' | base64 | tr -d '\n')" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="Simak App Store Profile" \

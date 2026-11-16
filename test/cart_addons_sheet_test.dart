@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uae_ecom_project/core/localization/language_provider.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/cart/model/cart_item_model.dart';
 import 'package:uae_ecom_project/features/cart/screens/cart_addons_sheet.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
@@ -15,6 +16,7 @@ void main() {
       final addon = ProductAddon(
         id: 8,
         name: 'Rice',
+        image: 'assets/images/home_logo.png',
         extraPrice: 3,
         maxQuantity: 2,
       );
@@ -57,6 +59,11 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       expect(find.text('1'), findsOneWidget);
+      expect(find.byType(CustomImage), findsOneWidget);
+      expect(
+        tester.widget<CustomImage>(find.byType(CustomImage)).url,
+        'assets/images/home_logo.png',
+      );
       await tester.tap(find.byTooltip('Increase addon quantity'));
       await tester.pump();
       expect(find.text('2'), findsOneWidget);
