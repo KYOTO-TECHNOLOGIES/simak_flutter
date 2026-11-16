@@ -6,6 +6,7 @@ import 'package:uae_ecom_project/features/auth/controller/auth_controller.dart';
 
 import 'package:uae_ecom_project/features/cart/controller/cart_controller.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
+import 'package:uae_ecom_project/features/products/screens/product_detail_screen.dart';
 import 'package:uae_ecom_project/features/products/controller/product_controller.dart';
 import 'package:uae_ecom_project/core/widgets/prep_selection_sheet.dart';
 import 'package:uae_ecom_project/core/utils/feedback_utils.dart';
@@ -41,6 +42,15 @@ class QuickAddToCartButton extends StatelessWidget {
                     context,
                     '/login',
                   );
+                }
+                return;
+              }
+
+              if (product.addons.isNotEmpty) {
+                if (context.mounted) {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => ProductDetailScreen(product: product),
+                  ));
                 }
                 return;
               }

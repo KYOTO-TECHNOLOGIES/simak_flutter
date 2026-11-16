@@ -31,7 +31,13 @@ class CartService {
     }
   }
 
-  Future<void> addItem(int productId, int quantity, {int? preparationSpecificationId, String? preparationInstructions, Map<int, int>? addonQuantities}) async {
+  Future<void> addItem(
+    int productId,
+    int quantity, {
+    int? preparationSpecificationId,
+    String? preparationInstructions,
+    Map<int, int>? addonQuantities,
+  }) async {
     try {
       final url = 'cart/add_item/';
       final data = {
@@ -42,12 +48,14 @@ class CartService {
           'preparation_specification': preparationSpecificationId,
           'preparation_option_id': preparationSpecificationId,
         },
-        if (preparationInstructions != null) 'preparation_instructions': preparationInstructions,
+        if (preparationInstructions != null)
+          'preparation_instructions': preparationInstructions,
         if (addonQuantities != null && addonQuantities.isNotEmpty)
-          'addon_quantities': addonQuantities.entries
-              .where((e) => e.value > 0)
-              .map((e) => {'addon_id': e.key, 'quantity': e.value})
-              .toList(),
+          'addons':
+              addonQuantities.entries
+                  .where((e) => e.value > 0)
+                  .map((e) => {'id': e.key, 'quantity': e.value})
+                  .toList(),
       };
       debugPrint('POST Request to: $url');
       debugPrint('Payload: $data');
@@ -58,34 +66,63 @@ class CartService {
     }
   }
 
-  Future<void> updateQuantity(int productId, int quantity, {int? preparationSpecificationId, int? cartItemId}) async {
+  Future<void> updateQuantity(
+    int productId,
+    int quantity, {
+    int? preparationSpecificationId,
+    int? cartItemId,
+  }) async {
     try {
-      await _dio.post('cart/update_item_quantity/', data: {
-        'product': productId,
-        'product_id': productId,
-        'quantity': quantity,
-        if (cartItemId != null) 'cart_item_id': cartItemId,
-        if (preparationSpecificationId != null) ...{
-          'preparation_specification': preparationSpecificationId,
-          'preparation_option_id': preparationSpecificationId,
+      await _dio.post(
+        'cart/update_item_quantity/',
+        data: {
+          'product': productId,
+          'product_id': productId,
+          'quantity': quantity,
+          if (cartItemId != null) 'cart_item_id': cartItemId,
+          if (preparationSpecificationId != null) ...{
+            'preparation_specification': preparationSpecificationId,
+            'preparation_option_id': preparationSpecificationId,
+          },
         },
-      });
+      );
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> removeItem(int productId, {int? preparationSpecificationId, int? cartItemId}) async {
+  Future<void> updateAddons(int cartItemId, Map<int, int> quantities) async {
+    await _dio.post(
+      'cart/update_item_addons/',
+      data: {
+        'cart_item_id': cartItemId,
+        'addons':
+            quantities.entries
+                .where((entry) => entry.value > 0)
+                .map((entry) => {'id': entry.key, 'quantity': entry.value})
+                .toList(),
+      },
+    );
+  }
+
+  Future<void> removeItem(
+    int productId, {
+    int? preparationSpecificationId,
+    int? cartItemId,
+  }) async {
     try {
-      await _dio.post('cart/remove_item/', data: {
-        'product': productId,
-        'product_id': productId,
-        if (cartItemId != null) 'cart_item_id': cartItemId,
-        if (preparationSpecificationId != null) ...{
-          'preparation_specification': preparationSpecificationId,
-          'preparation_option_id': preparationSpecificationId,
+      await _dio.post(
+        'cart/remove_item/',
+        data: {
+          'product': productId,
+          'product_id': productId,
+          if (cartItemId != null) 'cart_item_id': cartItemId,
+          if (preparationSpecificationId != null) ...{
+            'preparation_specification': preparationSpecificationId,
+            'preparation_option_id': preparationSpecificationId,
+          },
         },
-      });
+      );
     } catch (e) {
       rethrow;
     }

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -337,6 +338,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
           },
         ),
         
+        if (defaultTargetPlatform != TargetPlatform.iOS) ...[
         const SizedBox(height: 32),
         
         // ─── Auth Options Divider ─────────────────────────────────
@@ -403,6 +405,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
             );
           },
         ),
+        ],
       ],
     );
   }

@@ -18,6 +18,8 @@ class ApiClient {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          // Preserve English identifiers and all admin translation fields.
+          'Accept-Language': 'en',
         },
       ),
     );

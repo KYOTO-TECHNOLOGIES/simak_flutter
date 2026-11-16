@@ -95,6 +95,20 @@ String trTextStatic(BuildContext context, String englishText) {
 // ═══════════════════════════════════════════════════════════════════
 final Map<String, Map<String, String>> _translations = {
   'en': {
+    'addons': 'Add-ons',
+    'edit_addons': 'Edit add-ons',
+    'save_addons': 'Save add-ons',
+    'decrease_addon': 'Decrease addon quantity',
+    'increase_addon': 'Increase addon quantity',
+    'addons_independent_hint':
+        'Add-on quantities apply to this cart line and stay separate from the product quantity.',
+    'failed_update_addons':
+        'Could not update add-ons. Please refresh the cart and try again.',
+    'grill_fry_subtitle':
+        'From the sea to your table.\nGrilled or fried, just how you like it.',
+    'grill_fry_customise': 'Choose your preparation & extras',
+    'addon_price_summary': 'Includes add-ons +{amount} for this item',
+
     // ── Bottom Nav ───────────────────────────────────────────
     'nav_home': 'Home',
     'nav_products': 'Products',
@@ -257,7 +271,8 @@ final Map<String, Map<String, String>> _translations = {
     'mark_all_read': 'Mark all as read',
     'no_unread_notifications': 'No unread notifications',
     'no_read_notifications': 'No read notifications',
-    'notification_empty_hint': 'We will notify you when something important happens.',
+    'notification_empty_hint':
+        'We will notify you when something important happens.',
     'open_action': 'Open',
     'mark_read': 'Mark as read',
     'support_average_response': 'AVERAGE RESPONSE: UNDER 2 HOURS',
@@ -849,7 +864,8 @@ final Map<String, Map<String, String>> _translations = {
     'referral_step_3_title': 'Both Get max 20% Off',
     'referral_step_3_title_suffix': '(Upto 20 AED)',
     'referral_step_3_sub_1': 'Your friend gets max 20% OFF',
-    'referral_step_3_sub_2': ' instantly! Once the order is delivered, you also receive a 20%',
+    'referral_step_3_sub_2':
+        ' instantly! Once the order is delivered, you also receive a 20%',
     'referral_step_3_sub_3': ' discount coupon.',
     'referral_code_label': 'REFERRAL CODE (OPTIONAL)',
     'referral_code_hint': 'Enter referral code (if any)',
@@ -912,6 +928,17 @@ final Map<String, Map<String, String>> _translations = {
   //  CHINESE
   // ═════════════════════════════════════════════════════════════════
   'cn': {
+    'addons': '加购配料',
+    'edit_addons': '编辑配料',
+    'save_addons': '保存配料',
+    'decrease_addon': '减少配料数量',
+    'increase_addon': '增加配料数量',
+    'addons_independent_hint': '配料数量适用于此购物车条目，与商品数量独立。',
+    'failed_update_addons': '无法更新配料，请刷新购物车后重试。',
+    'grill_fry_subtitle': '从海洋到餐桌。\n香烤或酥炸，随您喜好。',
+    'grill_fry_customise': '选择烹饪方式和配料',
+    'addon_price_summary': '此项包含加购配料 +{amount}',
+
     'nav_home': '首页',
     'nav_products': '产品',
     'nav_profile': '个人中心',
@@ -1656,6 +1683,19 @@ final Map<String, Map<String, String>> _translations = {
   //  ARABIC
   // ═════════════════════════════════════════════════════════════════
   'ar': {
+    'addons': 'الإضافات',
+    'edit_addons': 'تعديل الإضافات',
+    'save_addons': 'حفظ الإضافات',
+    'decrease_addon': 'تقليل كمية الإضافة',
+    'increase_addon': 'زيادة كمية الإضافة',
+    'addons_independent_hint':
+        'كميات الإضافات تخص هذا العنصر في السلة وتبقى مستقلة عن كمية المنتج.',
+    'failed_update_addons':
+        'تعذر تحديث الإضافات. يرجى تحديث السلة والمحاولة مجدداً.',
+    'grill_fry_subtitle': 'من البحر إلى مائدتك.\nمشوي أو مقلي، كما تحب.',
+    'grill_fry_customise': 'اختر طريقة التحضير والإضافات',
+    'addon_price_summary': 'يشمل إضافات +{amount} لهذا العنصر',
+
     // ── Bottom Nav ───────────────────────────────────────────
     'nav_home': 'الرئيسية',
     'nav_products': 'المنتجات',
@@ -1881,7 +1921,8 @@ final Map<String, Map<String, String>> _translations = {
     'otp_login': 'الدخول برمز التحقق',
     'otp_sent_msg': 'لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى',
     'otp_sent_via_whatsapp': 'تم إرسال الرمز عبر واتساب',
-    'whatsapp_check_msg': 'يرجى التحقق من واتساب الخاص بك للحصول على رمز التحقق',
+    'whatsapp_check_msg':
+        'يرجى التحقق من واتساب الخاص بك للحصول على رمز التحقق',
     'otp_enter_msg': 'أدخل رقم هاتفك أو بريدك الإلكتروني\nلتلقي رمز التحقق',
     'phone_or_email': 'الهاتف أو البريد الإلكتروني',
     'phone_hint': '+971501234567 أو you@email.com',
@@ -2386,7 +2427,8 @@ final Map<String, Map<String, String>> _translations = {
     'referral_step_3_title': 'كلاهما يحصل على خصم يصل إلى 20%',
     'referral_step_3_title_suffix': '(حتى 20 درهم)',
     'referral_step_3_sub_1': 'يحصل صديقك على خصم يصل إلى 20٪',
-    'referral_step_3_sub_2': ' فوراً! بمجرد تسليم الطلب، ستتلقى أنت أيضاً كوبون خصم 20٪',
+    'referral_step_3_sub_2':
+        ' فوراً! بمجرد تسليم الطلب، ستتلقى أنت أيضاً كوبون خصم 20٪',
     'referral_step_3_sub_3': '.',
     'referral_code_label': 'كود الإحالة (اختياري)',
     'referral_code_hint': 'أدخل كود الإحالة (إن وجد)',
