@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uae_ecom_project/core/localization/app_translations.dart';
+import 'package:uae_ecom_project/core/widgets/custom_image.dart';
 import 'package:uae_ecom_project/features/cart/model/cart_item_model.dart';
 import 'package:uae_ecom_project/features/products/model/product_model.dart';
 
@@ -49,6 +50,19 @@ class _CartAddonsSheetState extends State<CartAddonsSheet> {
                         final quantity = quantities[addon.id] ?? 0;
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
+                          leading:
+                              addon.image != null &&
+                                      addon.image!.trim().isNotEmpty
+                                  ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CustomImage(
+                                      addon.image!,
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                  : null,
                           title: Text(addon.name),
                           subtitle: Text(
                             'AED ${addon.extraPrice.toStringAsFixed(2)}',
