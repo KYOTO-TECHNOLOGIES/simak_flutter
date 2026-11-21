@@ -48,6 +48,18 @@ void main() {
   );
 
   testWidgets(
+    'Android login shows an enabled Google sign-in button',
+    (tester) async {
+      await showForm(tester, const UnifiedAuthForm());
+      expect(find.text('Continue with Google'), findsOneWidget);
+      final button = tester.widget<OutlinedButton>(find.byType(OutlinedButton));
+      expect(button.onPressed, isNotNull);
+      expect(find.byType(Divider), findsNWidgets(2));
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
     'Android registration retains its Google sign-in button',
     (tester) async {
       await showForm(tester, const UnifiedRegisterForm());

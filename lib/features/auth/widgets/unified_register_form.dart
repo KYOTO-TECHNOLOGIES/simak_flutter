@@ -338,7 +338,7 @@ class _UnifiedRegisterFormState extends State<UnifiedRegisterForm> {
           },
         ),
         
-        if (defaultTargetPlatform != TargetPlatform.iOS) ...[
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
         const SizedBox(height: 32),
         
         // ─── Auth Options Divider ─────────────────────────────────
